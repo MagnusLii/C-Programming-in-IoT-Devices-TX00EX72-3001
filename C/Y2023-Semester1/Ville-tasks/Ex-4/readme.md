@@ -1,0 +1,1 @@
+Write a function that prints ascending sequence of numbers. Function receives two integers as a parameter and prints a sequence of number starting from the lowest number and ending at the largest number. Program must print each number on a separate line and print an empty line at the end of the sequence.

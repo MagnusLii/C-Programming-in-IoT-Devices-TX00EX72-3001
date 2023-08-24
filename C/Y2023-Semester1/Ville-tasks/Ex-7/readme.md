@@ -1,0 +1,1 @@
+Write a function that receives string as a parameter. Function finds all occurrences of letter 't' and replaces them with '*'. Function returns no value.
