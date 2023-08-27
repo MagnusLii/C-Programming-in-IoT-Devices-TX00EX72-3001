@@ -18,8 +18,6 @@ typedef enum { English, Italian, Spanish } language;
 const char *month(int number, language lang);
 const char *lang2str(language lang);
 
-#include <stdio.h>
-
 int main()
 {
     
