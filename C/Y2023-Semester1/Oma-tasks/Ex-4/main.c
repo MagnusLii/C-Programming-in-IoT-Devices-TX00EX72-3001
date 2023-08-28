@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <errno.h>
 
 int read_integer(void);
 
@@ -24,7 +23,7 @@ int main(void)
         }
     }
     
-    printf("You entered %d positive numbers. The average is: %.3f", ind - 1, sum / (ind - 1));
+    printf("You entered %d positive numbers. The average is: %.3f", ind, sum / (ind));
     
     return 0;
 }
@@ -37,12 +36,13 @@ int read_integer(void)
     printf("Enter positive numbers or negative to stop: ");
     fgets(input, 10, stdin);
 
-    errno = 0;
-    number = strtol(input, NULL, 10);
+    char *endptr;
+    number = strtol(input, &endptr, 10);
 
-    if (errno != 0)
+
+    if (input == endptr) 
     {
-        printf("invalid input");
+        printf("invalid input\n");
         goto invalid_input;
     }
     else
