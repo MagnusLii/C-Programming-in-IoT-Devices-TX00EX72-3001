@@ -1,6 +1,3 @@
-/*Write a function that receives two structures as parameters. Each structure represents a point in plane. Function calculates and returns distance between the points. See http://www.purplemath.com/modules/distform.htm for help with the formula.*/
-
-
 #include <stdio.h>
 #include <string.h>
 #include <math.h>

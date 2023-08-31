@@ -1,7 +1,3 @@
-/*Write a function that receives string as a parameter. Function finds all occurrences of letter 't' and replaces them with '*'. Function returns no value.*/#include <stdio.h>
-#include <string.h>
-
-
 void replace(char *str)
 {
     int i;

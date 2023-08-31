@@ -1,5 +1,3 @@
-/*Write a function that receives two parameters and returns an integer. Parameters are an array and array size. Function finds the largest number in the array and returns it.*/
-
 #include <stdio.h>
 #include <string.h>
 
