@@ -11,12 +11,24 @@ bool read_line(char *line, size_t size);
 
 int main(void)
 {
-    printf
+    bool x = true;
+    char first[10], second[10], line[100] = "7 2 sub";
+    int i = 0, j = 0;
+    char operator[10];
+    char *token;
+
+    // x = read_line(line, sizeof(line));
+
+    if (x == true)
+    {
+        while (line[i] != " " || line[i] != '\0')
+        {
+            
+        }
+    }
+    else
+    {
+    }
 
     return 0;
-}
-
-bool read_line(char *line, size_t size)
-{
-    return true;
 }
