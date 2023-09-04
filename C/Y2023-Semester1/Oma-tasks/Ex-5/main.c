@@ -41,7 +41,7 @@ int read_range(int low, int high)
 {
     char input[10];
     int number = 0;
-invalid_input:
+invalid_input:  // <--- remove
 
     printf("Enter a number between %d and %d: ", low, high);
 
@@ -54,12 +54,12 @@ invalid_input:
     if (input == endptr)
     {
         printf("You entered something other than an integer.\n");
-        goto invalid_input;
+        goto invalid_input;  // <--- remove
     }
     else if (number < low || number > high)
     {
         printf("Your input was outside the specified range.\n");
-        goto invalid_input;
+        goto invalid_input;  // <--- remove
     }
     else
     {
