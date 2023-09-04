@@ -53,9 +53,9 @@ int read_integer(void)
 
 
 /* Not my code, code from https://c-for-dummies.com/blog/?p=3671.
-Used it cause I found Atoi and strtol to be impossible to work with
-and getting them to work properly required too much hassle to
-check for correct input.*/
+Used it cause the simple true/false return is much
+easier to use in my code than the pointer in strtol and allows
+me to remove multiple if statements. */
 bool strtol_wrapper_b10(const char *s, long *n)
 {
     char *p;
