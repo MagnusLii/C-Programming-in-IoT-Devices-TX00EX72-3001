@@ -3,7 +3,7 @@
 #include <stdbool.h>
 
 int read_integer(void);
-bool strtol_wrapper_b10(const char *s, long *n);
+bool strtol_wrapper_b10(const char *s, int *n);
 
 int main(void)
 {
@@ -38,10 +38,10 @@ int read_integer(void)
     printf("Enter positive numbers or negative to stop: ");
 
     fgets(input, 10, stdin);
-    strtol_wrapper_b10(&input, &user_number_input);
+    strtol_wrapper_b10(input, &user_number_input);
 
     // Invalid input loop.
-    while (!strtol_wrapper_b10(&input, &user_number_input))
+    while (!strtol_wrapper_b10(input, &user_number_input))
     {
         printf("Invalid input!\n");
         printf("Enter positive numbers or negative to stop: ");
@@ -56,7 +56,7 @@ int read_integer(void)
 Used it cause the simple true/false return is much
 easier to use in my code than the pointer in strtol and allows
 me to remove multiple if statements. */
-bool strtol_wrapper_b10(const char *s, long *n)
+bool strtol_wrapper_b10(const char *s, int *n)
 {
     char *p;
 

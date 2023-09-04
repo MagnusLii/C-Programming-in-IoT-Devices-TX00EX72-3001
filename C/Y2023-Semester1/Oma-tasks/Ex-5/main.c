@@ -3,7 +3,7 @@
 #include <stdbool.h>
 
 int read_range(int low, int high);
-bool strtol_wrapper_b10(const char *s, long *n);
+bool strtol_wrapper_b10(const char *s, int *n);
 
 int main(void)
 {
@@ -50,14 +50,15 @@ int read_range(int low, int high)
         printf("Enter a number between %d and %d: ", low, high);
         fgets(input, 10, stdin);
 
-        valid_input = strtol_wrapper_b10(&input, &number);
+        valid_input = strtol_wrapper_b10(input, &number);
 
-        if (number < 0 || number > high)  // strtol_wrapper_b10() returns 0 if no conversion is possible.
+    
+        if ((number < low && valid_input == true)|| number > high) // (valid_input == true && number == 0) = user inputted 0.
         {
             printf("Your input was outside the specified range.\n");
             valid_input = false;
         }
-        else
+        else if (valid_input == false)
         {
             printf("You entered something other than an integer.\n");
         }
@@ -66,7 +67,7 @@ int read_range(int low, int high)
     return number;
 }
 
-bool strtol_wrapper_b10(const char *s, long *n)
+bool strtol_wrapper_b10(const char *s, int *n)
 {
     char *p;
 
