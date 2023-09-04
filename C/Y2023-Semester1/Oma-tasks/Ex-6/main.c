@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 int read_range(int low, int high);
+void get_input(char *input);
 
 int main(void)
 {
@@ -37,39 +39,44 @@ int read_range(int low, int high)
 {
     char input[10];
     int number = 0;
-invalid_input:
+    bool conversion_successful = false;
 
     printf("Enter a number between %d and %d: ", low, high);
 
-    fgets(input, 10, stdin);
+    while (conversion_successful == false)
+    {
+        printf("Enter a number between %d and %d: ", low, high);
+        get_input(input);
+        char *endptr;
+        number = strtol(input, &endptr, 10);
 
+        if (input == endptr) // No number(s) found.
+        {
+            printf("You entered something other than an integer.\n");
+        }
+        else if (*endptr != '\0') // In case of partial conversion, aka "3.6" -> "3".
+        {
+            printf("You entered a non integer number.\n");
+        }
+        else if (number < low || number > high)
+        {
+            printf("Your input was outside the specified range.\n");
+        }
+        else
+        {
+            conversion_successful = true;
+        }
+    }
+
+    return number;
+}
+
+void get_input(char *input)
+{
+    fgets(input, 10, stdin);
     size_t input_length = strlen(input);
     if (input_length > 0 && input[input_length - 1] == '\n')
     {
         input[input_length - 1] = '\0';
-    }
-
-    char *endptr;
-
-    number = strtol(input, &endptr, 10);
-
-    if (input == endptr) // No number(s) found.
-    {
-        printf("You entered something other than an integer.\n");
-        goto invalid_input;
-    }
-    else if (*endptr != '\0') // In case of partial conversion, aka "3.6" -> "3".
-    {
-        printf("You entered something other than an integer !!!!.\n");
-        goto invalid_input;
-    }
-    else if (number < low || number > high)
-    {
-        printf("Your input was outside the specified range.\n");
-        goto invalid_input;
-    }
-    else
-    {
-        return number;
     }
 }
