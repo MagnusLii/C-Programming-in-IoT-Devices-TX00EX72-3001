@@ -23,22 +23,25 @@ int main()
 
 const char *month(int number, language lang)
 {
-    printf("month: %d, lang: %d\n", number, lang);
+
     const char *months[3][12] = {
         {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
          "November", "December"},
         {"Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre",
          "Ottobre", "Novembre", "Dicembre"},
-        {"Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre",
-         "Octubre", "Noviembre", "Diciembre"}};
+        {"enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre",
+         "octubre", "noviembre", "diciembre"}
+    };
     const char *error = "Error";
 
     if (number < 1 || number > 12)
     {
         return error;
     }
-
-    // printf("%s", months[lang][number - 1]);
+    if (lang < 0 || lang > 3)
+    {
+        return error;
+    }
 
     return months[lang][number - 1];
 }
