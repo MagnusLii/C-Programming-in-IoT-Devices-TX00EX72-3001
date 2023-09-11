@@ -2,4 +2,6 @@
 *.exe
 C/Y2023-Semester1/Oma-tasks/TEST.c
 .vscode/tasks.json
-.vscode/tasks.json
+.vscode
+.vscode/*
+
