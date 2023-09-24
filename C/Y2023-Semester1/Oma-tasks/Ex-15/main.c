@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
@@ -54,7 +53,7 @@ int main(void)
             token = strtok(NULL, ";");
             if (token != NULL)
             {
-                array[linesread].price = atof(token);
+                array[linesread].price = strtod(token, NULL);
                 linesread++;
             }
         }
