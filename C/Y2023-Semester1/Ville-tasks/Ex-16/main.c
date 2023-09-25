@@ -45,7 +45,6 @@ int format_tester(const char *input, int size_of_string, int *pnum1, int *pnum2,
     }
 }
 
-
 /*
 int error_finder(const char *input, int size_of_string, int *pnum1, int *pnum2, char *poperator)
 {

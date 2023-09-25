@@ -1,15 +1,19 @@
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <stdbool.h>
+
+
 int main(void)
 {
 
-    char input[255];
-    size_t size = sizeof(input);
-    char *pinput = input;
-    int *psize = &size;
-    bool x = false;
+    int i = 0;
+    char str[10] = "addd";
+    i = strcmp(str, "add");
 
-    x = read_line(pinput, size);
-    
-    printf("%s", input);
+    printf("%d", i);
 
     return 0;
 }
