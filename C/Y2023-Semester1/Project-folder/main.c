@@ -370,11 +370,7 @@ bool exitToCancel(const char *inputStr)
     // Convert the input string to lowercase for case-insensitive comparison.
     char inputStrLower[INPUT_BUFFER_LENGHT];
     int i = 0;
-    for (i; i < strlen(inputStr); i++)
-    {
-        inputStrLower[i] = tolower(inputStr[i]);
-    }
-    inputStrLower[i] = '\0';
+    convertToLowercase(inputStrLower);
 
     if (strcmp(inputStrLower, "exit") == 0)
     {
