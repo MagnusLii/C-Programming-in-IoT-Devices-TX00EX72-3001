@@ -368,8 +368,10 @@ void dtimeString(char *stringToStoreTo)
 bool exitToCancel(const char *inputStr)
 {
     // Convert the input string to lowercase for case-insensitive comparison.
-    char inputStrLower[INPUT_BUFFER_LENGHT];
+    char inputStrLower[INPUT_BUFFER_LENGHT] = "\0";
     int i = 0;
+
+    strcpy(inputStrLower, inputStr);
     convertToLowercase(inputStrLower);
 
     if (strcmp(inputStrLower, "exit") == 0)
