@@ -365,7 +365,7 @@ void dtimeString(char *stringToStoreTo)
 
     Returns:
         - true if the input is equal to "exit" (case-insensitive), false otherwise.*/
-bool exit_to_cancel(const char *inputStr)
+bool exitToCancel(const char *inputStr)
 {
     // Convert the input string to lowercase for case-insensitive comparison.
     char inputStrLower[INPUT_BUFFER_LENGHT];
@@ -447,7 +447,7 @@ bool chooseMajor(char *stringToStoreTo)
     while (input_valid == false)
     {
         fgetsStringWhileLoopAlphanumerical(loopMsg, errorMsg, userinput, DEFAULT_STRING_LENGHT);
-        if (exit_to_cancel(userinput) == true)
+        if (exitToCancel(userinput) == true)
         {
             return false;
         }
@@ -606,7 +606,7 @@ void addNewStudent()
     // Creating firstname.
     printf("%s", SEPARATOR);
     fgetsStringWhileLoopAlphanumerical(inputstr, errorMsg, newStudent.firstname, NAME_LENGHT);
-    if (exit_to_cancel(newStudent.firstname) == true)
+    if (exitToCancel(newStudent.firstname) == true)
     {
         return;
     }
@@ -616,7 +616,7 @@ void addNewStudent()
     char errorMsg2[LONG_STRING_LENGHT] = "Please enter a valid lastname.\n";
     printf("%s", SEPARATOR);
     fgetsStringWhileLoopAlphanumerical(inputstr, errorMsg2, newStudent.lastname, NAME_LENGHT);
-    if (exit_to_cancel(newStudent.lastname) == true)
+    if (exitToCancel(newStudent.lastname) == true)
     {
         return;
     }
@@ -706,7 +706,7 @@ void editStudentEntry()
     do
     {
         fgetsStringWhileLoopAlphanumerical(promptMsg, errorMsg, userinput, DEFAULT_STRING_LENGHT);
-        if (exit_to_cancel(userinput) == true)
+        if (exitToCancel(userinput) == true)
         {
             return;
         }
@@ -729,7 +729,7 @@ void editStudentEntry()
     while (input_valid == false)
     {
         fgetsStringWhileLoopAlphanumerical(promptMsg, errorMsg, userinput, DEFAULT_STRING_LENGHT);
-        if (exit_to_cancel(userinput) == true)
+        if (exitToCancel(userinput) == true)
         {
             return;
         }
@@ -750,7 +750,7 @@ void editStudentEntry()
     case 1:
         sprintf(inputstr, "Enter firstname (max %d alphanumerical characters only!)\n", NAME_LENGHT - 1);
         fgetsStringWhileLoopAlphanumerical(inputstr, "Please enter a valid firstname.\n", userinput, NAME_LENGHT);
-        if (exit_to_cancel(userinput) == true)
+        if (exitToCancel(userinput) == true)
         {
             return;
         }
@@ -764,7 +764,7 @@ void editStudentEntry()
     case 2:
         sprintf(inputstr, "Enter lastname (max %d alphanumerical characters only!)\n", NAME_LENGHT - 1);
         fgetsStringWhileLoopAlphanumerical(inputstr, "Please enter a valid lastname.\n", userinput, NAME_LENGHT);
-        if (exit_to_cancel(userinput) == true)
+        if (exitToCancel(userinput) == true)
         {
             return;
         }
@@ -787,7 +787,7 @@ void editStudentEntry()
         sprintf(inputstr, "Enter a number between 1 and %d.\n", NUM_MAJORS);
         sprintf(errorMsg, "Please enter a valid integer between range 1-%d.\n", NUM_MAJORS);
         fgetsStringWhileLoopAlphanumerical(inputstr, errorMsg, userinput, DEFAULT_STRING_LENGHT);
-        if (exit_to_cancel(userinput) == true)
+        if (exitToCancel(userinput) == true)
         {
             return;
         }
@@ -855,7 +855,7 @@ void deleteStudentEntry()
     {
         fgetsStringWhileLoopAlphanumerical("Enter index number of student entry to remove. (Leftmost column in DB).\n",
                                            "Please enter a valid student index number.\n", userinput, DEFAULT_STRING_LENGHT);
-        if (exit_to_cancel(userinput) == true)
+        if (exitToCancel(userinput) == true)
         {
             return;
         }
@@ -968,7 +968,7 @@ void lookupOrBrowse()
                                            "Enter a valid integer between range 1-2.\n",
                                            userinput, DEFAULT_STRING_LENGHT);
 
-        if (exit_to_cancel(userinput) == true)
+        if (exitToCancel(userinput) == true)
         {
             return;
         }
@@ -1014,7 +1014,7 @@ void browseStudentList()
                                            "Enter a valid integer.\n",
                                            userinput, DEFAULT_STRING_LENGHT);
 
-        if (exit_to_cancel(userinput) == true)
+        if (exitToCancel(userinput) == true)
         {
             return;
         }
@@ -1094,7 +1094,7 @@ void lookupStudent()
     {
         fgetsStringWhileLoopAlphanumerical("Enter student index number (Leftmost column in DB).\n",
                                            "Please enter a valid student index number.\n", userinput, DEFAULT_STRING_LENGHT);
-        if (exit_to_cancel(userinput) == true)
+        if (exitToCancel(userinput) == true)
         {
             return;
         }
