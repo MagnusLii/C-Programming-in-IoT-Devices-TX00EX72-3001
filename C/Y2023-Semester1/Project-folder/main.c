@@ -46,7 +46,7 @@ void lookupStudent();
     Requires studentind to find the correct data.
 
     Parameters:
-        - studentind: The index of the student record to fetch.
+        - studentind: The index of the student record to fetch. The index num is the leftmost column in the database.
 
     Returns:
         A Student struct containing the fetched data.*/
