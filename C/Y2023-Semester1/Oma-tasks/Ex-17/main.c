@@ -3,9 +3,9 @@
 #include <string.h>
 #include <stdbool.h>
 #include <time.h>
+#include <ctype.h>
 
 #define INPUT_BUFFER_LENGHT 32
-#define MAX_PASSWORD_LENGHT INPUT_BUFFER_LENGHT * 2 + 1
 
 bool generatePassword(char *password, int size, const char *word);
 bool improvedFgets(char *stringToStoreTo, const int maxLenghtOfString);
@@ -17,7 +17,7 @@ int main()
     srand(time(NULL));
 
     char input[INPUT_BUFFER_LENGHT];
-    char password[(INPUT_BUFFER_LENGHT * 2) + 1];
+    char password[INPUT_BUFFER_LENGHT];
     bool stop = false, inputLen = false;
 
     while (stop == false)
@@ -29,13 +29,9 @@ int main()
         {
             stop = true;
         }
-        else if (generatePassword(password, MAX_PASSWORD_LENGHT, input) == true && inputLen == true)
+        else if (generatePassword(password, INPUT_BUFFER_LENGHT, input) == true && inputLen == true)
         {
             printf("Generated password: %s\n", password);
-        }
-        else
-        {
-            printf("Error: incorrect input.\n");
         }
     }
 
@@ -115,7 +111,7 @@ bool exitToCancel(const char *inputStr)
 
     if (strcmp(inputStrLower, "stop") == 0)
     {
-        printf("Cancelling...\n");
+        printf("Exiting...\n");
         return true; // Return true to indicate the "exit" command was detected.
     }
     return false; // Return false if the input is not "exit".
