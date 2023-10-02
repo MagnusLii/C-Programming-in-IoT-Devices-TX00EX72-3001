@@ -18,6 +18,7 @@ bool improvedFgets(char *stringToStoreTo, const int maxLenghtOfString);
 int compareStrings(const void *a, const void *b);
 void convertToLowercase(char *str);
 int cmpfunc(const void *a, const void *b);
+double storage = 0.0;
 
 int main(void)
 {
@@ -53,14 +54,18 @@ int main(void)
             {
                 token++;
             }
-            strcpy(array[linesread].name, token);
+            strncpy(array[linesread].name, token, MENU_ITEM_SIZE);
 
             token = strtok(NULL, ";");
             if (token != NULL)
             {
-
-                array[linesread].price = strtod(token, NULL);
-                linesread++;
+                errno = 0;
+                char *endptr = NULL;
+                array[linesread].price = strtod(token, &endptr);
+                if (errno == 0 && (*endptr == '\0' || *endptr == '\n'))
+                {
+                    linesread++;
+                }
             }
         }
     }
@@ -100,7 +105,7 @@ int main(void)
         break;
 
     default:
-        printf("asd\n");
+        printf("Hau are you in 'ere?\n");
         break;
     }
 
@@ -183,8 +188,6 @@ int cmpfunc(const void *a, const void *b)
 {
     const menu_item *itemA = a;
     const menu_item *itemB = b;
-
-    printf("%lf\n", (double)itemA->price - (double)itemB->price);
 
     if ((double)itemA->price > (double)itemB->price)
         return 1;
