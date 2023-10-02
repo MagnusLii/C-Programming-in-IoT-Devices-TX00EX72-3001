@@ -26,13 +26,13 @@ int main()
         if (improvedFgets(inputStr, INPUT_BUFFER_LENGTH) == true && stringToIntConv(inputStr, &inputint) == true && inputint >= 0 && inputint <= 15)
         {
             int randomNum = rand();
-            printf("Random Number: %d\n", randomNum);
-            printf("Random Hexadecimal Number: 0x%02X\n", randomNum);
+            //printf("Random Number: %d\n", randomNum);
+            printf("Hex number: 0x%X\n", randomNum);
 
             int shiftedNum = randomNum >> inputint;
             int result = shiftedNum & 0x3F;
 
-            printf("Result in Hexadecimal: 0x%02X\n", result);
+            printf("Result in Hexadecimal: 0x%X\n", result);
         }
         else if (inputint < 0)
         {
@@ -40,7 +40,7 @@ int main()
         }
         else
         {
-            printf("Error: Enter an int less than 16.\n");
+            printf("arghhhh, wrong input :(\n");
         }
     }
 
@@ -73,7 +73,9 @@ bool improvedFgets(char *stringToStoreTo, const int maxLenghtOfString)
             // Checking if input exceeds the maximum length.
             if (i >= maxLenghtOfString - 1)
             {
+                char dump[1000] = "\0";
                 printf("\nError: Input over max accepted length of %d characters.\n", maxLenghtOfString - 1);
+                fgets(dump, 1000, stdin);
                 return false;
             }
             i++;
