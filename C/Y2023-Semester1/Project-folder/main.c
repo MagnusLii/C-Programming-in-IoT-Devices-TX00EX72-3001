@@ -203,7 +203,6 @@ bool improvedFgets(char *stringToStoreTo, const int maxLenghtOfString)
 {
     bool newline_found = false; // Flag to track the presence of '\n'.
     int i = 0;
-    char dump[1000] = "\0"; // Buffer clear excess input from stdin.
 
     if (fgets(stringToStoreTo, INPUT_BUFFER_LENGHT, stdin) != NULL)
     {
@@ -226,6 +225,7 @@ bool improvedFgets(char *stringToStoreTo, const int maxLenghtOfString)
             if (i >= maxLenghtOfString - 1)
             {
                 printf("\nError: Input over max accepted lenght of %d characters.\n", maxLenghtOfString - 1);
+                char dump[1000] = "\0";
                 fgets(dump, 1000, stdin); // Clear excess input from stdin.
                 return false;
             }
