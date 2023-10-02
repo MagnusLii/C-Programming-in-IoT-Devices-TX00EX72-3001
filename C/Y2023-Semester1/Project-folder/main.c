@@ -374,7 +374,8 @@ bool exitToCancel(const char *inputStr)
     char inputStrLower[INPUT_BUFFER_LENGHT] = "\0";
     int i = 0;
 
-    strcpy(inputStrLower, inputStr);
+    strncasecmp(inputStrLower, inputStr, INPUT_BUFFER_LENGHT);
+    inputStrLower[INPUT_BUFFER_LENGHT - 1] = '\0';
     convertToLowercase(inputStrLower);
 
     if (strcmp(inputStrLower, "exit") == 0)
@@ -465,7 +466,8 @@ bool chooseMajor(char *stringToStoreTo)
         }
     }
     // Copy the selected major to the output string.
-    strcpy(stringToStoreTo, majors[userinput_int - 1]);
+    strncpy(stringToStoreTo, majors[userinput_int - 1], sizeof(stringToStoreTo) - 1);
+    stringToStoreTo[sizeof(stringToStoreTo) - 1] = '\0';
     return true; // Return true to indicate successful selection and storage of a major.
 }
 
@@ -803,7 +805,8 @@ void editStudentEntry()
             }
         }
 
-        strcpy(student.major, majors[userinput_int - 1]);
+        strncpy(student.major, majors[userinput_int - 1], LONG_STRING_LENGHT - 1);
+        student.major[LONG_STRING_LENGHT - 1] = '\0';
         break;
     }
 
