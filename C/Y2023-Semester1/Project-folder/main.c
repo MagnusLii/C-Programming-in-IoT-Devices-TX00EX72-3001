@@ -6,7 +6,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <float.h>
-#include <student.h>
+#include "student.h"
 
 // #defines
 #define DB "db.txt"
@@ -41,6 +41,8 @@ void lookupOrBrowse();
 bool stringIsYesOrNo(const char *str);
 void browseStudentList();
 void lookupStudent();
+void convertToLowercase(char *str);
+
 
 /*  Fetches student data from the database and returns it as a Struct.
     Requires studentind to find the correct data.
