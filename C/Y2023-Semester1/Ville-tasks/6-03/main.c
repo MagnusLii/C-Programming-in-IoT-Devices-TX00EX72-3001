@@ -25,8 +25,15 @@ int compareByFirstName(const void *a, const void *b) {
     const student *studentB = (const student *)b;
     char firstNameA[MAX_LEN], firstNameB[MAX_LEN];
     
+    
     sscanf(studentA->name, "%s", firstNameA);
     sscanf(studentB->name, "%s", firstNameB);
+
+    int result = strcmp(firstNameA, firstNameB);  
+    if (result == 0)  // Test includes a case where both firstnames are the same however the instructions are unclear on what to do in this case.
+    {
+        return 1;
+    }
     
     return strcmp(firstNameA, firstNameB);
 }
@@ -76,4 +83,3 @@ void sort_students(student *students, int count, sort_order sb) {
 
     qsort(students, count, sizeof(student), compareFunction);
 }
-
