@@ -1,3 +1,5 @@
+    
+    /*
     va_list args;
     va_start(args, format);
 
@@ -6,3 +8,5 @@
 
     va_end(args);
     return result;
+    */
+   
