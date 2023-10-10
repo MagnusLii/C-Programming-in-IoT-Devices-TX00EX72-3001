@@ -43,7 +43,6 @@ void browseStudentList();
 void lookupStudent();
 void convertToLowercase(char *str);
 
-
 /*  Fetches student data from the database and returns it as a Struct.
     Requires studentind to find the correct data.
 
@@ -52,31 +51,25 @@ void convertToLowercase(char *str);
 
     Returns:
         A Student struct containing the fetched data.*/
-Student fetch_student_data(const int studentind)
-{
+Student fetch_student_data(const int studentind){
     Student student = {0};
     int tokencount = 0, linecount = 0;
     char *token, buffer[LONG_STRING_LENGHT] = "\0";
     FILE *dbFile = openFileWithRetry(DB, "r", 3);
-    if (dbFile == NULL)
-    {
-        printf("Unable to open file %s", DB);
+    if (dbFile == NULL){
+        fprintf(stdout, "Error: unable to open file %s", DB);
         printf("Cancelling...");
         student.fetchFailure = 1; // Set fetchFailure flag to indicate a failure.
         return student;
     }
 
     bool entry_found = false; // Flag to indicate if the entry is found in the database.
-    while ((fgets(buffer, LONG_STRING_LENGHT, dbFile)) != NULL && entry_found == false)
-    {
+    while ((fgets(buffer, LONG_STRING_LENGHT, dbFile)) != NULL && entry_found == false){
         linecount++;
-        if (getIndNum(buffer) == studentind)
-        {
+        if (getIndNum(buffer) == studentind){
             token = strtok(buffer, ", ");
-            while (token != NULL)
-            {
-                switch (tokencount)
-                {
+            while (token != NULL){
+                switch (tokencount){
                 case 0:
                     stringToIntConv(token, &student.studentind);
                     break;
@@ -109,17 +102,15 @@ Student fetch_student_data(const int studentind)
 
     if (entry_found == false)
     {
-        printf("Error: Student record with index %d not found.\n"
-               "Cancelling...\n",
-               studentind);
+        fprintf(stdout, "Error: Student record with index %d not found.\n", studentind);
+        printf("Cancelling...");
         student.fetchFailure = 1; // Set fetchFailure flag to indicate a failure.
         return student;
     }
     return student;
 }
 
-int main()
-{
+int main(){
     int switch_choice = 0;
     char choice_str[INPUT_BUFFER_LENGHT] = "\0";
     bool exit = false; // Flag to control program exit.
@@ -174,17 +165,19 @@ int main()
 
     Returns:
         - true if data is successfully read and stored, false otherwise.*/
-bool getDBRowInd(int *pStudentind, int *pDB_rows)
-{
+bool getDBRowInd(int *pStudentind, int *pDB_rows){
+    if (pStudentind == NULL || pDB_rows == NULL){
+        fprintf(stdout, "Error: Invalid pointer in getDBRowInd.\n");
+        return false;
+    }
+
     FILE *pFile = openFileWithRetry(DB, "r", 3);
-    if (pFile == NULL)
-    {
+    if (pFile == NULL){
         return false;
     }
 
     int readCount = fscanf(pFile, "%d %d", pStudentind, pDB_rows);
-    if (readCount != 2) // Check if the correct number of values was successfully read from the file.
-    {
+    if (readCount != 2){ // Check if the correct number of values was successfully read from the file.
         printf("Error: Failed to read data from the file '%s'\n", DB);
         return false;
     }
@@ -201,39 +194,54 @@ bool getDBRowInd(int *pStudentind, int *pDB_rows)
 
     Returns:
         - true if input is successfully read and meets the conditions, false otherwise.*/
-bool improvedFgets(char *stringToStoreTo, const int maxLenghtOfString)
-{
+bool improvedFgets(char *stringToStoreTo, const int maxLenghtOfString){
+    if (stringToStoreTo == NULL || maxLenghtOfString < 1){
+        fprintf(stdout, "Error: Invalid pointer or maxLenghtOfString in improvedFgets.\n");
+        return false;
+    }
+    
     bool newline_found = false; // Flag to track the presence of '\n'.
     int i = 0;
+    int input_length = 0;
+    char *input_buffer = (char *)malloc(maxLenghtOfString * sizeof(char)); // Used for malloc() to allocate memory for the input buffer.
 
-    if (fgets(stringToStoreTo, INPUT_BUFFER_LENGHT, stdin) != NULL)
-    {
+    if (input_buffer == NULL){
+        fprintf(stdout, "Error: Memory allocation failed.\n");
+        return false;
+    }
+
+    if (fgets(input_buffer, maxLenghtOfString, stdin) != NULL){
+        input_length = strlen(input_buffer);
+
         // Checking for empty input.
-        if (stringToStoreTo[0] == '\n' || stringToStoreTo[0] == '\0')
-        {
-            printf("Error: Empty input.\n");
+        if (input_buffer[0] == '\n' || input_buffer[0] == '\0'){
+            fprintf(stdout, "Error: Empty input.\n");
+            free(input_buffer);
             return false;
         }
 
         // Replacing \n with \0.
-        while (newline_found == false)
-        {
-            if (stringToStoreTo[i] == '\n')
-            {
+        while (newline_found == false){
+            if (input_buffer[i] == '\n'){
                 newline_found = true;
-                stringToStoreTo[i] = '\0';
+                input_buffer[i] = '\0';
             }
+
+            i++;
+
             // Checking if input exceeds the maximum length.
-            if (i >= maxLenghtOfString - 1)
-            {
-                printf("\nError: Input over max accepted lenght of %d characters.\n", maxLenghtOfString - 1);
-                char dump[1000] = "\0";
-                fgets(dump, 1000, stdin); // Clear excess input from stdin.
+            if (i >= maxLenghtOfString - 1){
+                fprintf(stdout, "Error: Input over max accepted length of %d characters.\n", maxLenghtOfString - 1);
+                free(input_buffer);
                 return false;
             }
-            i++;
         }
     }
+
+    strncpy(stringToStoreTo, input_buffer, maxLenghtOfString - 1);
+    stringToStoreTo[maxLenghtOfString - 1] = '\0'; // Ensuring the string is null-terminated. Shouldn't be needed.
+
+    free(input_buffer);
     return true;
 }
 
@@ -246,30 +254,25 @@ bool improvedFgets(char *stringToStoreTo, const int maxLenghtOfString)
 
     Returns:
         - true if the conversion is successful and the input is valid, false otherwise.*/
-bool stringToIntConv(const char *str, int *result)
-{
+bool stringToIntConv(const char *str, int *result){
     char *endptr; // Pointer to the character after the converted part of the string.
-    errno = 0;
+    errno = 0;    // Setting errno to 0 to detect errors in strtol().
     long int num = strtol(str, &endptr, 10);
     // Checking if input is beyond the range of a long integer.
-    if (errno == ERANGE)
-    {
-        printf("Error: could not complete conversion to integer, number out of range.\nEnter a number between %d and %d.\n", LONG_MIN, LONG_MAX);
+    if (errno == ERANGE){
+        fprintf(stdout, "Error: could not complete conversion to integer, number out of range.\nEnter a number between %d and %d.\n", LONG_MIN, LONG_MAX);
         return false;
     }
     // Checking if input contained anything other than numbers.
-    else if (*endptr != '\0')
-    {
+    else if (*endptr != '\0'){
         // Checking if input is non numerical.
-        for (char *p = endptr; *p != '\0'; p++)
-        {
-            if (isdigit((unsigned char)*p) == false)
-            {
-                printf("Error: could not complete conversion to integer, you entered a non integer.\n");
+        for (char *p = endptr; *p != '\0'; p++){
+            if (isdigit((unsigned char)*p) == false){
+                fprintf(stdout, "Error: could not complete conversion to integer, you entered a non integer.\n");
                 return false;
             }
         }
-        printf("Error: could not read an integer.\n");
+        fprintf(stdout, "Error: could not read an integer.\n");
         return false;
     }
     *result = num;
@@ -285,23 +288,20 @@ bool stringToIntConv(const char *str, int *result)
 
     Returns:
         - true if the conversion is successful and the input is valid, false otherwise.*/
-bool stringToDoubleConv(const char *inputStr, double *result)
-{
+bool stringToDoubleConv(const char *inputStr, double *result){
     char *endptr; // Pointer to the character after the converted part of the string.
     errno = 0;
     double num = strtod(inputStr, &endptr);
     // Checking if input is beyond the range of a double.
-    if (errno == ERANGE)
-    {
-        printf("Error: could not complete conversion to double, number out of range.\n"
+    if (errno == ERANGE){
+        fprintf(stdout, "Error: could not complete conversion to double, number out of range.\n"
                "Enter a number between %f and %f.\n",
                DBL_MIN, DBL_MAX);
         return false;
     }
     // Checking if input contained anything other than numbers.
-    else if (*endptr != '\0')
-    {
-        printf("Error: could not complete conversion to double\n");
+    else if (*endptr != '\0'){
+        fprintf(stdout, "Error: could not complete conversion to double\n");
         return false;
     }
     *result = num;
@@ -316,11 +316,9 @@ bool stringToDoubleConv(const char *inputStr, double *result)
         - retryMessage: The message to print when input is invalid, prompting the user to retry.
         - stringToStoreTo: A pointer to the character buffer where the input will be stored.
         - maxLenghtOfString: The maximum length of the input string.*/
-void fgetsStringWhileLoopAlphanumerical(const char *stringToPrint, const char *retryMessage, char *stringToStoreTo, const int maxLenghtOfString)
-{
+void fgetsStringWhileLoopAlphanumerical(const char *stringToPrint, const char *retryMessage, char *stringToStoreTo, const int maxLenghtOfString){
     bool input_valid = false;
-    while (input_valid == false)
-    {
+    while (input_valid == false){
         printf("%s", stringToPrint);
         printf("Or input 'Exit' to cancel.\n"
                "Your input: ");
@@ -328,10 +326,8 @@ void fgetsStringWhileLoopAlphanumerical(const char *stringToPrint, const char *r
 
         // Alphanumerical character validation.
         int i = 0;
-        while (input_valid == true && stringToStoreTo[i] != '\0')
-        {
-            if (isalnum(stringToStoreTo[i]) == false)
-            {
+        while (input_valid == true && stringToStoreTo[i] != '\0'){
+            if (isalnum(stringToStoreTo[i]) == false){
                 // Display error message indicating the non-alphanumerical character and its location.
                 printf("\nNon alphanumerical character detected at character %d (%c)\n"
                        "Your input: %s\n"
@@ -339,8 +335,7 @@ void fgetsStringWhileLoopAlphanumerical(const char *stringToPrint, const char *r
                        i + 1, stringToStoreTo[i], stringToStoreTo);
 
                 // Print '^' under the error location.
-                for (int j = 0; j < i; j++)
-                {
+                for (int j = 0; j < i; j++){
                     printf(" ");
                 }
                 printf("^\n");
@@ -348,16 +343,14 @@ void fgetsStringWhileLoopAlphanumerical(const char *stringToPrint, const char *r
             }
             i++;
         }
-        if (input_valid == false)
-        {
+        if (input_valid == false){
             printf("%s", retryMessage); // Prompting user to try again.
         }
     }
 }
 
 // Gets the current date and time and stores it in the 'stringToStoreTo' buffer.
-void dtimeString(char *stringToStoreTo)
-{
+void dtimeString(char *stringToStoreTo){
     time_t current_time = time(NULL);
     strftime(stringToStoreTo, 20, "%Y%m", localtime(&current_time));
 }
@@ -370,8 +363,7 @@ void dtimeString(char *stringToStoreTo)
 
     Returns:
         - true if the input is equal to "exit" (case-insensitive), false otherwise.*/
-bool exitToCancel(const char *inputStr)
-{
+bool exitToCancel(const char *inputStr){
     // Convert the input string to lowercase for case-insensitive comparison.
     char inputStrLower[INPUT_BUFFER_LENGHT] = "\0";
     int i = 0;
@@ -380,8 +372,7 @@ bool exitToCancel(const char *inputStr)
     inputStrLower[INPUT_BUFFER_LENGHT - 1] = '\0';
     convertToLowercase(inputStrLower);
 
-    if (strcmp(inputStrLower, "exit") == 0)
-    {
+    if (strcmp(inputStrLower, "exit") == 0){
         printf("Cancelling...\n");
         return true; // Return true to indicate the "exit" command was detected.
     }
@@ -395,8 +386,7 @@ bool exitToCancel(const char *inputStr)
 
     Returns:
         - true if the ID is successfully generated and data is stored, false otherwise.*/
-bool createStudentId(struct Student *student)
-{
+bool createStudentId(struct Student *student){
     char date_string[INPUT_BUFFER_LENGHT] = "\0";
     // Fetch the current date and format it as a string.
     dtimeString(date_string);
@@ -404,8 +394,7 @@ bool createStudentId(struct Student *student)
     strcat(student->studentid, date_string);
 
     // Fetch and update the student index and database row information.
-    if (getDBRowInd(&student->studentind, &student->db_entry_row) == false)
-    {
+    if (getDBRowInd(&student->studentind, &student->db_entry_row) == false){
         return false; // Return false if there's an error in fetching the index and row information.
     }
     student->studentind++;
@@ -429,8 +418,7 @@ bool createStudentId(struct Student *student)
 
     Returns:
         - true if a major is successfully selected and stored, false if the user cancels or provides invalid input.*/
-bool chooseMajor(char *stringToStoreTo)
-{
+bool chooseMajor(char *stringToStoreTo){
     char userinput[INPUT_BUFFER_LENGHT] = "\0";
     int userinput_int;
     // Array of major options defined in MAJORS #define.
@@ -439,8 +427,7 @@ bool chooseMajor(char *stringToStoreTo)
     char errorMsg[LONG_STRING_LENGHT] = "Please enter a valid choice. [Single integer number]\n";
 
     // Build the message for user selection by iterating through major options.
-    for (int i = 0; i < NUM_MAJORS; i++)
-    {
+    for (int i = 0; i < NUM_MAJORS; i++){
         snprintf(loopMsg, sizeof(loopMsg), "%s%d", loopMsg, i + 1);
         strcat(loopMsg, ". ");
         strcat(loopMsg, majors[i]);
@@ -448,22 +435,18 @@ bool chooseMajor(char *stringToStoreTo)
     }
 
     bool input_valid = false; // Flag to track the validity of the input.
-    while (input_valid == false)
-    {
+    while (input_valid == false){
         fgetsStringWhileLoopAlphanumerical(loopMsg, errorMsg, userinput, DEFAULT_STRING_LENGHT);
-        if (exitToCancel(userinput) == true)
-        {
+        if (exitToCancel(userinput) == true){
             return false;
         }
 
         input_valid = stringToIntConv(userinput, &userinput_int);
-        if (input_valid == false)
-        {
+        if (input_valid == false){
             printf("%s", errorMsg);
         }
-        else if (userinput_int < 1 || userinput_int > NUM_MAJORS)
-        {
-            printf("\nError: Enter a number between 1 an %d\n", NUM_MAJORS);
+        else if (userinput_int < 1 || userinput_int > NUM_MAJORS){
+            fprintf(stdout, "\nError: Enter a number between 1 an %d\n", NUM_MAJORS);
             input_valid = false; // Set input_valid to false for out-of-range input.
         }
     }
@@ -477,10 +460,8 @@ bool chooseMajor(char *stringToStoreTo)
 
     Parameters:
         - str: A pointer to the null-terminated string to be converted to lowercase.*/
-void convertToLowercase(char *str)
-{
-    for (int i = 0; str[i] != '\0'; i++)
-    {
+void convertToLowercase(char *str){
+    for (int i = 0; str[i] != '\0'; i++){
         str[i] = tolower(str[i]);
     }
 }
@@ -492,19 +473,18 @@ void convertToLowercase(char *str)
 
     Returns:
         - true if the new entry is successfully added and the database is updated, false otherwise.*/
-bool addNewEntryToDB(struct Student studentStruct)
-{
+bool addNewEntryToDB(struct Student studentStruct){
     // Open a temporary file for writing.
     FILE *tmpFile = openFileWithRetry(TEMP, "w", 3);
-    if (tmpFile == NULL)
-    {
+    if (tmpFile == NULL){
+        fprintf(stdout, "Error: unable to open file %s", TEMP);
         return false; // Return false if unable to open the temporary file.
     }
 
     // Open the database file for reading.
     FILE *pFile = openFileWithRetry(DB, "r", 3);
-    if (pFile == NULL)
-    {
+    if (pFile == NULL){
+        fprintf(stdout, "Error: unable to open file %s", DB);
         return false; // Return false if unable to open the database file.
     }
 
@@ -512,17 +492,14 @@ bool addNewEntryToDB(struct Student studentStruct)
     char buffer[INPUT_BUFFER_LENGHT] = "\0"; // Buffer to store lines read from the database.
 
     // Copy existing data to the temporary file while adding the new entry.
-    while (fgets(buffer, INPUT_BUFFER_LENGHT, pFile) != NULL)
-    {
+    while (fgets(buffer, INPUT_BUFFER_LENGHT, pFile) != NULL){
         rowCount++;
 
         // Write the student index and database row information in the first row of the temp file.
-        if (rowCount == 1)
-        {
+        if (rowCount == 1){
             fprintf(tmpFile, "%d %d\n", studentStruct.studentind, studentStruct.db_entry_row);
         }
-        else
-        {
+        else{
             fprintf(tmpFile, "%s", buffer); // Copy the existing data to the temp file.
         }
     }
@@ -547,21 +524,18 @@ bool addNewEntryToDB(struct Student studentStruct)
 
     Returns:
         - true if the specified entry is found and successfully modified, false otherwise.*/
-bool modifyEntryToDB(struct Student studentStruct)
-{
+bool modifyEntryToDB(struct Student studentStruct){
     printf("Modifying data.\n");
 
     // Open a temporary file for writing.
     FILE *tmpFile = openFileWithRetry(TEMP, "w", 3);
-    if (tmpFile == NULL)
-    {
+    if (tmpFile == NULL){
         return false; // Return false if unable to open the temporary file.
     }
 
     // Open the database file for reading.
     FILE *pFile = openFileWithRetry(DB, "r", 3);
-    if (pFile == NULL)
-    {
+    if (pFile == NULL){
         return false; // Return false if unable to open the database file.
     }
 
@@ -570,20 +544,17 @@ bool modifyEntryToDB(struct Student studentStruct)
     bool entry_found = false;                // Flag to indicate if the specified entry is found.
 
     // Copy existing data to the temporary file while replacing the specified entry with new data.
-    while ((fgets(buffer, INPUT_BUFFER_LENGHT, pFile)) != NULL)
-    {
+    while ((fgets(buffer, INPUT_BUFFER_LENGHT, pFile)) != NULL){
         rowCount++;
 
         // Replace the specified entry with the new entry data.
-        if (rowCount == studentStruct.db_entry_row)
-        {
+        if (rowCount == studentStruct.db_entry_row){
             fprintf(tmpFile, "%d, %s, %s, %s, %s", studentStruct.studentind, studentStruct.firstname, studentStruct.lastname, studentStruct.studentid, studentStruct.major);
             entry_found = true; // Set the entry_found flag to true.
         }
 
         // Copy the existing data to the temporary file for other entries.
-        else
-        {
+        else{
             fprintf(tmpFile, "%s", buffer);
         }
     }
@@ -600,8 +571,7 @@ bool modifyEntryToDB(struct Student studentStruct)
 /*  Function to add a new student entry to the database.
     Prompts the user to enter student information, including first name, last name, and major.
     Generates a unique student ID and adds the new student to the database.*/
-void addNewStudent()
-{
+void addNewStudent(){
     // Gathering new student information.
     struct Student newStudent;
     char inputstr[LONG_STRING_LENGHT] = "\0";
@@ -611,8 +581,7 @@ void addNewStudent()
     // Creating firstname.
     printf("%s", SEPARATOR);
     fgetsStringWhileLoopAlphanumerical(inputstr, errorMsg, newStudent.firstname, NAME_LENGHT);
-    if (exitToCancel(newStudent.firstname) == true)
-    {
+    if (exitToCancel(newStudent.firstname) == true){
         return;
     }
 
@@ -621,8 +590,7 @@ void addNewStudent()
     char errorMsg2[LONG_STRING_LENGHT] = "Please enter a valid lastname.\n";
     printf("%s", SEPARATOR);
     fgetsStringWhileLoopAlphanumerical(inputstr, errorMsg2, newStudent.lastname, NAME_LENGHT);
-    if (exitToCancel(newStudent.lastname) == true)
-    {
+    if (exitToCancel(newStudent.lastname) == true){
         return;
     }
 
@@ -630,16 +598,14 @@ void addNewStudent()
 
     // Choosing major.
     printf("%s", SEPARATOR);
-    if (chooseMajor(newStudent.major) == false)
-    {
+    if (chooseMajor(newStudent.major) == false){
         return;
     }
 
     printf("%s", SEPARATOR);
     char userinput[INPUT_BUFFER_LENGHT] = "\0";
     // Confirming student data.
-    do
-    {
+    do{
         printf("Student will be added with the following information\n"
                "Firstname: %s\n"
                "Lastname: %s\n"
@@ -652,16 +618,14 @@ void addNewStudent()
         convertToLowercase(userinput);
     } while (stringIsYesOrNo(userinput) == false);
 
-    if (stricmp(userinput, "no") == 0 || stricmp(userinput, "n") == 0)
-    {
+    if (stricmp(userinput, "no") == 0 || stricmp(userinput, "n") == 0){
         printf("Cancelling...\n");
         return;
     }
 
     printf("Adding new student to DB...\n");
-    if (addNewEntryToDB(newStudent) == false)
-    {
-        printf("Error: Failed to add new student to DB.\n");
+    if (addNewEntryToDB(newStudent) == false){
+        fprintf(stdout, "Error: Failed to add new student to DB.\n");
         printf("Exiting...\n");
         return;
     }
@@ -678,14 +642,11 @@ void addNewStudent()
 
     Note:
         This function assumes that the input format is valid and that the index number is the first part of the entry.*/
-int getIndNum(const char *buffer)
-{
+int getIndNum(const char *buffer){
     char index_number[INPUT_BUFFER_LENGHT];
     int numberlength = 0;
-    for (int i = 0; i < strlen(buffer); i++)
-    {
-        if (buffer[i] == ',')
-        {
+    for (int i = 0; i < strlen(buffer); i++){
+        if (buffer[i] == ','){
             break;
         }
         index_number[numberlength] = buffer[i];
@@ -700,27 +661,23 @@ int getIndNum(const char *buffer)
 
 /*  Function to edit an existing student entry in the database.
     Allows the user to select a student by index number and modify the first name, last name, or major.*/
-void editStudentEntry()
-{
+void editStudentEntry(){
     char userinput[INPUT_BUFFER_LENGHT] = "\0";
     int studentind = 0;
     char promptMsg[LONG_STRING_LENGHT] = "\nEnter student index number (Leftmost column in DB).\n";
     char errorMsg[LONG_STRING_LENGHT] = "Please enter a valid student index number.\n";
 
     printf("%s", SEPARATOR);
-    do
-    {
+    do{
         fgetsStringWhileLoopAlphanumerical(promptMsg, errorMsg, userinput, DEFAULT_STRING_LENGHT);
-        if (exitToCancel(userinput) == true)
-        {
+        if (exitToCancel(userinput) == true){
             return;
         }
     } while (stringToIntConv(userinput, &studentind) == false);
 
     // Fetching current student data into struct.
     struct Student student = fetch_student_data(studentind);
-    if (student.fetchFailure == 1)
-    {
+    if (student.fetchFailure == 1){
         printf("Cancelling...\n");
         return;
     }
@@ -731,17 +688,14 @@ void editStudentEntry()
     sprintf(errorMsg, "Enter a valid integer between range 1-4.\n");
     int choice = 0;
     bool input_valid = false;
-    while (input_valid == false)
-    {
+    while (input_valid == false){
         fgetsStringWhileLoopAlphanumerical(promptMsg, errorMsg, userinput, DEFAULT_STRING_LENGHT);
-        if (exitToCancel(userinput) == true)
-        {
+        if (exitToCancel(userinput) == true){
             return;
         }
         input_valid = stringToIntConv(userinput, &choice);
-        if (choice < 1 || choice > 3)
-        {
-            printf("Error: Enter a valid integer between range 1-4.\n");
+        if (choice < 1 || choice > 3){
+            fprintf(stdout, "Error: Enter a valid integer between range 1-4.\n");
             input_valid = false;
         }
     }
@@ -749,18 +703,15 @@ void editStudentEntry()
     printf("%s", SEPARATOR);
     char inputstr[INPUT_BUFFER_LENGHT] = "\0";
     input_valid = false;
-    switch (choice)
-    {
+    switch (choice){
         // Changing firstname.
     case 1:
         sprintf(inputstr, "Enter firstname (max %d alphanumerical characters only!)\n", NAME_LENGHT - 1);
         fgetsStringWhileLoopAlphanumerical(inputstr, "Please enter a valid firstname.\n", userinput, NAME_LENGHT);
-        if (exitToCancel(userinput) == true)
-        {
+        if (exitToCancel(userinput) == true){
             return;
         }
-        for (int i = 0; i < strlen(userinput); i++)
-        {
+        for (int i = 0; i < strlen(userinput); i++){
             student.firstname[i] = userinput[i];
         }
         break;
@@ -769,12 +720,10 @@ void editStudentEntry()
     case 2:
         sprintf(inputstr, "Enter lastname (max %d alphanumerical characters only!)\n", NAME_LENGHT - 1);
         fgetsStringWhileLoopAlphanumerical(inputstr, "Please enter a valid lastname.\n", userinput, NAME_LENGHT);
-        if (exitToCancel(userinput) == true)
-        {
+        if (exitToCancel(userinput) == true){
             return;
         }
-        for (int i = 0; i < strlen(userinput); i++)
-        {
+        for (int i = 0; i < strlen(userinput); i++){
             student.lastname[i] = userinput[i];
         }
         break;
@@ -784,25 +733,21 @@ void editStudentEntry()
         char majors[NUM_MAJORS][LONG_STRING_LENGHT] = MAJORS;
         printf("Current major: %s\n", student.major);
         printf("Choose new major\n");
-        for (int i = 0; i < NUM_MAJORS; i++)
-        {
+        for (int i = 0; i < NUM_MAJORS; i++){
             printf("%d. %s\n", i + 1, majors[i]);
         }
 
         sprintf(inputstr, "Enter a number between 1 and %d.\n", NUM_MAJORS);
         sprintf(errorMsg, "Please enter a valid integer between range 1-%d.\n", NUM_MAJORS);
         fgetsStringWhileLoopAlphanumerical(inputstr, errorMsg, userinput, DEFAULT_STRING_LENGHT);
-        if (exitToCancel(userinput) == true)
-        {
+        if (exitToCancel(userinput) == true){
             return;
         }
 
         int userinput_int = 0;
-        while (input_valid == false)
-        {
+        while (input_valid == false){
             stringToIntConv(userinput, &userinput_int);
-            if (userinput_int >= 1 && userinput_int <= NUM_MAJORS)
-            {
+            if (userinput_int >= 1 && userinput_int <= NUM_MAJORS){
                 input_valid = true;
             }
         }
@@ -814,8 +759,7 @@ void editStudentEntry()
 
     // Confirming student record.
     printf("%s", SEPARATOR);
-    do
-    {
+    do{
         printf("Student will be modified with the following information\n"
                "Firstname: %s\n"
                "Lastname: %s\n"
@@ -828,16 +772,14 @@ void editStudentEntry()
         convertToLowercase(userinput);
     } while (stringIsYesOrNo(userinput) == false);
 
-    if (stricmp(userinput, "no") == 0 || stricmp(userinput, "n") == 0)
-    {
+    if (stricmp(userinput, "no") == 0 || stricmp(userinput, "n") == 0){
         printf("Cancelling...\n");
         return;
     }
 
     // Modifying student entry in DB.
     printf("Modifying student entry in DB...\n");
-    if (modifyEntryToDB(student) == false)
-    {
+    if (modifyEntryToDB(student) == false){
         printf("Error: Failed to modify entry with studentind \"%d\".\n", studentind);
         printf("Exiting...\n");
         return;
@@ -848,8 +790,7 @@ void editStudentEntry()
 
 /*  Function to delete an existing student entry from the database.
     Allows the user to select a student by index number and removes the corresponding entry.*/
-void deleteStudentEntry()
-{
+void deleteStudentEntry(){
     // Gathering information on the entry to remove.
     printf("%s", SEPARATOR);
     char userinput[INPUT_BUFFER_LENGHT] = "\0";
@@ -857,12 +798,10 @@ void deleteStudentEntry()
     int studentind = 0;
 
     // Loop until a valid student index number is provided.
-    while (entry_found == false)
-    {
+    while (entry_found == false){
         fgetsStringWhileLoopAlphanumerical("Enter index number of student entry to remove. (Leftmost column in DB).\n",
                                            "Please enter a valid student index number.\n", userinput, DEFAULT_STRING_LENGHT);
-        if (exitToCancel(userinput) == true)
-        {
+        if (exitToCancel(userinput) == true){
             return;
         }
         entry_found = stringToIntConv(userinput, &studentind);
@@ -870,19 +809,16 @@ void deleteStudentEntry()
 
     // Fetching student data based on the index number.
     struct Student student = fetch_student_data(studentind); // student.db_entry_row is used to locate entry in DB.
-    if (student.fetchFailure == 1)
-    {
+    if (student.fetchFailure == 1){
         return;
     }
 
     FILE *pFile = openFileWithRetry(DB, "r", 3);
-    if (pFile == NULL)
-    {
+    if (pFile == NULL){
         return;
     }
     FILE *tmpFile = openFileWithRetry(TEMP, "w", 3);
-    if (tmpFile == NULL)
-    {
+    if (tmpFile == NULL){
         return;
     }
 
@@ -893,14 +829,11 @@ void deleteStudentEntry()
 
     entry_found = false;
     char buffer[LONG_STRING_LENGHT] = "\0";
-    while (fgets(buffer, LONG_STRING_LENGHT, pFile) != NULL)
-    {
-        if (getIndNum(buffer) != studentind)
-        {
+    while (fgets(buffer, LONG_STRING_LENGHT, pFile) != NULL){
+        if (getIndNum(buffer) != studentind){
             fprintf(tmpFile, "%s", buffer);
         }
-        if (getIndNum(buffer) == studentind)
-        {
+        if (getIndNum(buffer) == studentind){
             entry_found = true;
         }
     }
@@ -908,9 +841,8 @@ void deleteStudentEntry()
     fclose(pFile);
     fclose(tmpFile);
 
-    if (entry_found == false)
-    {
-        printf("Error: Student record with index %d not found.\n", studentind);
+    if (entry_found == false){
+        fprintf(stdout, "Error: Student record with index %d not found.\n", studentind);
         printf("Cancelling...\n");
         remove(TEMP);
         return;
@@ -935,32 +867,28 @@ void deleteStudentEntry()
     Returns:
         - A pointer to the opened file if successful.
         - NULL if unable to open the file after the specified number of retries.*/
-FILE *openFileWithRetry(const char *fileName, const char *mode, const int maxRetries)
-{
+FILE *openFileWithRetry(const char *fileName, const char *mode, const int maxRetries){
     FILE *file = NULL;
     int retryCount = 0;
 
     // Attempt to open the file 'maxRetries' times.
-    while (retryCount < maxRetries)
-    {
+    while (retryCount < maxRetries){
         file = fopen(fileName, mode);
-        if (file != NULL)
-        {
+        if (file != NULL){
             return file; // File opened successfully.
         }
         retryCount++;
     }
 
     // Unable to open the file after maximum retries.
-    printf("Error: Unable to open the file \"%s\".\n", fileName);
+    fprintf(stdout, "Error: Unable to open the file \"%s\".\n", fileName);
     return NULL;
 }
 
 /*  Allows the user to choose between two options: lookup student or browse students.
     Performs input validation to ensure a valid choice within the specified range.
     Calls the corresponding function based on the user's choice.*/
-void lookupOrBrowse()
-{
+void lookupOrBrowse(){
     char userinput[INPUT_BUFFER_LENGHT] = "\0";
     int userinput_int = 0;
     bool input_valid = false;
@@ -968,28 +896,24 @@ void lookupOrBrowse()
     printf("%s", SEPARATOR);
 
     // Validate user input for the chosen option.
-    while (input_valid == false)
-    {
+    while (input_valid == false){
         fgetsStringWhileLoopAlphanumerical("1. Lookup student\n2. Browse students\nChoose an option.\n",
                                            "Enter a valid integer between range 1-2.\n",
                                            userinput, DEFAULT_STRING_LENGHT);
 
-        if (exitToCancel(userinput) == true)
-        {
+        if (exitToCancel(userinput) == true){
             return;
         }
 
         // Convert the user input to an integer and check if it's within the valid range.
         stringToIntConv(userinput, &userinput_int);
-        if (userinput_int >= 1 && userinput_int <= 2)
-        {
+        if (userinput_int >= 1 && userinput_int <= 2){
             input_valid = true;
         }
     }
 
     // Perform the chosen action based on the user's input.
-    switch (userinput_int)
-    {
+    switch (userinput_int){
     case 1:
         lookupStudent();
         break;
@@ -1004,8 +928,7 @@ void lookupOrBrowse()
     Asks the user how many rows to show at a time and validates the input.
     Prints the specified number of rows, showing entries in a tabular format.
     Prompts the user to continue or exit after each batch of rows.*/
-void browseStudentList()
-{
+void browseStudentList(){
     char userinput[INPUT_BUFFER_LENGHT] = "\0";
     int numOfRowsToPrint = 0;
     bool input_valid = false;
@@ -1013,28 +936,24 @@ void browseStudentList()
     printf("%s", SEPARATOR);
 
     // Validate user input for the number of rows to print at a time.
-    do
-    {
+    do{
         // Getting user input for the number of rows to show.
         fgetsStringWhileLoopAlphanumerical("\nHow many rows to show at a time?\nEnter an integer.\n",
                                            "Enter a valid integer.\n",
                                            userinput, DEFAULT_STRING_LENGHT);
 
-        if (exitToCancel(userinput) == true)
-        {
+        if (exitToCancel(userinput) == true){
             return;
         }
 
         input_valid = stringToIntConv(userinput, &numOfRowsToPrint);
-        if (input_valid == false)
-        {
+        if (input_valid == false){
             printf("Error: Enter a valid integer.\n");
         }
     } while (input_valid == false);
 
     FILE *pFile = openFileWithRetry(DB, "r", 3);
-    if (pFile == NULL)
-    {
+    if (pFile == NULL){
         return;
     }
 
@@ -1042,7 +961,7 @@ void browseStudentList()
     int studentind = 0, DBrows = 0;
     fscanf(pFile, "%d %d", &studentind, &DBrows);
 
-    // Skip column names from the DB.
+    // Skip first two rows of the DB.
     char columnNames[LONG_STRING_LENGHT] = "\0";
     fgets(columnNames, LONG_STRING_LENGHT, pFile);
     fgets(columnNames, LONG_STRING_LENGHT, pFile);
@@ -1050,19 +969,16 @@ void browseStudentList()
     int rowCount = 1;
     char buffer[LONG_STRING_LENGHT] = "\0";
     userinput[0] = '\0';
-    while (rowCount <= DBrows)
-    {
+    while (rowCount <= DBrows){
         printf("%s", SEPARATOR);
         printf("Entries %d - %d of %d\n", rowCount, rowCount + numOfRowsToPrint - 1, DBrows);
         printf("Studentind, Firstname, Lastname, Studentid, Major\n");
 
-        for (int i = 0; i < numOfRowsToPrint; i++)
-        {
+        for (int i = 0; i < numOfRowsToPrint; i++){
             fgets(buffer, LONG_STRING_LENGHT, pFile);
             printf("%s", buffer);
             rowCount++;
-            if (rowCount == DBrows + 1)
-            {
+            if (rowCount == DBrows + 1){
                 break;
             }
         }
@@ -1071,14 +987,12 @@ void browseStudentList()
         printf("Continue? [yes/no]\nInput: ");
         improvedFgets(userinput, DEFAULT_STRING_LENGHT);
         convertToLowercase(userinput);
-        while (stringIsYesOrNo(userinput) == false)
-        {
+        while (stringIsYesOrNo(userinput) == false){
             printf("Error: Please enter \"yes\" or \"no\".\nInput: ");
             improvedFgets(userinput, DEFAULT_STRING_LENGHT);
             convertToLowercase(userinput);
         }
-        if (stricmp(userinput, "no") == 0 || stricmp(userinput, "n") == 0)
-        {
+        if (stricmp(userinput, "no") == 0 || stricmp(userinput, "n") == 0){
             printf("Cancelling...\n");
             return;
         }
@@ -1088,28 +1002,24 @@ void browseStudentList()
 /*  Allows the user to look up a specific student entry in the database by entering the student's index number.
     Validates the user's input for the index number.
     Retrieves and displays the student's information (firstname, lastname, student ID, major) if found in the database.*/
-void lookupStudent()
-{
+void lookupStudent(){
     char userinput[INPUT_BUFFER_LENGHT] = "\0";
     int studentind = 0;
     bool input_valid = false;
 
     // Asking for student index number.
     printf("%s", SEPARATOR);
-    while (input_valid == false)
-    {
+    while (input_valid == false){
         fgetsStringWhileLoopAlphanumerical("Enter student index number (Leftmost column in DB).\n",
                                            "Please enter a valid student index number.\n", userinput, DEFAULT_STRING_LENGHT);
-        if (exitToCancel(userinput) == true)
-        {
+        if (exitToCancel(userinput) == true){
             return;
         }
         input_valid = stringToIntConv(userinput, &studentind);
     }
 
     struct Student student = fetch_student_data(studentind);
-    if (student.fetchFailure == 1)
-    {
+    if (student.fetchFailure == 1){
         printf("Cancelling...\n");
         return;
     }
@@ -1127,14 +1037,11 @@ void lookupStudent()
 /*  Tests if a given string represents a "yes" or "no" response.
     Returns true if the string matches "yes," "no," "y," or "n" (case-insensitive), indicating a valid response.
     Returns false otherwise.*/
-bool stringIsYesOrNo(const char *str)
-{
-    if (stricmp(str, "yes") == 0 || stricmp(str, "no") == 0 || stricmp(str, "y") == 0 || stricmp(str, "n") == 0)
-    {
+bool stringIsYesOrNo(const char *str){
+    if (stricmp(str, "yes") == 0 || stricmp(str, "no") == 0 || stricmp(str, "y") == 0 || stricmp(str, "n") == 0){
         return true;
     }
-    else
-    {
+    else{
         return false;
     }
 }
