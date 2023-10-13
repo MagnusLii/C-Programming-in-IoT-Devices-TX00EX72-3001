@@ -354,6 +354,7 @@ void fgetsStringWhileLoopAlphanumerical(const char *stringToPrint, const char *r
         input_valid = improvedFgets(stringToStoreTo, maxLenghtOfString);
 
         // Alphanumerical character validation.
+        // TODO: Has 6 levels on indentation, should be refactored.
         int charIndex = 0;
         while (input_valid == true && stringToStoreTo[charIndex] != '\0'){
             if (isalnum(stringToStoreTo[charIndex]) == false){

@@ -6,8 +6,9 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#define DB "db.txt"
 
-bool fileRead(char *stringToStoreTo, FILE *fileToReadFrom);
+bool fileReadLine(char *stringToStoreTo, int maxLenOfString, FILE *pointerToFileToReadFrom);
 
 int main()
 {
@@ -15,40 +16,52 @@ int main()
     FILE *pFile = fopen("db.txt", "r");
     char string[256] = {0};
 
-    while (fileRead(string ,pFile) != false)
+    while (fileReadLine(string, 256, pFile) != false)
     {
         printf("%s", string);
     }
-    
+
     return 0;
 }
 
-bool fileRead(char *stringToStoreTo, FILE *fileToReadFrom){
+bool fileReadLine(char *stringToStoreTo, int maxLenOfString, FILE *pointerToFileToReadFrom)
+{
     char *buffer;
-    size_t line_len = 0;
-    ssize_t bufferLen;
+    int line_len = 0;
     buffer = (char *)malloc(line_len * sizeof(char));
-    if( buffer == NULL){
-        fprintf(stdout, "Error: Unable to allocate buffer in fileRead.\n");
+    if (buffer == NULL)
+    {
+        fprintf(stdout, "Error: Unable to allocate buffer in fileReadLine.\n");
         free(buffer);
         return false;
     }
 
-    bufferLen = getline(&buffer, &line_len, fileToReadFrom);
-    if (bufferLen == -1 || bufferLen == 0){
-        fprintf(stdout, "Error: Failed to read data from the file '%s'\n", "db.txt");
-        free(buffer);
-        return false;
-    }
-    else if (bufferLen > 256){
-        fprintf(stdout, "Error: Line length exceeds buffer length in fileRead.\n");
+    if (fscanf(pointerToFileToReadFrom, "%s", buffer) != 1)
+    {
+        fprintf(stdout, "Error: Failed to read data from the file '%s'\n", DB);
         free(buffer);
         return false;
     }
 
-    strncpy(stringToStoreTo, buffer, sizeof(stringToStoreTo) - 1);
-    stringToStoreTo[sizeof(stringToStoreTo) - 1] = '\0';
+    int indx = 0;
+    bool strEnd = false;
+    for (int i = 0; i < maxLenOfString; i++)
+    {
+        if (buffer[i] == '\0' || buffer[i] == '\n')
+        {
+            buffer[i] = '\0';
+            strEnd = true;
+        }
+    }
+
+    if (strEnd == false)
+    {
+        fprintf(stdout, "Error: The line in the file '%s' is too long.\n", DB);
+        free(buffer);
+        return false;
+    }
+
+    strncpy(stringToStoreTo, buffer, maxLenOfString);
     free(buffer);
-
     return true;
 }
