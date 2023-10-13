@@ -5,26 +5,32 @@
 #include <errno.h>
 #include <ctype.h>
 
+bool validateFormat(const char *input);
+
 int main()
 {
-    char str[100] = "Hello World";
 
-    sprintf(str, "%s", "test test");
+    FILE *pFile = fopen("db.txt", "r");
 
-    printf("%s\n", str);
+    char string[256] = {0};
+    int readCount = fscanf(pFile, "%s", string);
+
+    validateFormat(string);
+
     return 0;
 }
 
-void changeStudentAttribute(char *inputstr, char *attribute, int maxLength)
+bool validateFormat(const char *input)
 {
-    sprintf(inputstr, "Enter firstname (max %d alphanumerical characters only!)\n", NAME_LENGHT - 1);
-    fgetsStringWhileLoopAlphanumerical(inputstr, "Please enter a valid firstname.\n", userinput, NAME_LENGHT);
-    if (exit_to_cancel(userinput) == true)
+    int val1, val2;
+    if (sscanf(input, "%d %d", &val1, &val2) == 2)
     {
-        return;
+        printf("The input matches the expected format.\n");
+        return true;
     }
-    for (int i = 0; i < strlen(userinput); i++)
+    else
     {
-        student.attribute[i] = userinput[i];
+        printf("The input does not match the expected format.\n");
+        return false;
     }
 }
