@@ -255,9 +255,15 @@ bool improvedFgets(char *stringToStoreTo, const int maxLenghtOfString){
     Returns:
         - true if the conversion is successful and the input is valid, false otherwise.*/
 bool stringToIntConv(const char *str, int *result){
+    if (str == NULL || result == NULL){
+        fprintf(stdout, "Error: Invalid pointer in stringToIntConv.\n");
+        return false;
+    }
+
     char *endptr; // Pointer to the character after the converted part of the string.
     errno = 0;    // Setting errno to 0 to detect errors in strtol().
     long int num = strtol(str, &endptr, 10);
+
     // Checking if input is beyond the range of a long integer.
     if (errno == ERANGE){
         fprintf(stdout, "Error: could not complete conversion to integer, number out of range.\nEnter a number between %d and %d.\n", LONG_MIN, LONG_MAX);
@@ -289,9 +295,15 @@ bool stringToIntConv(const char *str, int *result){
     Returns:
         - true if the conversion is successful and the input is valid, false otherwise.*/
 bool stringToDoubleConv(const char *inputStr, double *result){
+    if (inputStr == NULL || result == NULL){
+        fprintf(stdout, "Error: Invalid pointer in stringToDoubleConv.\n");
+        return false;
+    }
+
     char *endptr; // Pointer to the character after the converted part of the string.
     errno = 0;
     double num = strtod(inputStr, &endptr);
+
     // Checking if input is beyond the range of a double.
     if (errno == ERANGE){
         fprintf(stdout, "Error: could not complete conversion to double, number out of range.\n"
@@ -317,7 +329,17 @@ bool stringToDoubleConv(const char *inputStr, double *result){
         - stringToStoreTo: A pointer to the character buffer where the input will be stored.
         - maxLenghtOfString: The maximum length of the input string.*/
 void fgetsStringWhileLoopAlphanumerical(const char *stringToPrint, const char *retryMessage, char *stringToStoreTo, const int maxLenghtOfString){
+    if (stringToPrint == NULL || retryMessage == NULL || stringToStoreTo == NULL || maxLenghtOfString < 1){
+        fprintf(stdout, "Error: Invalid pointer in fgetsStringWhileLoopAlphanumerical.\n");
+        return;
+    }
+    if (maxLenghtOfString < 1){
+        fprintf(stdout, "Error: Invalid maxLenghtOfString in fgetsStringWhileLoopAlphanumerical.\n");
+        return;
+    }
+
     bool input_valid = false;
+    
     while (input_valid == false){
         printf("%s", stringToPrint);
         printf("Or input 'Exit' to cancel.\n"
@@ -351,6 +373,11 @@ void fgetsStringWhileLoopAlphanumerical(const char *stringToPrint, const char *r
 
 // Gets the current date and time and stores it in the 'stringToStoreTo' buffer.
 void dtimeString(char *stringToStoreTo){
+    if (stringToStoreTo == NULL){
+        fprintf(stdout, "Error: Invalid pointer in dtimeString.\n");
+        return;
+    }
+
     time_t current_time = time(NULL);
     strftime(stringToStoreTo, 20, "%Y%m", localtime(&current_time));
 }
@@ -364,6 +391,11 @@ void dtimeString(char *stringToStoreTo){
     Returns:
         - true if the input is equal to "exit" (case-insensitive), false otherwise.*/
 bool exitToCancel(const char *inputStr){
+    if (inputStr == NULL){
+        fprintf(stdout, "Error: Invalid pointer in exitToCancel.\n");
+        return false;
+    }
+
     // Convert the input string to lowercase for case-insensitive comparison.
     char inputStrLower[INPUT_BUFFER_LENGHT] = "\0";
     int i = 0;
@@ -387,6 +419,11 @@ bool exitToCancel(const char *inputStr){
     Returns:
         - true if the ID is successfully generated and data is stored, false otherwise.*/
 bool createStudentId(struct Student *student){
+    if (student == NULL){
+        fprintf(stdout, "Error: Invalid pointer in createStudentId.\n");
+        return false;
+    }
+
     char date_string[INPUT_BUFFER_LENGHT] = "\0";
     // Fetch the current date and format it as a string.
     dtimeString(date_string);
@@ -419,6 +456,11 @@ bool createStudentId(struct Student *student){
     Returns:
         - true if a major is successfully selected and stored, false if the user cancels or provides invalid input.*/
 bool chooseMajor(char *stringToStoreTo){
+    if (stringToStoreTo == NULL){
+        fprintf(stdout, "Error: Invalid pointer in chooseMajor.\n");
+        return false;
+    }
+
     char userinput[INPUT_BUFFER_LENGHT] = "\0";
     int userinput_int;
     // Array of major options defined in MAJORS #define.
@@ -461,6 +503,11 @@ bool chooseMajor(char *stringToStoreTo){
     Parameters:
         - str: A pointer to the null-terminated string to be converted to lowercase.*/
 void convertToLowercase(char *str){
+    if (str == NULL){
+        fprintf(stdout, "Error: Invalid pointer in convertToLowercase.\n");
+        return;
+    }
+
     for (int i = 0; str[i] != '\0'; i++){
         str[i] = tolower(str[i]);
     }
@@ -642,7 +689,12 @@ void addNewStudent(){
 
     Note:
         This function assumes that the input format is valid and that the index number is the first part of the entry.*/
-int getIndNum(const char *buffer){
+int getIndNum(const char *buffer){ 
+    if (buffer == NULL){
+        fprintf(stdout, "Error: Invalid pointer in getIndNum.\n");
+        return -1;
+    }
+
     char index_number[INPUT_BUFFER_LENGHT];
     int numberlength = 0;
     for (int i = 0; i < strlen(buffer); i++){
@@ -868,6 +920,15 @@ void deleteStudentEntry(){
         - A pointer to the opened file if successful.
         - NULL if unable to open the file after the specified number of retries.*/
 FILE *openFileWithRetry(const char *fileName, const char *mode, const int maxRetries){
+    if (fileName == NULL || mode == NULL){
+        fprintf(stdout, "Error: Invalid pointer in openFileWithRetry.\n");
+        return NULL;
+    }
+    if (maxRetries < 1){
+        fprintf(stdout, "Error: Invalid maxRetries in openFileWithRetry.\n");
+        return NULL;
+    }
+
     FILE *file = NULL;
     int retryCount = 0;
 
@@ -1038,6 +1099,11 @@ void lookupStudent(){
     Returns true if the string matches "yes," "no," "y," or "n" (case-insensitive), indicating a valid response.
     Returns false otherwise.*/
 bool stringIsYesOrNo(const char *str){
+    if (str == NULL){
+        fprintf(stdout, "Error: Invalid pointer in stringIsYesOrNo.\n");
+        return false;
+    }
+
     if (stricmp(str, "yes") == 0 || stricmp(str, "no") == 0 || stricmp(str, "y") == 0 || stricmp(str, "n") == 0){
         return true;
     }
