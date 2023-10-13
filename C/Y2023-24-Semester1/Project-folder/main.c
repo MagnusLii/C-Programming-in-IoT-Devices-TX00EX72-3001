@@ -347,23 +347,23 @@ void fgetsStringWhileLoopAlphanumerical(const char *stringToPrint, const char *r
         input_valid = improvedFgets(stringToStoreTo, maxLenghtOfString);
 
         // Alphanumerical character validation.
-        int i = 0;
-        while (input_valid == true && stringToStoreTo[i] != '\0'){
-            if (isalnum(stringToStoreTo[i]) == false){
+        int charIndex = 0;
+        while (input_valid == true && stringToStoreTo[charIndex] != '\0'){
+            if (isalnum(stringToStoreTo[charIndex]) == false){
                 // Display error message indicating the non-alphanumerical character and its location.
                 printf("\nNon alphanumerical character detected at character %d (%c)\n"
                        "Your input: %s\n"
                        "Error loc:  ",
-                       i + 1, stringToStoreTo[i], stringToStoreTo);
+                       charIndex + 1, stringToStoreTo[charIndex], stringToStoreTo);
 
                 // Print '^' under the error location.
-                for (int j = 0; j < i; j++){
+                for (int errorPosition = 0; errorPosition < charIndex; errorPosition++){
                     printf(" ");
                 }
                 printf("^\n");
                 input_valid = false;
             }
-            i++;
+            charIndex++;
         }
         if (input_valid == false){
             printf("%s", retryMessage); // Prompting user to try again.
