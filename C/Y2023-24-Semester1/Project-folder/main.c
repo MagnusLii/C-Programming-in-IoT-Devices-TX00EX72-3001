@@ -183,7 +183,26 @@ bool getDBRowInd(int *pStudentind, int *pDB_rows){
         return false;
     }
 
-    int readCount = fscanf(pFile, "%d %d", pStudentind, pDB_rows);
+    char *buffer;
+    size_t line_len = 0;
+    ssize_t bufferLen;
+    buffer = (char *)malloc(line_len * sizeof(char));
+    if( buffer == NULL){
+        fprintf(stdout, "Error: Unable to allocate buffer in getDBRowInd.\n");
+        return false;
+    }
+
+    bufferLen = getline(&buffer, &line_len, pFile);
+    if (bufferLen == -1 || bufferLen == 0){
+        fprintf(stdout, "Error: Failed to read data from the file '%s'\n", DB);
+        return false;
+    }
+    else if (bufferLen > LONG_STRING_LENGHT){
+        fprintf(stdout, "Error: Line length exceeds buffer length in getDBRowInd.\n");
+        return false;
+    }
+    
+    int readCount = sscanf(buffer, "%d %d", pStudentind, pDB_rows);
     if (readCount != 2){ // Check if the correct number of values was successfully read from the file.
         printf("Error: Failed to read data from the file '%s'\n", DB);
         return false;
@@ -354,6 +373,7 @@ void fgetsStringWhileLoopAlphanumerical(const char *stringToPrint, const char *r
         input_valid = improvedFgets(stringToStoreTo, maxLenghtOfString);
 
         // Alphanumerical character validation.
+        // TODO: Has 6 levels on indentation, should be refactored if possible.
         int charIndex = 0;
         while (input_valid == true && stringToStoreTo[charIndex] != '\0'){
             if (isalnum(stringToStoreTo[charIndex]) == false){
