@@ -56,10 +56,17 @@ Student fetch_student_data(const int studentind){
     int tokencount = 0, linecount = 0;
     char *token, buffer[LONG_STRING_LENGHT] = "\0";
     FILE *dbFile = openFileWithRetry(DB, "r", 3);
+    if (studentind < 0){
+        fprintf(stdout, "Error: Invalid student index number.\n");
+        printf("Cancelling...");
+        student.fetchFailure = 1; // Set flag to indicate a failure.
+        return student;
+    }
+    
     if (dbFile == NULL){
         fprintf(stdout, "Error: unable to open file %s", DB);
         printf("Cancelling...");
-        student.fetchFailure = 1; // Set fetchFailure flag to indicate a failure.
+        student.fetchFailure = 1; // Set flag to indicate a failure.
         return student;
     }
 
