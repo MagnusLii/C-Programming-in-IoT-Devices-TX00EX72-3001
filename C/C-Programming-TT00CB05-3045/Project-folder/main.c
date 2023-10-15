@@ -480,15 +480,15 @@ bool createStudentId(struct Student *student){
     return true; // Return true to indicate a successful ID generation and data storage.
 }
 
-/*  Prompts the user to choose a major and stores the selected major in 'stringToStoreTo'.
-    Returns false if the user cancels midway.
-    Performs error checking to ensure the input is a valid integer within the specified range.
-
-    Parameters:
-        - stringToStoreTo: A pointer to the character buffer where the selected major will be stored.
-
-    Returns:
-        - true if a major is successfully selected and stored, false if the user cancels or provides invalid input.*/
+/**
+ * Prompts the user to choose a major and stores the selected major in 'stringToStoreTo'.
+ * Returns false if the user cancels midway.
+ * Performs error checking to ensure the input is a valid integer within the specified range.
+ *
+ * @param stringToStoreTo - A pointer to the character buffer where the selected major will be stored.
+ *
+ * @return true if a major is successfully selected and stored, false if the user cancels or provides invalid input.
+ */
 bool chooseMajor(char *stringToStoreTo){
     if (stringToStoreTo == NULL){
         fprintf(stdout, "Error: Invalid pointer in chooseMajor.\n");
