@@ -42,80 +42,7 @@ bool stringIsYesOrNo(const char *str);
 void browseStudentList();
 void lookupStudent();
 void convertToLowercase(char *str);
-
-/*  Fetches student data from the database and returns it as a Struct.
-    Requires studentind to find the correct data.
-
-    Parameters:
-        - studentind: The index of the student record to fetch. The index num is the leftmost column in the database.
-
-    Returns:
-        A Student struct containing the fetched data.*/
-Student fetch_student_data(const int studentind){
-    Student student = {0};
-    int tokencount = 0, linecount = 0;
-    char *token, buffer[LONG_STRING_LENGHT] = "\0";
-    FILE *dbFile = openFileWithRetry(DB, "r", 3);
-    if (studentind < 0){
-        fprintf(stdout, "Error: Invalid student index number.\n");
-        printf("Cancelling...");
-        student.fetchFailure = 1; // Set flag to indicate a failure.
-        return student;
-    }
-    
-    if (dbFile == NULL){
-        fprintf(stdout, "Error: unable to open file %s", DB);
-        printf("Cancelling...");
-        student.fetchFailure = 1; // Set flag to indicate a failure.
-        return student;
-    }
-
-    bool entry_found = false; // Flag to indicate if the entry is found in the database.
-    while ((fgets(buffer, LONG_STRING_LENGHT, dbFile)) != NULL && entry_found == false){
-        linecount++;
-        if (getIndNum(buffer) == studentind){
-            token = strtok(buffer, ", ");
-            while (token != NULL){
-                switch (tokencount){
-                case 0:
-                    stringToIntConv(token, &student.studentind);
-                    break;
-                case 1:
-                    strncpy(student.firstname, token, sizeof(student.firstname) - 1);
-                    student.firstname[sizeof(student.firstname) - 1] = '\0';
-                    break;
-                case 2:
-                    strncpy(student.lastname, token, sizeof(student.lastname) - 1);
-                    student.lastname[sizeof(student.lastname) - 1] = '\0';
-                    break;
-                case 3:
-                    strncpy(student.studentid, token, sizeof(student.studentid) - 1);
-                    student.studentid[sizeof(student.studentid) - 1] = '\0';
-                    break;
-                case 4:
-                    strncpy(student.major, token, sizeof(student.major) - 1);
-                    student.major[sizeof(student.major) - 1] = '\0';
-                    break;
-                }
-
-                token = strtok(NULL, ", ");
-                tokencount++;
-            }
-            student.db_entry_row = linecount; // Set the row number in the database where the entry was found.
-            entry_found = true;
-        }
-    }
-    fclose(dbFile);
-
-    if (entry_found == false)
-    {
-        fprintf(stdout, "Error: Student record with index %d not found.\n", studentind);
-        printf("Cancelling...");
-        student.fetchFailure = 1; // Set fetchFailure flag to indicate a failure.
-        return student;
-    }
-    return student;
-}
+Student fetch_student_data(const int studentind);
 
 int main(){
     int switch_choice = 0;
@@ -161,6 +88,83 @@ int main(){
         }
     }
     return 0;
+}
+
+/*  Fetches student data from the database and returns it as a Struct.
+    Requires studentind to find the correct data.
+
+    Parameters:
+        - studentind: The index of the student record to fetch. The index num is the leftmost column in the database.
+
+    Returns:
+        A Student struct containing the fetched data.*/
+Student fetch_student_data(const int studentind){
+    Student student = {0};
+    int tokencount = 0, linecount = 0;
+    char *token, buffer[LONG_STRING_LENGHT] = "\0";
+    FILE *dbFile = openFileWithRetry(DB, "r", 3);
+
+    student.fetchFailure = 0; // Set fetchFailure flag to 0 to indicate no failure.
+
+    if (studentind < 0){
+        fprintf(stdout, "Error: Invalid student index number.\n");
+        printf("Cancelling...");
+        student.fetchFailure = 1; // Set flag to indicate a failure.
+        return student;
+    }
+    
+    if (dbFile == NULL){
+        fprintf(stdout, "Error: unable to open file %s", DB);
+        printf("Cancelling...");
+        student.fetchFailure = 1; // Set flag to indicate a failure.
+        return student;
+    }
+
+    bool entry_found = false; // Flag to indicate if the entry is found in the database.
+    while ((fgets(buffer, LONG_STRING_LENGHT, dbFile)) != NULL && entry_found == false){
+        linecount++;
+        if (getIndNum(buffer) == studentind){
+            token = strtok(buffer, ", ");
+            while (token != NULL){
+                switch (tokencount){
+                case 0:
+                    stringToIntConv(token, &student.studentind);
+                    break;
+                case 1:
+                    strncpy(student.firstname, token, NAME_LENGHT - 1);
+                    student.firstname[NAME_LENGHT - 1] = '\0';
+                    break;
+                case 2:
+                    strncpy(student.lastname, token, NAME_LENGHT - 1);
+                    student.lastname[NAME_LENGHT - 1] = '\0';
+                    break;
+                case 3:
+                    strncpy(student.studentid, token, STUDENT_ID_LENGHT - 1);
+                    student.studentid[STUDENT_ID_LENGHT - 1] = '\0';
+                    break;
+                case 4:
+                    strncpy(student.major, token, sizeof(student.major) - 1);
+                    student.major[sizeof(student.major) - 1] = '\0';
+                    break;
+                }
+
+                token = strtok(NULL, ", ");
+                tokencount++;
+            }
+            student.db_entry_row = linecount; // Set the row number in the database where the entry was found.
+            entry_found = true;
+        }
+    }
+    fclose(dbFile);
+
+    if (entry_found == false)
+    {
+        fprintf(stdout, "Error: Student record with index %d not found.\n", studentind);
+        printf("Cancelling...");
+        student.fetchFailure = 1; // Set fetchFailure flag to indicate a failure.
+        return student;
+    }
+    return student;
 }
 
 /*  Gets the current index for students and the number of entries (rows) in the database.
