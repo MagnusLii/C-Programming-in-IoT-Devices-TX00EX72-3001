@@ -13,13 +13,13 @@ bool fileReadLine(char *stringToStoreTo, int maxLenOfString, FILE *pointerToFile
 int main()
 {
 
-    FILE *pFile = fopen("db.txt", "r");
-    char string[256] = {0};
+    char asd[100] = "asdasdasd";
+    int size;
 
-    while (fileReadLine(string, 256, pFile) != false)
-    {
-        printf("%s", string);
-    }
+    size = sizeof(asd);
+    size = strlen(asd);
+
+    printf("%d\n", size);
 
     return 0;
 }
