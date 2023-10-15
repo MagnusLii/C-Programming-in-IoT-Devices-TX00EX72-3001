@@ -3,15 +3,15 @@
 
 #include <stdio.h>
 
-#define STR_LEN 256
+#define STUDEN_ARR_LEN 256
 
 struct Student
 {
     int studentind, db_entry_row;
-    char firstname[STR_LEN];
-    char lastname[STR_LEN];
-    char studentid[STR_LEN];
-    char major[STR_LEN];
+    char firstname[STUDEN_ARR_LEN];
+    char lastname[STUDEN_ARR_LEN];
+    char studentid[STUDEN_ARR_LEN];
+    char major[STUDEN_ARR_LEN];
     int fetchFailure;
 };
 
