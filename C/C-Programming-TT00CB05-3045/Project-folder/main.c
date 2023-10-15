@@ -90,14 +90,14 @@ int main(){
     return 0;
 }
 
-/*  Fetches student data from the database and returns it as a Struct.
-    Requires studentind to find the correct data.
-
-    Parameters:
-        - studentind: The index of the student record to fetch. The index num is the leftmost column in the database.
-
-    Returns:
-        A Student struct containing the fetched data.*/
+/**
+ * Fetches student data from the database and returns it as a Struct.
+ * Requires studentind to find the correct data.
+ *
+ * @param studentind - The index of the student record to fetch. The index num is the leftmost column in the database.
+ *
+ * @return A Student struct containing the fetched data.
+ */
 Student fetchStudentData(const int studentind){
     Student student = {0};
     int tokencount = 0, linecount = 0;
@@ -124,7 +124,7 @@ Student fetchStudentData(const int studentind){
     while ((fgets(buffer, LONG_STRING_LENGHT, dbFile)) != NULL && entry_found == false){
         linecount++;
         if (getIndNum(buffer) == studentind){
-            token = strtok(buffer, ", ");
+            token = strtok(buffer, ",");
             while (token != NULL){
                 switch (tokencount){
                 case 0:
@@ -132,7 +132,7 @@ Student fetchStudentData(const int studentind){
                     break;
                 case 1:
                     strncpy(student.firstname, token, NAME_LENGHT - 1);
-                    student.firstname[NAME_LENGHT - 1] = '\0';
+                    student.firstname[strlen(student.firstname) - 1] = '\0';
                     break;
                 case 2:
                     strncpy(student.lastname, token, NAME_LENGHT - 1);
@@ -143,8 +143,8 @@ Student fetchStudentData(const int studentind){
                     student.studentid[STUDENT_ID_LENGHT - 1] = '\0';
                     break;
                 case 4:
-                    strncpy(student.major, token, sizeof(student.major) - 1);
-                    student.major[sizeof(student.major) - 1] = '\0';
+                    strncpy(student.major, token, STUDEN_ARR_LEN - 1);
+                    student.major[STUDEN_ARR_LEN - 1] = '\0';
                     break;
                 }
 
@@ -167,15 +167,36 @@ Student fetchStudentData(const int studentind){
     return student;
 }
 
-/*  Gets the current index for students and the number of entries (rows) in the database.
-    Returns false if unable to open the database file or read the correct data.
+/**
+ * Verifies that the length of a token does not exceed a specified maximum length.
+ *
+ * @param token   - The token to be verified.
+ * @param maxLen  - The maximum allowed length for the token.
+ *
+ * @return        - Returns true if the token length is valid (within maxLen), false otherwise.
+ */
+bool verifyTokenLen(const char *token, const int maxLen){
+    if (token == NULL || maxLen < 1){
+        fprintf(stdout, "Error: Invalid pointer or maxLen in verifyTokenLen.\n");
+        return false;
+    }
 
-    Parameters:
-        - pStudentind: Pointer to an integer to store the current student index.
-        - pDB_rows: Pointer to an integer to store the number of entries in the database.
+    if (strlen(token) > maxLen){
+        fprintf(stdout, "Error: Token length exceeds max length of %d characters.\n", maxLen);
+        return false;
+    }
+    return true;
+}
 
-    Returns:
-        - true if data is successfully read and stored, false otherwise.*/
+/**
+ * Gets the current index for students and the number of entries (rows) in the database.
+ * Returns false if unable to open the database file or read the correct data.
+ *
+ * @param pStudentind - Pointer to an integer to store the current student index.
+ * @param pDB_rows    - Pointer to an integer to store the number of entries in the database.
+ *
+ * @return true if data is successfully read and stored, false otherwise.
+ */
 bool getDBRowInd(int *pStudentind, int *pDB_rows){
     if (pStudentind == NULL || pDB_rows == NULL){
         fprintf(stdout, "Error: Invalid pointer in getDBRowInd.\n");
@@ -196,15 +217,15 @@ bool getDBRowInd(int *pStudentind, int *pDB_rows){
     return true;
 }
 
-/*  A modified version of the fgets() function that replaces '\n' with '\0'.
-    It does not accept empty strings and checks if user input exceeds the maximum length.
-
-    Parameters:
-        - stringToStoreTo: A pointer to the character buffer where the input will be stored.
-        - maxLenghtOfString: The maximum length of the input string.
-
-    Returns:
-        - true if input is successfully read and meets the conditions, false otherwise.*/
+/**
+ * A modified version of the fgets() function that replaces '\n' with '\0'.
+ * It does not accept empty strings and checks if user input exceeds the maximum length.
+ *
+ * @param stringToStoreTo - A pointer to the character buffer where the input will be stored.
+ * @param maxLenghtOfString - The maximum length of the input string.
+ *
+ * @return true if input is successfully read and meets the conditions, false otherwise.
+ */
 bool improvedFgets(char *stringToStoreTo, const int maxLenghtOfString){
     if (stringToStoreTo == NULL || maxLenghtOfString < 1){
         fprintf(stdout, "Error: Invalid pointer or maxLenghtOfString in improvedFgets.\n");
@@ -256,15 +277,15 @@ bool improvedFgets(char *stringToStoreTo, const int maxLenghtOfString){
     return true;
 }
 
-/*  Converts a string to an integer and returns true if the conversion is successful,
-    does not allow partial conversions, and validates the input.
-
-    Parameters:
-        - str: The input string to be converted.
-        - result: Pointer to an integer where the result will be stored.
-
-    Returns:
-        - true if the conversion is successful and the input is valid, false otherwise.*/
+/**
+ * Converts a string to an integer and returns true if the conversion is successful,
+ * does not allow partial conversions, and validates the input.
+ *
+ * @param str - The input string to be converted.
+ * @param result - Pointer to an integer where the result will be stored.
+ *
+ * @return true if the conversion is successful and the input is valid, false otherwise.
+ */
 bool stringToIntConv(const char *str, int *result){
     if (str == NULL || result == NULL){
         fprintf(stdout, "Error: Invalid pointer in stringToIntConv.\n");
@@ -296,15 +317,15 @@ bool stringToIntConv(const char *str, int *result){
     return true;
 }
 
-/*  Converts a string to a double and returns true if the conversion is successful,
-    checks that input is within the range, and validates the conversion.
-
-    Parameters:
-        - inputStr: The input string to be converted.
-        - result: Pointer to a double where the result will be stored.
-
-    Returns:
-        - true if the conversion is successful and the input is valid, false otherwise.*/
+/**
+ * Converts a string to a double and returns true if the conversion is successful,
+ * checks that input is within the range, and validates the conversion.
+ *
+ * @param inputStr - The input string to be converted.
+ * @param result - Pointer to a double where the result will be stored.
+ *
+ * @return true if the conversion is successful and the input is valid, false otherwise.
+ */
 bool stringToDoubleConv(const char *inputStr, double *result){
     if (inputStr == NULL || result == NULL){
         fprintf(stdout, "Error: Invalid pointer in stringToDoubleConv.\n");
@@ -331,14 +352,15 @@ bool stringToDoubleConv(const char *inputStr, double *result){
     return true;
 }
 
-/*  Template for a while loop using fgets that only allows alphanumeric characters.
-    Displays user-friendly error messages and error locations in case of input errors.
-
-    Parameters:
-        - stringToPrint: The message to print to the user before input.
-        - retryMessage: The message to print when input is invalid, prompting the user to retry.
-        - stringToStoreTo: A pointer to the character buffer where the input will be stored.
-        - maxLenghtOfString: The maximum length of the input string.*/
+/**
+ * Template for a while loop using fgets that only allows alphanumeric characters.
+ * Displays error messages and error locations in case of input errors.
+ *
+ * @param stringToPrint - The message to print to the user before input.
+ * @param retryMessage - The message to print when input is invalid, prompting the user to retry.
+ * @param stringToStoreTo - A pointer to the character buffer where the input will be stored.
+ * @param maxLenghtOfString - The maximum length of the input string.
+ */
 void fgetsStringWhileLoopAlphanumerical(const char *stringToPrint, const char *retryMessage, char *stringToStoreTo, const int maxLenghtOfString){
     if (stringToPrint == NULL || retryMessage == NULL || stringToStoreTo == NULL || maxLenghtOfString < 1){
         fprintf(stdout, "Error: Invalid pointer in fgetsStringWhileLoopAlphanumerical.\n");
@@ -394,14 +416,14 @@ void dtimeString(char *stringToStoreTo){
     strftime(stringToStoreTo, 20, "%Y%m", localtime(&current_time));
 }
 
-/*  Checks if the input string is equal to "exit" (case-insensitive) and returns true if so.
-    Does not modify the input string.
-
-    Parameters:
-        - inputStr: The input string to check for the "exit" command.
-
-    Returns:
-        - true if the input is equal to "exit" (case-insensitive), false otherwise.*/
+/**
+ * Checks if the input string is equal to "exit" (case-insensitive) and returns true if so.
+ * Does not modify the input string.
+ *
+ * @param inputStr - The input string to check for the "exit" command.
+ *
+ * @return true if the input is equal to "exit" (case-insensitive), false otherwise.
+ */
 bool exitToCancel(const char *inputStr){
     if (inputStr == NULL){
         fprintf(stdout, "Error: Invalid pointer in exitToCancel.\n");
@@ -423,13 +445,13 @@ bool exitToCancel(const char *inputStr){
     return false; // Return false if the input is not "exit".
 }
 
-/*  Generates a unique student ID, updates student index, and stores relevant data in the Student struct.
-
-    Parameters:
-        - student: Pointer to a Student struct where the generated ID and data will be stored.
-
-    Returns:
-        - true if the ID is successfully generated and data is stored, false otherwise.*/
+/**
+ * Generates a unique student ID, updates student index, and stores relevant data in the Student struct.
+ *
+ * @param student - Pointer to a Student struct where the generated ID and data will be stored.
+ *
+ * @return true if the ID is successfully generated and data is stored, false otherwise.
+ */
 bool createStudentId(struct Student *student){
     if (student == NULL){
         fprintf(stdout, "Error: Invalid pointer in createStudentId.\n");
@@ -510,10 +532,11 @@ bool chooseMajor(char *stringToStoreTo){
     return true; // Return true to indicate successful selection and storage of a major.
 }
 
-/*  Converts all characters in a string to lowercase.
-
-    Parameters:
-        - str: A pointer to the null-terminated string to be converted to lowercase.*/
+/**
+ * Converts all characters in a string to lowercase.
+ *
+ * @param str - A pointer to the null-terminated string to be converted to lowercase.
+ */
 void convertToLowercase(char *str){
     if (str == NULL){
         fprintf(stdout, "Error: Invalid pointer in convertToLowercase.\n");
@@ -525,13 +548,13 @@ void convertToLowercase(char *str){
     }
 }
 
-/*  Adds a new student entry to the database file and updates the database.
-
-    Parameters:
-        - studentStruct: The Student struct representing the new entry to be added.
-
-    Returns:
-        - true if the new entry is successfully added and the database is updated, false otherwise.*/
+/**
+ * Adds a new student entry to the database file and updates the database.
+ *
+ * @param studentStruct - The Student struct representing the new entry to be added.
+ *
+ * @return true if the new entry is successfully added and the database is updated, false otherwise.
+ */
 bool addNewEntryToDB(struct Student studentStruct){
     // Open a temporary file for writing.
     FILE *tmpFile = openFileWithRetry(TEMP, "w", 3);
@@ -575,14 +598,14 @@ bool addNewEntryToDB(struct Student studentStruct){
     return true; // Return true to indicate a successful entry addition and database update.
 }
 
-/*Modifies an existing entry in the database file using data from the provided Student struct.
-    The entry to be modified is located based on the 'db_entry_row' field stored in the struct.
-
-    Parameters:
-        - studentStruct: The Student struct containing the modified entry data.
-
-    Returns:
-        - true if the specified entry is found and successfully modified, false otherwise.*/
+/**
+ * Modifies an existing entry in the database file using data from the provided Student struct.
+ * The entry to be modified is located based on the 'db_entry_row' field stored in the struct.
+ *
+ * @param studentStruct - The Student struct containing the modified entry data.
+ *
+ * @return true if the specified entry is found and successfully modified, false otherwise.
+ */
 bool modifyEntryToDB(struct Student studentStruct){
     printf("Modifying data.\n");
 
@@ -627,9 +650,11 @@ bool modifyEntryToDB(struct Student studentStruct){
     return entry_found; // Return true if the specified entry is found and modified, false otherwise.
 }
 
-/*  Function to add a new student entry to the database.
-    Prompts the user to enter student information, including first name, last name, and major.
-    Generates a unique student ID and adds the new student to the database.*/
+/**
+ * Function to add a new student entry to the database.
+ * Prompts the user to enter student information, including first name, last name, and major.
+ * Generates a unique student ID and adds the new student to the database.
+ */
 void addNewStudent(){
     // Gathering new student information.
     struct Student newStudent;
@@ -691,16 +716,13 @@ void addNewStudent(){
     printf("New student added to DB.\n");
 }
 
-/*  Function to extract the index number from a database entry string.
-
-    Parameters:
-        - buffer: The input string containing the database entry.
-
-    Returns:
-        - The extracted index number as an integer.
-
-    Note:
-        This function assumes that the input format is valid and that the index number is the first part of the entry.*/
+/**
+ * Function to extract the index number from a database entry string.
+ *
+ * @param buffer - The input string containing the database entry.
+ *
+ * @return The extracted index number as an integer.
+ */
 int getIndNum(const char *buffer){ 
     if (buffer == NULL){
         fprintf(stdout, "Error: Invalid pointer in getIndNum.\n");
@@ -723,8 +745,10 @@ int getIndNum(const char *buffer){
     return strtol(index_number, NULL, 10); // Assumes that the database will not have more than 999,999,999 entries.
 }
 
-/*  Function to edit an existing student entry in the database.
-    Allows the user to select a student by index number and modify the first name, last name, or major.*/
+/**
+ * Function to edit an existing student entry in the database.
+ * Allows the user to select a student by index number and modify the first name, last name, or major.
+ */
 void editStudentEntry(){
     char userinput[INPUT_BUFFER_LENGHT] = "\0";
     int studentind = 0;
@@ -852,8 +876,10 @@ void editStudentEntry(){
     return;
 }
 
-/*  Function to delete an existing student entry from the database.
-    Allows the user to select a student by index number and removes the corresponding entry.*/
+/**
+ * Function to delete an existing student entry from the database.
+ * Allows the user to select a student by index number and removes the corresponding entry.
+ */
 void deleteStudentEntry(){
     // Gathering information on the entry to remove.
     printf("%s", SEPARATOR);
@@ -920,17 +946,17 @@ void deleteStudentEntry(){
     return;
 }
 
-/*  Attempts to open the specified file with the given mode.
-    Retries a maximum of 'maxRetries' times in case of failure.
-
-    Parameters:
-        - fileName: The name of the file to open.
-        - mode: The mode in which to open the file (e.g., "r" for read, "w" for write).
-        - maxRetries: The maximum number of retry attempts in case of failure.
-
-    Returns:
-        - A pointer to the opened file if successful.
-        - NULL if unable to open the file after the specified number of retries.*/
+/**
+ * Attempts to open the specified file with the given mode.
+ * Retries a maximum of 'maxRetries' times in case of failure.
+ *
+ * @param fileName - The name of the file to open.
+ * @param mode - The mode in which to open the file (e.g., "r" for read, "w" for write).
+ * @param maxRetries - The maximum number of retry attempts in case of failure.
+ *
+ * @return A pointer to the opened file if successful.
+ *         NULL if unable to open the file after the specified number of retries.
+ */
 FILE *openFileWithRetry(const char *fileName, const char *mode, const int maxRetries){
     if (fileName == NULL || mode == NULL){
         fprintf(stdout, "Error: Invalid pointer in openFileWithRetry.\n");
@@ -958,9 +984,11 @@ FILE *openFileWithRetry(const char *fileName, const char *mode, const int maxRet
     return NULL;
 }
 
-/*  Allows the user to choose between two options: lookup student or browse students.
-    Performs input validation to ensure a valid choice within the specified range.
-    Calls the corresponding function based on the user's choice.*/
+/**
+ * Allows the user to choose between two options: lookup student or browse students.
+ * Performs input validation to ensure a valid choice within the specified range.
+ * Calls the corresponding function based on the user's choice.
+ */
 void lookupOrBrowse(){
     char userinput[INPUT_BUFFER_LENGHT] = "\0";
     int userinput_int = 0;
@@ -997,10 +1025,12 @@ void lookupOrBrowse(){
     return;
 }
 
-/*  Allows the user to browse the list of student entries in the database.
-    Asks the user how many rows to show at a time and validates the input.
-    Prints the specified number of rows, showing entries in a tabular format.
-    Prompts the user to continue or exit after each batch of rows.*/
+/**
+ * Allows the user to browse the list of student entries in the database.
+ * Asks the user how many rows to show at a time and validates the input.
+ * Prints the specified number of rows, showing entries in a tabular format.
+ * Prompts the user to continue or exit after each batch of rows.
+ */
 void browseStudentList(){
     char userinput[INPUT_BUFFER_LENGHT] = "\0";
     int numOfRowsToPrint = 0;
@@ -1072,9 +1102,11 @@ void browseStudentList(){
     }
 }
 
-/*  Allows the user to look up a specific student entry in the database by entering the student's index number.
-    Validates the user's input for the index number.
-    Retrieves and displays the student's information (firstname, lastname, student ID, major) if found in the database.*/
+/**
+ * Allows the user to look up a specific student entry in the database by entering the student's index number.
+ * Validates the user's input for the index number.
+ * Retrieves and displays the student's information (firstname, lastname, student ID, major) if found in the database.
+ */
 void lookupStudent(){
     char userinput[INPUT_BUFFER_LENGHT] = "\0";
     int studentind = 0;
@@ -1107,9 +1139,11 @@ void lookupStudent(){
     return;
 }
 
-/*  Tests if a given string represents a "yes" or "no" response.
-    Returns true if the string matches "yes," "no," "y," or "n" (case-insensitive), indicating a valid response.
-    Returns false otherwise.*/
+/**
+ * Tests if a given string represents a "yes" or "no" response.
+ * Returns true if the string matches "yes," "no," "y," or "n" (case-insensitive), indicating a valid response.
+ * Returns false otherwise.
+ */
 bool stringIsYesOrNo(const char *str){
     if (str == NULL){
         fprintf(stdout, "Error: Invalid pointer in stringIsYesOrNo.\n");
