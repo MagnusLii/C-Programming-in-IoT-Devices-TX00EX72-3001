@@ -12,7 +12,7 @@ It will include the following:
 DB layout:
 
 (current student index number) (current DB entries tracking number)
-(layout desc) == Entrynum, Firstname, Lastname, Studentid, Major
+(Column 1 name), (column 2 name), (column 3 name)...
 (first entry)
 (second entry)
 ...
