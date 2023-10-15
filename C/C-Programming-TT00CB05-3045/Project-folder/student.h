@@ -3,16 +3,15 @@
 
 #include <stdio.h>
 
-#define INPUT_BUFFER_LENGTH 128
-#define LONG_STRING_LENGTH 256
+#define STR_LEN 256
 
 struct Student
 {
     int studentind, db_entry_row;
-    char firstname[INPUT_BUFFER_LENGTH];
-    char lastname[INPUT_BUFFER_LENGTH];
-    char studentid[INPUT_BUFFER_LENGTH];
-    char major[LONG_STRING_LENGTH];
+    char firstname[STR_LEN];
+    char lastname[STR_LEN];
+    char studentid[STR_LEN];
+    char major[STR_LEN];
     int fetchFailure;
 };
 
