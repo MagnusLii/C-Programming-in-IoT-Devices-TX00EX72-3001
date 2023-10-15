@@ -42,7 +42,7 @@ bool stringIsYesOrNo(const char *str);
 void browseStudentList();
 void lookupStudent();
 void convertToLowercase(char *str);
-Student fetch_student_data(const int studentind);
+Student fetchStudentData(const int studentind);
 
 int main(){
     int switch_choice = 0;
@@ -98,7 +98,7 @@ int main(){
 
     Returns:
         A Student struct containing the fetched data.*/
-Student fetch_student_data(const int studentind){
+Student fetchStudentData(const int studentind){
     Student student = {0};
     int tokencount = 0, linecount = 0;
     char *token, buffer[LONG_STRING_LENGHT] = "\0";
@@ -740,7 +740,7 @@ void editStudentEntry(){
     } while (stringToIntConv(userinput, &studentind) == false);
 
     // Fetching current student data into struct.
-    struct Student student = fetch_student_data(studentind);
+    struct Student student = fetchStudentData(studentind);
     if (student.fetchFailure == 1){
         printf("Cancelling...\n");
         return;
@@ -872,7 +872,7 @@ void deleteStudentEntry(){
     }
 
     // Fetching student data based on the index number.
-    struct Student student = fetch_student_data(studentind); // student.db_entry_row is used to locate entry in DB.
+    struct Student student = fetchStudentData(studentind); // student.db_entry_row is used to locate entry in DB.
     if (student.fetchFailure == 1){
         return;
     }
@@ -1091,7 +1091,7 @@ void lookupStudent(){
         input_valid = stringToIntConv(userinput, &studentind);
     }
 
-    struct Student student = fetch_student_data(studentind);
+    struct Student student = fetchStudentData(studentind);
     if (student.fetchFailure == 1){
         printf("Cancelling...\n");
         return;
