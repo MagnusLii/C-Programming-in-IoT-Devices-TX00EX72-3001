@@ -1,18 +1,20 @@
-The goal of this project is to improve on the previously created student record management
-system to submit it as the project for  C Programming in IoT Devices TX00EX72-3001 course.
+Student Management System
 
-The student management system will run entirely in a cmd, any data and records will be stored in a plain txt file.
-It will include the following:
+This project is designed for the "C - Programming TT00CB05-3045" course. The student management system runs entirely in a command-line environment (CMD), and all data and records are stored in a plain text file.
+Features
 
--Ability to add/remove students from the record.
--Ability to modify existing records.
--Ability to search existing records.
+The system includes the following features:
 
+    Ability to add or remove students from the record.
+    Ability to modify existing records.
+    Ability to search or browse existing records.
 
-DB layout:
+Please note that this program assumes that the database (DB) file has already been created and is named "db.txt." It's important to be aware that this project does not include extensive error handling or validation for scenarios where the DB file might become corrupted outside of the program.
 
-(current student index number) (current DB entries tracking number)
-(Column 1 name), (column 2 name), (column 3 name)...
-(first entry)
-(second entry)
+Database (DB) Layout
+The DB layout consists of the following elements:
+
+row 1: (The current student index number) (The current DB entries tracking number)
+row 2: Column names for the data
+row 3: Individual student entries
 ...
