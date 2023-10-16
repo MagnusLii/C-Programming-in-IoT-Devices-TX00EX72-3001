@@ -108,14 +108,14 @@ Student fetchStudentData(const int studentind){
     student.fetchFailure = 0; // Set fetchFailure flag to 0 to indicate no failure.
 
     if (studentind < 0){
-        fprintf(stdout, "Error: Invalid student index number.\n");
+        fprintf(stderr, "Error: Invalid student index number.\n");
         printf("Cancelling...");
         student.fetchFailure = 1; // Set flag to indicate a failure.
         return student;
     }
     
     if (dbFile == NULL){
-        fprintf(stdout, "Error: unable to open file %s", DB);
+        fprintf(stderr, "Error: unable to open file %s", DB);
         printf("Cancelling...");
         student.fetchFailure = 1; // Set flag to indicate a failure.
         return student;
@@ -170,7 +170,7 @@ Student fetchStudentData(const int studentind){
 
     if (entry_found == false)
     {
-        fprintf(stdout, "Error: Student record with index %d not found.\n", studentind);
+        fprintf(stderr, "Error: Student record with index %d not found.\n", studentind);
         printf("Cancelling...");
         student.fetchFailure = 1; // Set fetchFailure flag to indicate a failure.
         return student;
@@ -188,12 +188,12 @@ Student fetchStudentData(const int studentind){
  */
 bool verifyTokenLen(const char *token, const int maxLen){
     if (token == NULL || maxLen < 1){
-        fprintf(stdout, "Error: Invalid pointer or maxLen in verifyTokenLen.\n");
+        fprintf(stderr, "Error: Invalid pointer or maxLen in verifyTokenLen.\n");
         return false;
     }
 
     if (strlen(token) > maxLen){
-        fprintf(stdout, "Error: Token length exceeds max length of %d characters.\n", maxLen);
+        fprintf(stderr, "Error: Token length exceeds max length of %d characters.\n", maxLen);
         return false;
     }
     return true;
@@ -210,7 +210,7 @@ bool verifyTokenLen(const char *token, const int maxLen){
  */
 bool getDBRowInd(int *pStudentind, int *pDB_rows){
     if (pStudentind == NULL || pDB_rows == NULL){
-        fprintf(stdout, "Error: Invalid pointer in getDBRowInd.\n");
+        fprintf(stderr, "Error: Invalid pointer in getDBRowInd.\n");
         return false;
     }
 
@@ -239,7 +239,7 @@ bool getDBRowInd(int *pStudentind, int *pDB_rows){
  */
 bool improvedFgets(char *stringToStoreTo, const int maxLenghtOfString){
     if (stringToStoreTo == NULL || maxLenghtOfString < 1){
-        fprintf(stdout, "Error: Invalid pointer or maxLenghtOfString in improvedFgets.\n");
+        fprintf(stderr, "Error: Invalid pointer or maxLenghtOfString in improvedFgets.\n");
         return false;
     }
     
@@ -249,7 +249,7 @@ bool improvedFgets(char *stringToStoreTo, const int maxLenghtOfString){
     char *input_buffer = (char *)malloc(maxLenghtOfString * sizeof(char)); // Used for malloc() to allocate memory for the input buffer.
 
     if (input_buffer == NULL){
-        fprintf(stdout, "Error: Memory allocation failed.\n");
+        fprintf(stderr, "Error: Memory allocation failed.\n");
         return false;
     }
 
@@ -258,7 +258,7 @@ bool improvedFgets(char *stringToStoreTo, const int maxLenghtOfString){
 
         // Checking for empty input.
         if (input_buffer[0] == '\n' || input_buffer[0] == '\0'){
-            fprintf(stdout, "Error: Empty input.\n");
+            fprintf(stderr, "Error: Empty input.\n");
             free(input_buffer);
             return false;
         }
@@ -274,7 +274,7 @@ bool improvedFgets(char *stringToStoreTo, const int maxLenghtOfString){
 
             // Checking if input exceeds the maximum length.
             if (i >= maxLenghtOfString - 1){
-                fprintf(stdout, "Error: Input over max accepted length of %d characters.\n", maxLenghtOfString - 1);
+                fprintf(stderr, "Error: Input over max accepted length of %d characters.\n", maxLenghtOfString - 1);
                 free(input_buffer);
                 return false;
             }
@@ -300,7 +300,7 @@ bool improvedFgets(char *stringToStoreTo, const int maxLenghtOfString){
  */
 bool stringToIntConv(const char *str, int *result){
     if (str == NULL || result == NULL){
-        fprintf(stdout, "Error: Invalid pointer in stringToIntConv.\n");
+        fprintf(stderr, "Error: Invalid pointer in stringToIntConv.\n");
         return false;
     }
 
@@ -310,7 +310,7 @@ bool stringToIntConv(const char *str, int *result){
 
     // Checking if input is beyond the range of a long integer.
     if (errno == ERANGE){
-        fprintf(stdout, "Error: could not complete conversion to integer, number out of range.\nEnter a number between %d and %d.\n", LONG_MIN, LONG_MAX);
+        fprintf(stderr, "Error: could not complete conversion to integer, number out of range.\nEnter a number between %d and %d.\n", LONG_MIN, LONG_MAX);
         return false;
     }
     // Checking if input contained anything other than numbers.
@@ -318,11 +318,11 @@ bool stringToIntConv(const char *str, int *result){
         // Checking if input is non numerical.
         for (char *p = endptr; *p != '\0'; p++){
             if (isdigit((unsigned char)*p) == false){
-                fprintf(stdout, "Error: could not complete conversion to integer, you entered a non integer.\n");
+                fprintf(stderr, "Error: could not complete conversion to integer, you entered a non integer.\n");
                 return false;
             }
         }
-        fprintf(stdout, "Error: could not read an integer.\n");
+        fprintf(stderr, "Error: could not read an integer.\n");
         return false;
     }
     *result = num;
@@ -340,7 +340,7 @@ bool stringToIntConv(const char *str, int *result){
  */
 bool stringToDoubleConv(const char *inputStr, double *result){
     if (inputStr == NULL || result == NULL){
-        fprintf(stdout, "Error: Invalid pointer in stringToDoubleConv.\n");
+        fprintf(stderr, "Error: Invalid pointer in stringToDoubleConv.\n");
         return false;
     }
 
@@ -350,14 +350,14 @@ bool stringToDoubleConv(const char *inputStr, double *result){
 
     // Checking if input is beyond the range of a double.
     if (errno == ERANGE){
-        fprintf(stdout, "Error: could not complete conversion to double, number out of range.\n"
+        fprintf(stderr, "Error: could not complete conversion to double, number out of range.\n"
                "Enter a number between %f and %f.\n",
                DBL_MIN, DBL_MAX);
         return false;
     }
     // Checking if input contained anything other than numbers.
     else if (*endptr != '\0'){
-        fprintf(stdout, "Error: could not complete conversion to double\n");
+        fprintf(stderr, "Error: could not complete conversion to double\n");
         return false;
     }
     *result = num;
@@ -375,11 +375,11 @@ bool stringToDoubleConv(const char *inputStr, double *result){
  */
 void fgetsStringWhileLoopAlphanumerical(const char *stringToPrint, const char *retryMessage, char *stringToStoreTo, const int maxLenghtOfString){
     if (stringToPrint == NULL || retryMessage == NULL || stringToStoreTo == NULL || maxLenghtOfString < 1){
-        fprintf(stdout, "Error: Invalid pointer in fgetsStringWhileLoopAlphanumerical.\n");
+        fprintf(stderr, "Error: Invalid pointer in fgetsStringWhileLoopAlphanumerical.\n");
         return;
     }
     if (maxLenghtOfString < 1){
-        fprintf(stdout, "Error: Invalid maxLenghtOfString in fgetsStringWhileLoopAlphanumerical.\n");
+        fprintf(stderr, "Error: Invalid maxLenghtOfString in fgetsStringWhileLoopAlphanumerical.\n");
         return;
     }
 
@@ -420,7 +420,7 @@ void fgetsStringWhileLoopAlphanumerical(const char *stringToPrint, const char *r
 // Gets the current date and time and stores it in the 'stringToStoreTo' buffer.
 void dtimeString(char *stringToStoreTo){
     if (stringToStoreTo == NULL){
-        fprintf(stdout, "Error: Invalid pointer in dtimeString.\n");
+        fprintf(stderr, "Error: Invalid pointer in dtimeString.\n");
         return;
     }
 
@@ -438,7 +438,7 @@ void dtimeString(char *stringToStoreTo){
  */
 bool exitToCancel(const char *inputStr){
     if (inputStr == NULL){
-        fprintf(stdout, "Error: Invalid pointer in exitToCancel.\n");
+        fprintf(stderr, "Error: Invalid pointer in exitToCancel.\n");
         return false;
     }
 
@@ -466,7 +466,7 @@ bool exitToCancel(const char *inputStr){
  */
 bool createStudentId(struct Student *student){
     if (student == NULL){
-        fprintf(stdout, "Error: Invalid pointer in createStudentId.\n");
+        fprintf(stderr, "Error: Invalid pointer in createStudentId.\n");
         return false;
     }
 
@@ -503,7 +503,7 @@ bool createStudentId(struct Student *student){
  */
 bool chooseMajor(char *stringToStoreTo){
     if (stringToStoreTo == NULL){
-        fprintf(stdout, "Error: Invalid pointer in chooseMajor.\n");
+        fprintf(stderr, "Error: Invalid pointer in chooseMajor.\n");
         return false;
     }
 
@@ -534,7 +534,7 @@ bool chooseMajor(char *stringToStoreTo){
             printf("%s", errorMsg);
         }
         else if (userinput_int < 1 || userinput_int > NUM_MAJORS){
-            fprintf(stdout, "\nError: Enter a number between 1 an %d\n", NUM_MAJORS);
+            fprintf(stderr, "\nError: Enter a number between 1 an %d\n", NUM_MAJORS);
             input_valid = false; // Set input_valid to false for out-of-range input.
         }
     }
@@ -551,7 +551,7 @@ bool chooseMajor(char *stringToStoreTo){
  */
 void convertToLowercase(char *str){
     if (str == NULL){
-        fprintf(stdout, "Error: Invalid pointer in convertToLowercase.\n");
+        fprintf(stderr, "Error: Invalid pointer in convertToLowercase.\n");
         return;
     }
 
@@ -571,14 +571,14 @@ bool addNewEntryToDB(struct Student studentStruct){
     // Open a temporary file for writing.
     FILE *tmpFile = openFileWithRetry(TEMP, "w", 3);
     if (tmpFile == NULL){
-        fprintf(stdout, "Error: unable to open file %s", TEMP);
+        fprintf(stderr, "Error: unable to open file %s", TEMP);
         return false; // Return false if unable to open the temporary file.
     }
 
     // Open the database file for reading.
     FILE *pFile = openFileWithRetry(DB, "r", 3);
     if (pFile == NULL){
-        fprintf(stdout, "Error: unable to open file %s", DB);
+        fprintf(stderr, "Error: unable to open file %s", DB);
         return false; // Return false if unable to open the database file.
     }
 
@@ -721,7 +721,7 @@ void addNewStudent(){
 
     printf("Adding new student to DB...\n");
     if (addNewEntryToDB(newStudent) == false){
-        fprintf(stdout, "Error: Failed to add new student to DB.\n");
+        fprintf(stderr, "Error: Failed to add new student to DB.\n");
         printf("Exiting...\n");
         return;
     }
@@ -737,7 +737,7 @@ void addNewStudent(){
  */
 int getIndNum(const char *buffer){ 
     if (buffer == NULL){
-        fprintf(stdout, "Error: Invalid pointer in getIndNum.\n");
+        fprintf(stderr, "Error: Invalid pointer in getIndNum.\n");
         return -1;
     }
 
@@ -795,7 +795,7 @@ void editStudentEntry(){
         }
         input_valid = stringToIntConv(userinput, &choice);
         if (choice < 1 || choice > 3){
-            fprintf(stdout, "Error: Enter a valid integer between range 1-4.\n");
+            fprintf(stderr, "Error: Enter a valid integer between range 1-4.\n");
             input_valid = false;
         }
     }
@@ -921,6 +921,7 @@ void deleteStudentEntry(){
     }
     FILE *tmpFile = openFileWithRetry(TEMP, "w", 3);
     if (tmpFile == NULL){
+        fclose(pFile);
         return;
     }
 
@@ -945,18 +946,56 @@ void deleteStudentEntry(){
     fclose(tmpFile);
 
     if (entry_found == false){
-        fprintf(stdout, "Error: Student record with index %d not found.\n", studentind);
+        fprintf(stderr, "Error: Student record with index %d not found.\n", studentind);
         printf("Cancelling...\n");
         remove(TEMP);
         return;
     }
 
-    // Updating the database.
-    remove(DB);
-    rename(TEMP, DB);
-    printf("Student entry removed.\n");
+    updateDatabase(DB, TEMP);
 
     return;
+}
+
+/**
+ * Updates the database file and creates a backup.
+ *
+ * @param currentDBFileName - The name of the current database file.
+ * @param tempDBFileName - The name of the temporary database file.
+ */
+void updateDatabase(const char currentDBFileName, const char tempDBFileName) {
+    // Create a backup of the current database.
+    if (rename(currentDBFileName, "db_backup.txt") == -1) {
+        fprintf(stderr, "Error: Unable to create a backup of the previous DB.\n");
+        printf("Cancelling DB update procedure without DB modification...\n");
+        remove(tempDBFileName); // Attempt to remove the temporary file, doesn't matter if this fails.
+        return;
+    }
+    printf("Backup of DB created.\n");
+
+    // Update the database file with the new data.
+    if (rename(tempDBFileName, currentDBFileName) == -1) {
+        fprintf(stderr, "Error: Unable to update the DB file.\n");
+        printf("Attempting to restore the previous DB...\n");
+
+        // Attempt to restore the previous DB if the update fails.
+        if (rename("db_backup.txt", currentDBFileName) == -1) {
+            fprintf(stderr, "Error: Unable to restore the previous DB.\n");
+            fprintf(stderr, "Backup can be found in \"db_backup.txt\" and should be restored manually.\n");
+            printf("Cancelling DB update procedure...\n");
+            return;
+        }
+        return;
+    }
+    printf("Student entry removed.\n");
+    printf("DB updated.\n");
+
+    // Remove the backup of the previous database.
+    if (remove("db_backup.txt") == -1) {
+        fprintf(stderr, "Error: Unable to remove the backup of the previous DB.\n");
+        fprintf(stderr, "Backup can be found in \"db_backup.txt\" and can be removed manually.\n");
+        return;
+    }
 }
 
 /**
@@ -972,11 +1011,11 @@ void deleteStudentEntry(){
  */
 FILE *openFileWithRetry(const char *fileName, const char *mode, const int maxRetries){
     if (fileName == NULL || mode == NULL){
-        fprintf(stdout, "Error: Invalid pointer in openFileWithRetry.\n");
+        fprintf(stderr, "Error: Invalid pointer in openFileWithRetry.\n");
         return NULL;
     }
     if (maxRetries < 1){
-        fprintf(stdout, "Error: Invalid maxRetries in openFileWithRetry.\n");
+        fprintf(stderr, "Error: Invalid maxRetries in openFileWithRetry.\n");
         return NULL;
     }
 
@@ -993,7 +1032,7 @@ FILE *openFileWithRetry(const char *fileName, const char *mode, const int maxRet
     }
 
     // Unable to open the file after maximum retries.
-    fprintf(stdout, "Error: Unable to open the file \"%s\".\n", fileName);
+    fprintf(stderr, "Error: Unable to open the file \"%s\".\n", fileName);
     return NULL;
 }
 
@@ -1072,14 +1111,13 @@ void browseStudentList(){
 
     FILE *pFile = openFileWithRetry(DB, "r", 3);
     if (pFile == NULL){
-        fclose(pFile);
         return;
     }
 
     // Fetch the number of rows in the DB.
     int studentind = 0, DBrows = 0;
     if (fscanf(pFile, "%d %d", &studentind, &DBrows) != 2){
-        fprintf(stdout, "Error: Failed to read DB in browseStudentList.\n");
+        fprintf(stderr, "Error: Failed to read DB in browseStudentList.\n");
         fclose(pFile);
         return;
     }
@@ -1184,7 +1222,7 @@ void lookupStudent(){
  */
 bool stringIsYesOrNo(const char *str){
     if (str == NULL){
-        fprintf(stdout, "Error: Invalid pointer in stringIsYesOrNo.\n");
+        fprintf(stderr, "Error: Invalid pointer in stringIsYesOrNo.\n");
         return false;
     }
 
