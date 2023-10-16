@@ -958,7 +958,7 @@ void deleteStudentEntry(){
 }
 
 /**
- * Updates the database file and creates a backup.
+ * Creates a backup and then attempts to update the DB file.
  *
  * @param currentDBFileName - The name of the current database file.
  * @param tempDBFileName - The name of the temporary database file.
