@@ -291,6 +291,7 @@ bool improvedFgets(char *stringToStoreTo, const int maxLenghtOfString){
 /**
  * Converts a string to an integer and returns true if the conversion is successful,
  * does not allow partial conversions, and validates the input.
+ * Doesn't allow for negative numbers as they won't be needed in this program.
  *
  * @param str - The input string to be converted.
  * @param result - Pointer to an integer where the result will be stored.
@@ -1052,8 +1053,10 @@ void browseStudentList(){
 
     // Validate user input for the number of rows to print at a time.
     do{
+        numOfRowsToPrint = 0;
+
         // Getting user input for the number of rows to show.
-        fgetsStringWhileLoopAlphanumerical("\nHow many rows to show at a time?\nEnter an integer.\n",
+        fgetsStringWhileLoopAlphanumerical("\nHow many rows to show at a time?\nEnter a positive integer.\n",
                                            "Enter a valid integer.\n",
                                            userinput, DEFAULT_STRING_LENGHT);
 
@@ -1061,7 +1064,7 @@ void browseStudentList(){
             return;
         }
 
-        input_valid = stringToIntConv(userinput, &numOfRowsToPrint);
+        input_valid = stringToIntConv(userinput, &numOfRowsToPrint);  // stringToIntConv wont allow negative numbers.
         if (input_valid == false){
             printf("Error: Enter a valid integer.\n");
         }
@@ -1069,6 +1072,7 @@ void browseStudentList(){
 
     FILE *pFile = openFileWithRetry(DB, "r", 3);
     if (pFile == NULL){
+        fclose(pFile);
         return;
     }
 
@@ -1076,6 +1080,7 @@ void browseStudentList(){
     int studentind = 0, DBrows = 0;
     if (fscanf(pFile, "%d %d", &studentind, &DBrows) != 2){
         fprintf(stdout, "Error: Failed to read DB in browseStudentList.\n");
+        fclose(pFile);
         return;
     }
 
@@ -1126,9 +1131,13 @@ void browseStudentList(){
 
         if (stricmp(userinput, "no") == 0 || stricmp(userinput, "n") == 0){
             printf("Cancelling...\n");
+            fclose(pFile);
             return;
         }
     }
+
+    fclose(pFile);
+    return;
 }
 
 /**
@@ -1149,7 +1158,7 @@ void lookupStudent(){
         if (exitToCancel(userinput) == true){
             return;
         }
-        input_valid = stringToIntConv(userinput, &studentind);
+        input_valid = stringToIntConv(userinput, &studentind); // Negative values can pass as the lookup will simply fail to find the entry and prompt the user to retry.
     }
 
     struct Student student = fetchStudentData(studentind);
