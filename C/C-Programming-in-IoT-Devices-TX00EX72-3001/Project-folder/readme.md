@@ -1,6 +1,6 @@
 Student Management System
 
-This project is designed for the "C - Programming TT00CB05-3045" course. The student management system runs entirely in a command-line environment (CMD), and all data and records are stored in a plain text file.
+This project is designed for the "C Programming in IoT Devices TX00EX72-3001" course. The student management system runs entirely in a command-line environment (CMD), and all data and records are stored in a plain text file.
 Features
 
 The system includes the following features:
