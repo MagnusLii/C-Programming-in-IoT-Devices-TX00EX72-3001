@@ -18,7 +18,7 @@ Studentind,Firstname,Lastname,Studentid,Major
 17,Daniel,Lewis,202307000017,Biomimicry
 18,Madison,Walker,202307000018,BicycleDesign
 19,Christopher,Hall,202307000019,EcoGastronomy
-20,Ava,Young,202307000020,PuppetArts
+20,Aya,Young,202307000020,PuppetArts
 21,Matthew,Green,202307000021,Biomimicry
 22,Isabella,Adams,202307000022,BicycleDesign
 23,Anthony,King,202307000023,EcoGastronomy
