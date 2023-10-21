@@ -1,4 +1,4 @@
-51 49
+53 51
 Studentind,Firstname,Lastname,Studentid,Major
 1,test,dsa,202307000001,Biomimicry
 2,pepe,powers,202307000002,BicycleDesign
@@ -49,3 +49,4 @@ Studentind,Firstname,Lastname,Studentid,Major
 49,Elijah,Cooper,202307000049,Biomimicry
 50,Penelope,Ramirez,202307000050,BicycleDesign
 51,Lime,Wire,202307000051,Biomimicry
+53,Ferrus,Mannus,202310000053,EcoGastronomy
