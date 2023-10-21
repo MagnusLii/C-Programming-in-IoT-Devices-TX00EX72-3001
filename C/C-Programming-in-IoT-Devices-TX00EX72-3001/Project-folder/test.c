@@ -6,7 +6,6 @@
 #include <ctype.h>
 #include <errno.h>
 #include <float.h>
-#include "student.h"
 
 // #defines
 #define DB "db.txt"
@@ -14,8 +13,8 @@
 #define NAME_LENGHT 21
 #define STUDENT_ID_LENGHT 13
 #define DEFAULT_STRING_LENGHT 21
-#define INPUT_BUFFER_LENGHT 256 // Used for any array that is expected to store userinput.
-#define LONG_STRING_LENGHT 256  // Used for any array that is expected to store long strings but not nessecarily userinput.
+#define INPUT_BUFFER_LENGHT 1024 // Used for any array that is expected to store userinput.
+#define LONG_STRING_LENGHT 1024  // Used for any array that is expected to store long strings but not nessecarily userinput.
 #define SEPARATOR "\n\n----------------------------------------\n\n"
 #define MAJORS                                                       \
     {                                                                \
@@ -44,6 +43,23 @@ void browseStudentList();
 void lookupStudent();
 void convertToLowercase(char *str);
 Student fetchStudentData(const int studentind);
+bool verifyTokenLen(const char *token, const int maxLen);
+bool modifyEntryToDB(struct Student studentStruct);
+bool exitToCancel(const char *inputStr);
+bool chooseMajor(char *stringToStoreTo);
+void updateDatabase(const char currentDBFileName, const char tempDBFileName);
+
+struct Student
+{
+    int studentind, db_entry_row;
+    char firstname[LONG_STRING_LENGHT];
+    char lastname[LONG_STRING_LENGHT];
+    char studentid[LONG_STRING_LENGHT];
+    char major[LONG_STRING_LENGHT];
+    int fetchFailure;
+};
+
+typedef struct Student Student;
 
 int main(){
     int switch_choice = 0;
@@ -154,8 +170,8 @@ Student fetchStudentData(const int studentind){
                 case 4:
                                     printf("Token len: %d\n", strlen(token));
                     printf("Token: %s\n", token);
-                    strncpy(student.major, token, STUDENT_ARR_LEN - 1);
-                    student.major[STUDENT_ARR_LEN - 1] = '\0';
+                    strncpy(student.major, token, LONG_STRING_LENGHT - 1);
+                    student.major[LONG_STRING_LENGHT - 1] = '\0';
                     break;
                 }
 
@@ -539,8 +555,8 @@ bool chooseMajor(char *stringToStoreTo){
         }
     }
     // Copy the selected major to the output string.
-    strncpy(stringToStoreTo, majors[userinput_int - 1], sizeof(stringToStoreTo) - 1);
-    stringToStoreTo[sizeof(stringToStoreTo) - 1] = '\0';
+    strncpy(stringToStoreTo, majors[userinput_int - 1], LONG_STRING_LENGHT - 1);
+    stringToStoreTo[LONG_STRING_LENGHT - 1] = '\0';
     return true; // Return true to indicate successful selection and storage of a major.
 }
 
@@ -604,8 +620,7 @@ bool addNewEntryToDB(struct Student studentStruct){
     fclose(pFile);   // Close the database file.
     fclose(tmpFile); // Close the temporary file.
 
-    remove(DB);       // Remove the old database file.
-    rename(TEMP, DB); // Rename the temp file to the database file to update the database.
+    updateDatabase(DB, TEMP);
 
     return true; // Return true to indicate a successful entry addition and database update.
 }
@@ -644,7 +659,7 @@ bool modifyEntryToDB(struct Student studentStruct){
         // Replace the specified entry with the new entry data.
         if (rowCount == studentStruct.db_entry_row){
             fprintf(tmpFile, "%d,%s,%s,%s,%s", studentStruct.studentind, studentStruct.firstname, studentStruct.lastname, studentStruct.studentid, studentStruct.major);
-            entry_found = true; // Set the entry_found flag to true.
+            entry_found = true;
         }
 
         // Copy the existing data to the temporary file for other entries.
@@ -653,11 +668,10 @@ bool modifyEntryToDB(struct Student studentStruct){
         }
     }
 
-    fclose(pFile);   // Close the database file.
-    fclose(tmpFile); // Close the temporary file.
+    fclose(pFile);
+    fclose(tmpFile);
 
-    remove(DB);       // Remove the old database file.
-    rename(TEMP, DB); // Rename the temp file to the database file to update the database.
+    updateDatabase(DB, TEMP);
 
     return entry_found; // Return true if the specified entry is found and modified, false otherwise.
 }
@@ -726,6 +740,7 @@ void addNewStudent(){
         return;
     }
     printf("New student added to DB.\n");
+    return;
 }
 
 /**
@@ -733,13 +748,18 @@ void addNewStudent(){
  *
  * @param buffer - The input string containing the database entry.
  *
- * @return The extracted index number as an integer.
+ * @return The extracted index number as an integer or "-1" if an error occurs.
  */
 int getIndNum(const char *buffer){ 
     if (buffer == NULL){
         fprintf(stderr, "Error: Invalid pointer in getIndNum.\n");
         return -1;
     }
+
+    if (strlen(buffer) > INPUT_BUFFER_LENGHT){
+        fprintf(stderr, "Error: Buffer string too long in getIndNum.\n");
+        return -1;
+    }    
 
     char index_number[INPUT_BUFFER_LENGHT];
     int numberlength = 0;
@@ -750,11 +770,17 @@ int getIndNum(const char *buffer){
         index_number[numberlength] = buffer[i];
         numberlength++;
     }
+    
+    int result = 0;
+    if (stringToIntConv(index_number, &result) == false){
+        fprintf(stderr, "Error: Failed to convert buffer to int in getIndNum.\n");
+        return -1;
+    }
 
     /*  Converting string to int.
         This has the potential to fail if the characters before the first "," are not numbers.
         However error checks in other functions should prevent any incorrectly formatted DB entries.*/
-    return strtol(index_number, NULL, 10); // Assumes that the database will not have more than 999,999,999 entries.
+    return result;
 }
 
 /**
