@@ -143,8 +143,8 @@ Student fetchStudentData(const int studentind){
                     student.studentid[STUDENT_ID_LENGHT - 1] = '\0';
                     break;
                 case 4:
-                    strncpy(student.major, token, STUDEN_ARR_LEN - 1);
-                    student.major[STUDEN_ARR_LEN - 1] = '\0';
+                    strncpy(student.major, token, STUDENT_ARR_LEN - 1);
+                    student.major[STUDENT_ARR_LEN - 1] = '\0';
                     break;
                 }
 
