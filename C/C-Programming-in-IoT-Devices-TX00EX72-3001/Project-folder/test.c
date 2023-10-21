@@ -139,6 +139,10 @@ Student fetchStudentData(const int studentind){
         return student;
     }
 
+    // Skip the first 3 lines of the database file as they contain metadata.
+    fgets(buffer, LONG_STRING_LENGHT, dbFile);
+    fgets(buffer, LONG_STRING_LENGHT, dbFile);
+
     bool entry_found = false; // Flag to indicate if the entry is found in the database.
     while ((fgets(buffer, LONG_STRING_LENGHT, dbFile)) != NULL && entry_found == false){
         linecount++;
@@ -147,31 +151,21 @@ Student fetchStudentData(const int studentind){
             while (token != NULL){
                 switch (tokencount){
                 case 0:
-                    printf("Token len: %d\n", strlen(token));
-                    printf("Token: %s\n", token);
                     stringToIntConv(token, &student.studentind);
                     break;
                 case 1:
-                                    printf("Token len: %d\n", strlen(token));
-                    printf("Token: %s\n", token);
                     strncpy(student.firstname, token, NAME_LENGHT - 1);
                     student.firstname[NAME_LENGHT - 1] = '\0';
                     break;
                 case 2:
-                                    printf("Token len: %d\n", strlen(token));
-                    printf("Token: %s\n", token);
                     strncpy(student.lastname, token, NAME_LENGHT - 1);
                     student.lastname[NAME_LENGHT - 1] = '\0';
                     break;
                 case 3:
-                                    printf("Token len: %d\n", strlen(token));
-                    printf("Token: %s\n", token);
                     strncpy(student.studentid, token, STUDENT_ID_LENGHT - 1);
                     student.studentid[STUDENT_ID_LENGHT - 1] = '\0';
                     break;
                 case 4:
-                                    printf("Token len: %d\n", strlen(token));
-                    printf("Token: %s\n", token);
                     strncpy(student.major, token, LONG_STRING_LENGHT - 1);
                     student.major[LONG_STRING_LENGHT - 1] = '\0';
                     break;
@@ -180,7 +174,7 @@ Student fetchStudentData(const int studentind){
                 token = strtok(NULL, ", ");
                 tokencount++;
             }
-            student.db_entry_row = linecount; // Set the row number in the database where the entry was found.
+            student.db_entry_row = linecount + 2; // Set the row number in the database where the entry was found. (+2) to account for the 2 lines skipped at the beginning.
             entry_found = true;
         }
     }
@@ -316,6 +310,7 @@ bool stringToIntConv(const char *str, int *result){
         for (char *p = endptr; *p != '\0'; p++){
             if (isdigit((unsigned char)*p) == false){
                 fprintf(stderr, "Error: could not complete conversion to integer, you entered a non integer.\n");
+                printf(SEPARATOR);
                 return false;
             }
         }
@@ -743,13 +738,13 @@ int getIndNum(const char *buffer){
 
     char index_number[INPUT_BUFFER_LENGHT];
     int numberlength = 0;
-    for (int i = 0; i < strlen(buffer); i++){
-        if (buffer[i] == ','){
-            break;
-        }
-        index_number[numberlength] = buffer[i];
+    int index = 0;
+    while (index < strlen(buffer) && buffer[index] != ','){
+        index_number[numberlength] = buffer[index];
         numberlength++;
+        index++;
     }
+    index_number[numberlength] = '\0';
     
     int result = 0;
     if (stringToIntConv(index_number, &result) == false){
@@ -791,7 +786,7 @@ void editStudentEntry(){
     // Confirming what information to edit.
     printf("%s", SEPARATOR);
     sprintf(promptMsg, "\n1. Firstname\n2. Lastname\n3. Major\nChoose data to change.\n");
-    sprintf(errorMsg, "Enter a valid integer between range 1-4.\n");
+    sprintf(errorMsg, "Enter a valid integer between range 1-3.\n");
     int choice = 0;
     bool input_valid = false;
     while (input_valid == false){
@@ -801,7 +796,8 @@ void editStudentEntry(){
         }
         input_valid = stringToIntConv(userinput, &choice);
         if (choice < 1 || choice > 3){
-            fprintf(stderr, "Error: Enter a valid integer between range 1-4.\n");
+            fprintf(stderr, "Error: Enter a valid integer between range 1-3.\n");
+            printf(SEPARATOR);
             input_valid = false;
         }
     }
