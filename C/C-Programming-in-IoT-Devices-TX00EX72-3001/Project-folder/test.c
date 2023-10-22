@@ -41,7 +41,7 @@ bool improvedFgets(char *stringToStoreTo, const int maxLenghtOfString);
 bool stringToIntConv(const char *str, int *result);
 bool stringToDoubleConv(const char *inputStr, double *result);
 void fgetsStringWhileLoopAlphanumerical(const char *stringToPrint, const char *retryMessage, char *stringToStoreTo, const int maxLenghtOfString);
-bool dtimeString(char *stringToStoreTo, size_t bufferSize);
+bool dtimeString(char *stringToStoreTo, const size_t bufferSize);
 bool createStudentId(struct Student *student);
 void addNewStudent();
 int getIndNum(const char *buffer);
@@ -419,8 +419,7 @@ void fgetsStringWhileLoopAlphanumerical(const char *stringToPrint, const char *r
  * @return true if the formatting and storage were successful, false otherwise.
  *         Returns false if 'stringToStoreTo' is a null pointer or if 'bufferSize' is less than 7.
  */
-bool dtimeString(char *stringToStoreTo, size_t stringToStoreToSize) {
-    // Check if the 'stringToStoreTo' pointer is valid.
+bool dtimeString(char *stringToStoreTo, const size_t stringToStoreToSize){
     if (stringToStoreTo == NULL) {
         fprintf(stderr, "Error: Invalid pointer in dtimeString.\n");
         return false;
@@ -432,7 +431,7 @@ bool dtimeString(char *stringToStoreTo, size_t stringToStoreToSize) {
         return false;
     }
 
-    // Retrieve the current date and time and format it as "YYYYMM."
+    // Create and store the formatted string.
     time_t current_time = time(NULL);
     strftime(stringToStoreTo, stringToStoreToSize, "%Y%m", localtime(&current_time));
     return true;
@@ -459,7 +458,6 @@ bool exitToCancel(const char *inputStr, const int strMaxLen) {
         return false;
     }
 
-    // Verify the str pointer is valid.
     if (inputStr == NULL) {
         fprintf(stderr, "Error: Invalid pointer in exitToCancel.\n");
         return false;
@@ -540,6 +538,7 @@ bool chooseMajor(char *stringToStoreTo){
         strcat(loopMsg, "\n");
     }
 
+    // Prompt the user to choose a major.
     bool input_valid = false; // Flag to track the validity of the input.
     while (input_valid == false){
         fgetsStringWhileLoopAlphanumerical(loopMsg, errorMsg, userinput, DEFAULT_STRING_LENGHT);
@@ -556,6 +555,7 @@ bool chooseMajor(char *stringToStoreTo){
             input_valid = false; // Set input_valid to false for out-of-range input.
         }
     }
+
     // Copy the selected major to the output string.
     strncpy(stringToStoreTo, majors[userinput_int - 1], LONG_STRING_LENGHT - 1);
     stringToStoreTo[LONG_STRING_LENGHT - 1] = '\0';
