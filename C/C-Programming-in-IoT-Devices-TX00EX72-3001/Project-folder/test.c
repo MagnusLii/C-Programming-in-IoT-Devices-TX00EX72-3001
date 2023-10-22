@@ -1247,8 +1247,9 @@ void lookupStudent(){
            "Major: %s\n",
            student.firstname, student.lastname, student.studentid, student.major);
 
-    //#TODO: Might be a good idea to put somesort of prompt here to let the user continue,
-    //otherwise the program will just return to main() and print the menu in addition to the student information.
+    // A pause to allow the user to read the information.
+    printf("Press enter to continue.\n");
+    fgets(userinput, INPUT_BUFFER_LENGHT, stdin);
     return;
 }
 
