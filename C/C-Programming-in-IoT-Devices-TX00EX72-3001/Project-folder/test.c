@@ -41,7 +41,7 @@ bool improvedFgets(char *stringToStoreTo, const int maxLenghtOfString);
 bool stringToIntConv(const char *str, int *result);
 bool stringToDoubleConv(const char *inputStr, double *result);
 void fgetsStringWhileLoopAlphanumerical(const char *stringToPrint, const char *retryMessage, char *stringToStoreTo, const int maxLenghtOfString);
-void dtimeString(char *stringToStoreTo);
+bool dtimeString(char *stringToStoreTo, size_t bufferSize);
 bool createStudentId(struct Student *student);
 void addNewStudent();
 int getIndNum(const char *buffer);
@@ -101,7 +101,7 @@ int main(){
             exit = true;
             break;
         default:
-            fprintf(stderr, "Error: Incorrect input.\n");
+            fprintf(stderr, "Error: Incorrect input enter number from 1-5.\n");
             break;
         }
         switch_choice = 0;
@@ -309,8 +309,6 @@ bool stringToIntConv(const char *str, int *result){
         // Checking if input is non numerical.
         for (char *p = endptr; *p != '\0'; p++){
             if (isdigit((unsigned char)*p) == false){
-                fprintf(stderr, "Error: could not complete conversion to integer, you entered a non integer.\n");
-                printf(SEPARATOR);
                 return false;
             }
         }
@@ -398,6 +396,7 @@ void fgetsStringWhileLoopAlphanumerical(const char *stringToPrint, const char *r
                     printf(" ");
                 }
                 printf("^\n");
+                printf(SEPARATOR);
                 input_valid = false;
             }
             charIndex++;
@@ -408,16 +407,38 @@ void fgetsStringWhileLoopAlphanumerical(const char *stringToPrint, const char *r
     }
 }
 
-// Gets the current date and time and stores it in the 'stringToStoreTo' buffer.
-void dtimeString(char *stringToStoreTo){
-    if (stringToStoreTo == NULL){
+/**
+ * Formats the current date and time as "YYYYMM" and stores it in the 'stringToStoreTo' buffer.
+ *
+ * This function retrieves the current date and time, formats it as "YYYYMM" (e.g., "202210"),
+ * and stores the result in the provided buffer. The buffer size is determined by 'bufferSize'.
+ *
+ * @param stringToStoreTo - The buffer where the formatted date and time will be stored.
+ * @param stringToStoreToSize - Size of the buffer where the formatted date and time will be stored.
+ *
+ * @return true if the formatting and storage were successful, false otherwise.
+ *         Returns false if 'stringToStoreTo' is a null pointer or if 'bufferSize' is less than 7.
+ */
+bool dtimeString(char *stringToStoreTo, size_t stringToStoreToSize) {
+    // Check if the 'stringToStoreTo' pointer is valid.
+    if (stringToStoreTo == NULL) {
         fprintf(stderr, "Error: Invalid pointer in dtimeString.\n");
-        return;
+        return false;
     }
 
+    // Ensure that the provided buffer is large enough to store the formatted date and time.
+    if (stringToStoreToSize < 7) {
+        fprintf(stderr, "Error: Buffer string too short in dtimeString.\n");
+        return false;
+    }
+
+    // Retrieve the current date and time and format it as "YYYYMM."
     time_t current_time = time(NULL);
-    strftime(stringToStoreTo, 20, "%Y%m", localtime(&current_time));
+    strftime(stringToStoreTo, stringToStoreToSize, "%Y%m", localtime(&current_time));
+    return true;
 }
+
+
 
 /**
  * Checks if the input string is equal to "exit" (case-insensitive) and returns true if so.
@@ -469,7 +490,7 @@ bool createStudentId(struct Student *student){
 
     char date_string[INPUT_BUFFER_LENGHT] = "\0";
     // Fetch the current date and format it as a string.
-    dtimeString(date_string);
+    dtimeString(date_string, sizeof(date_string));
     student->studentid[0] = '\0'; // Ensuring the student ID is empty before concatenating.
     strcat(student->studentid, date_string);
 
@@ -774,13 +795,19 @@ void editStudentEntry(){
     char promptMsg[LONG_STRING_LENGHT] = "\nEnter student index number (Leftmost column in DB).\n";
     char errorMsg[LONG_STRING_LENGHT] = "Please enter a valid student index number.\n";
 
-    printf("%s", SEPARATOR);
-    do{
+    // Prompting user to enter student index number.
+    bool input_valid = false;
+    while (input_valid == false){
+        printf(SEPARATOR);
         fgetsStringWhileLoopAlphanumerical(promptMsg, errorMsg, userinput, DEFAULT_STRING_LENGHT);
         if (exitToCancel(userinput, strlen(userinput)) == true){
             return;
         }
-    } while (stringToIntConv(userinput, &studentind) == false);
+        input_valid = stringToIntConv(userinput, &studentind);
+        if (input_valid == false){
+            fprintf(stderr, "Error: Enter a valid integer.\n");
+        }
+    }
 
     // Fetching current student data into struct.
     struct Student student = fetchStudentData(studentind);
@@ -789,12 +816,12 @@ void editStudentEntry(){
         return;
     }
 
-    // Confirming what information to edit.
+    // Confirming what information to edit with user.
     printf("%s", SEPARATOR);
     sprintf(promptMsg, "\n1. Firstname\n2. Lastname\n3. Major\nChoose data to change.\n");
     sprintf(errorMsg, "Enter a valid integer between range 1-3.\n");
     int choice = 0;
-    bool input_valid = false;
+    input_valid = false;
     while (input_valid == false){
         fgetsStringWhileLoopAlphanumerical(promptMsg, errorMsg, userinput, DEFAULT_STRING_LENGHT);
         if (exitToCancel(userinput, strlen(userinput)) == true){
