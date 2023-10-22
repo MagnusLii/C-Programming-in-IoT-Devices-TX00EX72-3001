@@ -57,7 +57,7 @@ void convertToLowercase(char *str);
 Student fetchStudentData(const int studentind);
 bool verifyTokenLen(const char *token, const int maxLen);
 bool modifyEntryToDB(struct Student studentStruct);
-bool exitToCancel(const char *inputStr);
+bool exitToCancel(const char *inputStr, const int strMaxLen);
 bool chooseMajor(char *stringToStoreTo);
 void updateDatabase(const char *currentDBFileName, const char *tempDBFileName);
 
@@ -421,32 +421,38 @@ void dtimeString(char *stringToStoreTo){
 
 /**
  * Checks if the input string is equal to "exit" (case-insensitive) and returns true if so.
- * Does not modify the input string.
+ *
+ * This function performs a case-insensitive comparison of the input string with the "exit" command.
+ * It does not modify the input string.
  *
  * @param inputStr - The input string to check for the "exit" command.
+ * @param strMaxLen - The maximum length to consider in the input string.
  *
  * @return true if the input is equal to "exit" (case-insensitive), false otherwise.
+ *         Returns false if the input string is not exactly four characters long.
+ *         Returns false if the input string is a null pointer.
  */
-bool exitToCancel(const char *inputStr){
-    if (inputStr == NULL){
+bool exitToCancel(const char *inputStr, const int strMaxLen) {
+    // str cannot be "exit" if it is not exactly four characters long.
+    if (strMaxLen != 4) {
+        return false;
+    }
+
+    // Verify the str pointer is valid.
+    if (inputStr == NULL) {
         fprintf(stderr, "Error: Invalid pointer in exitToCancel.\n");
         return false;
     }
 
-    // Convert the input string to lowercase for case-insensitive comparison.
-    char inputStrLower[INPUT_BUFFER_LENGHT] = "\0";
-    int i = 0;
-
-    strncasecmp(inputStrLower, inputStr, INPUT_BUFFER_LENGHT);
-    inputStrLower[INPUT_BUFFER_LENGHT - 1] = '\0';
-    convertToLowercase(inputStrLower);
-
-    if (strcmp(inputStrLower, "exit") == 0){
+    // Perform a case-insensitive comparison with the "exit" command.
+    if (strncasecmp("exit", inputStr, strMaxLen) == 0) {
         printf("Cancelling...\n");
-        return true; // Return true to indicate the "exit" command was detected.
+        return true;
     }
-    return false; // Return false if the input is not "exit".
+
+    return false;
 }
+
 
 /**
  * Generates a unique student ID, updates student index, and stores relevant data in the Student struct.
@@ -516,7 +522,7 @@ bool chooseMajor(char *stringToStoreTo){
     bool input_valid = false; // Flag to track the validity of the input.
     while (input_valid == false){
         fgetsStringWhileLoopAlphanumerical(loopMsg, errorMsg, userinput, DEFAULT_STRING_LENGHT);
-        if (exitToCancel(userinput) == true){
+        if (exitToCancel(userinput, strlen(userinput)) == true){
             return false;
         }
 
@@ -666,7 +672,7 @@ void addNewStudent(){
     char errorMsg[LONG_STRING_LENGHT] = "Please enter a valid firstname.\n";
     printf("%s", SEPARATOR);
     fgetsStringWhileLoopAlphanumerical(inputstr, errorMsg, newStudent.firstname, NAME_LENGHT);
-    if (exitToCancel(newStudent.firstname) == true){
+    if (exitToCancel(newStudent.firstname, strlen(newStudent.firstname)) == true){
         return;
     }
 
@@ -675,7 +681,7 @@ void addNewStudent(){
     sprintf(errorMsg, "Please enter a valid lastname.\n");
     printf("%s", SEPARATOR);
     fgetsStringWhileLoopAlphanumerical(inputstr, errorMsg, newStudent.lastname, NAME_LENGHT);
-    if (exitToCancel(newStudent.lastname) == true){
+    if (exitToCancel(newStudent.lastname, strlen(newStudent.firstname)) == true){
         return;
     }
 
@@ -771,7 +777,7 @@ void editStudentEntry(){
     printf("%s", SEPARATOR);
     do{
         fgetsStringWhileLoopAlphanumerical(promptMsg, errorMsg, userinput, DEFAULT_STRING_LENGHT);
-        if (exitToCancel(userinput) == true){
+        if (exitToCancel(userinput, strlen(userinput)) == true){
             return;
         }
     } while (stringToIntConv(userinput, &studentind) == false);
@@ -791,7 +797,7 @@ void editStudentEntry(){
     bool input_valid = false;
     while (input_valid == false){
         fgetsStringWhileLoopAlphanumerical(promptMsg, errorMsg, userinput, DEFAULT_STRING_LENGHT);
-        if (exitToCancel(userinput) == true){
+        if (exitToCancel(userinput, strlen(userinput)) == true){
             return;
         }
         input_valid = stringToIntConv(userinput, &choice);
@@ -810,7 +816,7 @@ void editStudentEntry(){
     case 1:
         sprintf(inputstr, "Enter firstname (max %d alphanumerical characters only!)\n", NAME_LENGHT - 1);
         fgetsStringWhileLoopAlphanumerical(inputstr, "Please enter a valid firstname.\n", userinput, NAME_LENGHT);
-        if (exitToCancel(userinput) == true){
+        if (exitToCancel(userinput, strlen(userinput)) == true){
             return;
         }
         for (int i = 0; i < strlen(userinput); i++){
@@ -822,7 +828,7 @@ void editStudentEntry(){
     case 2:
         sprintf(inputstr, "Enter lastname (max %d alphanumerical characters only!)\n", NAME_LENGHT - 1);
         fgetsStringWhileLoopAlphanumerical(inputstr, "Please enter a valid lastname.\n", userinput, NAME_LENGHT);
-        if (exitToCancel(userinput) == true){
+        if (exitToCancel(userinput, strlen(userinput)) == true){
             return;
         }
         for (int i = 0; i < strlen(userinput); i++){
@@ -842,7 +848,7 @@ void editStudentEntry(){
         sprintf(inputstr, "Enter a number between 1 and %d.\n", NUM_MAJORS);
         sprintf(errorMsg, "Please enter a valid integer between range 1-%d.\n", NUM_MAJORS);
         fgetsStringWhileLoopAlphanumerical(inputstr, errorMsg, userinput, DEFAULT_STRING_LENGHT);
-        if (exitToCancel(userinput) == true){
+        if (exitToCancel(userinput, strlen(userinput)) == true){
             return;
         }
 
@@ -905,9 +911,10 @@ void deleteStudentEntry(){
     while (entry_found == false){
         fgetsStringWhileLoopAlphanumerical("Enter index number of student entry to remove. (Leftmost column in DB).\n",
                                            "Please enter a valid student index number.\n", userinput, DEFAULT_STRING_LENGHT);
-        if (exitToCancel(userinput) == true){
+        if (exitToCancel(userinput, strlen(userinput)) == true){
             return;
         }
+        printf("\n\n%s\n\n", userinput);
         entry_found = stringToIntConv(userinput, &studentind);
     }
 
@@ -1055,7 +1062,7 @@ void lookupOrBrowse(){
                                            "Enter a valid integer between range 1-2.\n",
                                            userinput, DEFAULT_STRING_LENGHT);
 
-        if (exitToCancel(userinput) == true){
+        if (exitToCancel(userinput, strlen(userinput)) == true){
             return;
         }
 
@@ -1100,7 +1107,7 @@ void browseStudentList(){
                                            "Enter a valid integer.\n",
                                            userinput, DEFAULT_STRING_LENGHT);
 
-        if (exitToCancel(userinput) == true){
+        if (exitToCancel(userinput, strlen(userinput)) == true){
             return;
         }
 
@@ -1194,15 +1201,14 @@ void lookupStudent(){
     while (input_valid == false){
         fgetsStringWhileLoopAlphanumerical("Enter student index number (Leftmost column in DB).\n",
                                            "Please enter a valid student index number.\n", userinput, DEFAULT_STRING_LENGHT);
-        if (exitToCancel(userinput) == true){
+        if (exitToCancel(userinput, strlen(userinput)) == true){
             return;
         }
         input_valid = stringToIntConv(userinput, &studentind); // Negative values can pass as the lookup will simply fail to find the entry and prompt the user to retry.
     }
 
     struct Student student = fetchStudentData(studentind);
-    if (student.fetchFailure == 1){
-        printf("Cancelling...\n");
+    if (student.fetchFailure == 1){ 
         return;
     }
 
@@ -1213,6 +1219,9 @@ void lookupStudent(){
            "Studentid: %s\n"
            "Major: %s\n",
            student.firstname, student.lastname, student.studentid, student.major);
+
+    //#TODO: Might be a good idea to put somesort of prompt here to let the user continue,
+    //otherwise the program will just return to main() and print the menu in addition to the student information.
     return;
 }
 
