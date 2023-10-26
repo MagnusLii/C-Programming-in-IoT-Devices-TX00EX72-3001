@@ -90,6 +90,8 @@ int main(){
     gpio_set_dir(BUTTON_DEC, GPIO_IN);
     gpio_pull_up(BUTTON_DEC);
 
+    stdio_init_all();
+
     bool prev_on_off_state = false;
 
     printf("start loop");
