@@ -1,6 +1,22 @@
 #include "pico/stdlib.h"
 #include "hardware/pwm.h"
 
+#define BUTTON_ON_OFF 7
+#define BUTTON_INC 8
+#define BUTTON_DEC 9
+
+#define LED1 20
+#define LED2 21
+#define LED3 22
+
+void inc_dutycycle(int *dutycycle) {
+    if (*dutycycle < 99) (*dutycycle)++;
+}
+
+void dec_dutycycle(int *dutycycle) {
+    if (*dutycycle > 0) (*dutycycle)--;
+}
+
 uint32_t pwm_set_freq_duty(uint slice_num, uint chan, uint32_t f, int d)
 {
     uint32_t clock = 125000000;
@@ -17,11 +33,38 @@ uint32_t pwm_set_freq_duty(uint slice_num, uint chan, uint32_t f, int d)
 
 int main()
 {
+    int dutycycle = 75;
+
+    // setup led pin 22.
     gpio_set_function(22, GPIO_FUNC_PWM);
     uint slice_num = pwm_gpio_to_slice_num(22);
     uint chan = pwm_gpio_to_channel(22);
-    pwm_set_freq_duty(slice_num, chan, 50, 75);
+    pwm_set_freq_duty(slice_num, chan, 50, dutycycle);
     pwm_set_enabled(slice_num, true);
+
+    // setup button pin 8.
+    gpio_init(BUTTON_INC);
+    gpio_set_dir(BUTTON_INC, GPIO_IN);
+    gpio_pull_up(BUTTON_INC);
+
+    // setup button pin 9.
+    gpio_init(BUTTON_DEC);
+    gpio_set_dir(BUTTON_DEC, GPIO_IN);
+    gpio_pull_up(BUTTON_DEC);
+
+    while (1)
+    {
+        if (gpio_get(BUTTON_INC) == 0) {
+            inc_dutycycle(&dutycycle);
+            pwm_set_freq_duty(slice_num, chan, 50, dutycycle);
+            sleep_ms(100);
+        }
+        if (gpio_get(BUTTON_DEC) == 0) {
+            dec_dutycycle(&dutycycle);
+            pwm_set_freq_duty(slice_num, chan, 50, dutycycle);
+            sleep_ms(100);
+        }
+    }
     return 0;
 }
 
