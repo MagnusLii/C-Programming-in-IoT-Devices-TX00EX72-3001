@@ -12,6 +12,7 @@ int dutycycle = 75;
 bool led_state = false;
 
 void inc_dutycycle(){
+    printf("inc_dutycycle")
     if (dutycycle < 99){
         dutycycle = dutycycle + 10;
         if (dutycycle >= 99)
@@ -22,6 +23,7 @@ void inc_dutycycle(){
 }
 
 void dec_dutycycle(){
+    printf("dec_dutycycle");
     if (dutycycle > 1){
         dutycycle = dutycycle - 10;
         if (dutycycle <= 1)
@@ -45,6 +47,7 @@ uint32_t pwm_set_freq_duty(uint slice_num, uint chan, uint32_t f, int d){
 }
 
 void toggle_leds(){
+    printf("toggle_leds");
     led_state = !led_state;
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
         gpio_set_function(i, GPIO_FUNC_PWM);
@@ -64,6 +67,7 @@ int main(){
 
     // setup led(s).
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
+        printf("setup led %d", i);
         gpio_set_function(i, GPIO_FUNC_PWM);
         uint slice_num = pwm_gpio_to_slice_num(i);
         uint chan = pwm_gpio_to_channel(i);
@@ -87,6 +91,7 @@ int main(){
 
     bool prev_on_off_state = false;
 
+    printf("start loop");
     while (1){
         bool on_off_state = gpio_get(BUTTON_ON_OFF) == 0;
         if (on_off_state && !prev_on_off_state){
