@@ -9,32 +9,28 @@
 #define LED2 21
 #define LED3 22
 
-bool led_state = false;
-uint brightness = 128; // Start at 50% brightness
+int main()
+{
+    
+    gpio_set_function(LED1, GPIO_FUNC_PWM);
+    gpio_set_function(LED2, GPIO_FUNC_PWM);
+    gpio_set_function(LED3, GPIO_FUNC_PWM);
 
-void toggle_leds() {
-    led_state = !led_state;
-    if (led_state) {
-        pwm_set_gpio_level(LED1, brightness);
-        pwm_set_gpio_level(LED2, brightness);
-        pwm_set_gpio_level(LED3, brightness);
-    } else {
-        pwm_set_gpio_level(LED1, 0);
-        pwm_set_gpio_level(LED2, 0);
-        pwm_set_gpio_level(LED3, 0);
-    }
-}
+    uint slice_num1 = pwm_gpio_to_slice_num(LED1);
+    uint slice_num2 = pwm_gpio_to_slice_num(LED2);
+    uint slice_num3 = pwm_gpio_to_slice_num(LED3);
 
-void increase_brightness() {
-    if (brightness < 255) brightness++;
-}
+    pwm_set_enabled(slice_num1, true);
+    pwm_set_enabled(slice_num2, true);
+    pwm_set_enabled(slice_num3, true);
 
-void decrease_brightness() {
-    if (brightness > 0) brightness--;
-}
+    pwm_set_wrap(slice_num1, 255);
+    pwm_set_wrap(slice_num2, 255);
+    pwm_set_wrap(slice_num3, 255);
 
-int main() {
-    stdio_init_all();
+    pwm_set_chan_level(slice_num1, PWM_CHAN_A, 0);
+    pwm_set_chan_level(slice_num2, PWM_CHAN_A, 0);
+    pwm_set_chan_level(slice_num3, PWM_CHAN_A, 0);
 
     // Initialize buttons
     gpio_init(BUTTON_ON_OFF);
@@ -75,3 +71,4 @@ int main() {
 
     return 0;
 }
+
