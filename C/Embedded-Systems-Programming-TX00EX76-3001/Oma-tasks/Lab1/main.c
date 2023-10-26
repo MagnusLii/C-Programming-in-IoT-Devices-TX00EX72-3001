@@ -1,5 +1,6 @@
 #include "pico/stdlib.h"
 #include "hardware/pwm.h"
+#include <stdio.h>
 
 #define BUTTON_ON_OFF 8
 #define BUTTON_INC 9
@@ -12,7 +13,7 @@ int dutycycle = 75;
 bool led_state = false;
 
 void inc_dutycycle(){
-    printf("inc_dutycycle")
+    printf("inc_dutycycle");
     if (dutycycle < 99){
         dutycycle = dutycycle + 10;
         if (dutycycle >= 99)
