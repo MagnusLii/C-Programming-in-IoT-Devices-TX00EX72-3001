@@ -5,20 +5,33 @@
 #define BUTTON_INC 8
 #define BUTTON_DEC 9
 
+#define N_LED 3
+#define STARTING_LED 20
 #define LED1 20
 #define LED2 21
 #define LED3 22
 
-void inc_dutycycle(int *dutycycle) {
-    if (*dutycycle < 99) (*dutycycle)++;
+void inc_dutycycle(int *dutycycle){
+    if (*dutycycle < 99){
+        *dutycycle = *dutycycle + 10;
+        if (*dutycycle >= 99)
+        {
+            *dutycycle = 99;
+        }
+    }
 }
 
-void dec_dutycycle(int *dutycycle) {
-    if (*dutycycle > 0) (*dutycycle)--;
+void dec_dutycycle(int *dutycycle){
+    if (*dutycycle <= 1){
+        *dutycycle = *dutycycle - 10;
+        if (*dutycycle <= 1)
+        {
+            *dutycycle = 1;
+        }
+    }
 }
 
-uint32_t pwm_set_freq_duty(uint slice_num, uint chan, uint32_t f, int d)
-{
+uint32_t pwm_set_freq_duty(uint slice_num, uint chan, uint32_t f, int d){
     uint32_t clock = 125000000;
     uint32_t divider16 = clock / f / 4096 + (clock % (f * 4096) != 0);
     if (divider16 / 16 == 0)
@@ -31,16 +44,17 @@ uint32_t pwm_set_freq_duty(uint slice_num, uint chan, uint32_t f, int d)
     return wrap;
 }
 
-int main()
-{
+int main(){
     int dutycycle = 75;
 
-    // setup led pin 22.
-    gpio_set_function(22, GPIO_FUNC_PWM);
-    uint slice_num = pwm_gpio_to_slice_num(22);
-    uint chan = pwm_gpio_to_channel(22);
-    pwm_set_freq_duty(slice_num, chan, 50, dutycycle);
-    pwm_set_enabled(slice_num, true);
+    // setup led(s).
+    for (int i = STARTING_LED; i < N_LED; i++){
+        gpio_set_function(i, GPIO_FUNC_PWM);
+        uint slice_num = pwm_gpio_to_slice_num(i);
+        uint chan = pwm_gpio_to_channel(22);
+        pwm_set_freq_duty(slice_num, chan, 50, dutycycle);
+        pwm_set_enabled(slice_num, true);
+    }
 
     // setup button pin 8.
     gpio_init(BUTTON_INC);
@@ -52,14 +66,13 @@ int main()
     gpio_set_dir(BUTTON_DEC, GPIO_IN);
     gpio_pull_up(BUTTON_DEC);
 
-    while (1)
-    {
-        if (gpio_get(BUTTON_INC) == 0) {
+    while (1){
+        if (gpio_get(BUTTON_INC) == 0){
             inc_dutycycle(&dutycycle);
             pwm_set_freq_duty(slice_num, chan, 50, dutycycle);
             sleep_ms(100);
         }
-        if (gpio_get(BUTTON_DEC) == 0) {
+        if (gpio_get(BUTTON_DEC) == 0){
             dec_dutycycle(&dutycycle);
             pwm_set_freq_duty(slice_num, chan, 50, dutycycle);
             sleep_ms(100);
@@ -67,4 +80,3 @@ int main()
     }
     return 0;
 }
-
