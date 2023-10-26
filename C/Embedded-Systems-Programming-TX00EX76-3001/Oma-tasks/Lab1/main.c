@@ -22,7 +22,7 @@ void inc_dutycycle(int *dutycycle){
 }
 
 void dec_dutycycle(int *dutycycle){
-    if (*dutycycle <= 1){
+    if (*dutycycle > 1){
         *dutycycle = *dutycycle - 10;
         if (*dutycycle <= 1)
         {
@@ -48,10 +48,10 @@ int main(){
     int dutycycle = 75;
 
     // setup led(s).
-    for (int i = STARTING_LED; i < N_LED; i++){
+    for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
         gpio_set_function(i, GPIO_FUNC_PWM);
         uint slice_num = pwm_gpio_to_slice_num(i);
-        uint chan = pwm_gpio_to_channel(22);
+        uint chan = pwm_gpio_to_channel(i);
         pwm_set_freq_duty(slice_num, chan, 50, dutycycle);
         pwm_set_enabled(slice_num, true);
     }
@@ -68,21 +68,23 @@ int main(){
 
     while (1){
         if (gpio_get(BUTTON_INC) == 0){
-        for (int i = STARTING_LED; i < N_LED; i++){
-            gpio_set_function(i, GPIO_FUNC_PWM);
-            uint slice_num = pwm_gpio_to_slice_num(i);
-            uint chan = pwm_gpio_to_channel(22);
-            pwm_set_freq_duty(slice_num, chan, 50, dutycycle);
-            pwm_set_enabled(slice_num, true);
-        }
+            inc_dutycycle(&dutycycle);
+            for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
+                gpio_set_function(i, GPIO_FUNC_PWM);
+                uint slice_num = pwm_gpio_to_slice_num(i);
+                uint chan = pwm_gpio_to_channel(i);
+                pwm_set_freq_duty(slice_num, chan, 50, dutycycle);
+                pwm_set_enabled(slice_num, true);
+            }
             
             sleep_ms(100);
         }
         if (gpio_get(BUTTON_DEC) == 0){
-            for (int i = STARTING_LED; i < N_LED; i++){
+            dec_dutycycle(&dutycycle);
+            for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
                 gpio_set_function(i, GPIO_FUNC_PWM);
                 uint slice_num = pwm_gpio_to_slice_num(i);
-                uint chan = pwm_gpio_to_channel(22);
+                uint chan = pwm_gpio_to_channel(i);
                 pwm_set_freq_duty(slice_num, chan, 50, dutycycle);
                 pwm_set_enabled(slice_num, true);
             }
