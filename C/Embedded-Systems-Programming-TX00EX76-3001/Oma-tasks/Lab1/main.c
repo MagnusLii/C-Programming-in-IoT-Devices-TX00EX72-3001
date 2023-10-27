@@ -113,7 +113,7 @@ int main(){
             }
             else if (led_state == true){
                 led_state = false;
-                turn_off_leds(&led_state);
+                turn_off_leds();
             }
             while (gpio_get(BUTTON_ON_OFF) == 0);
             printf("Led state: %d\n", led_state);
