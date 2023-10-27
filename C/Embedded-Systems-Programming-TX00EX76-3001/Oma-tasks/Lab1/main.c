@@ -96,14 +96,17 @@ int main(){
     while (1){
         if (gpio_get(BUTTON_ON_OFF) == 0){
             toggle_leds(led_state, dutycycle);
+            while (gpio_get(BUTTON_ON_OFF) == 0);
         }
         if (gpio_get(BUTTON_INC) == 0){
             inc_dutycycle(&dutycycle);
             toggle_leds(led_state, dutycycle);
+            while (gpio_get(BUTTON_INC) == 0);
         }
         if (gpio_get(BUTTON_DEC) == 0){
             dec_dutycycle(&dutycycle);
             toggle_leds(led_state, dutycycle);
+            while (gpio_get(BUTTON_DEC) == 0);
         }
     }
 }
