@@ -92,44 +92,18 @@ int main(){
 
     stdio_init_all();
 
-    bool prev_on_off_state = false;
-
     printf("start loop\n");
     while (1){
-        bool on_off_state = gpio_get(BUTTON_ON_OFF) == 0;
-        if (on_off_state && !prev_on_off_state){
+        if (gpio_get(BUTTON_ON_OFF) != 0){
             toggle_leds(led_state, dutycycle);
-            sleep_ms(1000); // Debounce delay
         }
-        prev_on_off_state = on_off_state;
-
-        if(led_state) {
-            if (gpio_get(BUTTON_INC) == 0){
-                inc_dutycycle(&dutycycle);
-                for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
-                    printf("setup led %d duty up\n", i);
-                    gpio_set_function(i, GPIO_FUNC_PWM);
-                    uint slice_num = pwm_gpio_to_slice_num(i);
-                    uint chan = pwm_gpio_to_channel(i);
-                    pwm_set_freq_duty(slice_num, chan, 50, dutycycle);
-                    pwm_set_enabled(slice_num, true);
-                }
-                
-                sleep_ms(100); // Smooth dimming delay
-            }
-            if (gpio_get(BUTTON_DEC) == 0){
-                dec_dutycycle(&dutycycle);
-                for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
-                    printf("setup led %d duty down\n", i);
-                    gpio_set_function(i, GPIO_FUNC_PWM);
-                    uint slice_num = pwm_gpio_to_slice_num(i);
-                    uint chan = pwm_gpio_to_channel(i);
-                    pwm_set_freq_duty(slice_num, chan, 50, dutycycle);
-                    pwm_set_enabled(slice_num, true);
-                }
-                sleep_ms(100); // Smooth dimming delay
-            }
+        if (gpio_get(BUTTON_INC) != 0){
+            inc_dutycycle(&dutycycle);
+            toggle_leds(led_state, dutycycle);
         }
-    }
+        if (gpio_get(BUTTON_DEC) != 0){
+            dec_dutycycle(&dutycycle);
+            toggle_leds(led_state, dutycycle);
+        }
 }
 
