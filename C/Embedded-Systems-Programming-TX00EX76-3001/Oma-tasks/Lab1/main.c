@@ -53,7 +53,6 @@ void turn_on_leds(const int dutycycle){
         uint slice_num = pwm_gpio_to_slice_num(i);
         uint chan = pwm_gpio_to_channel(i);
         pwm_set_freq_duty(slice_num, chan, 50, dutycycle);
-        pwm_set_enabled(slice_num, true);
     }
 }
 
@@ -64,7 +63,6 @@ void turn_off_leds(){
         uint slice_num = pwm_gpio_to_slice_num(i);
         uint chan = pwm_gpio_to_channel(i);
         pwm_set_freq_duty(slice_num, chan, 50, 0);
-        pwm_set_enabled(slice_num, false);
     }
 }
 
