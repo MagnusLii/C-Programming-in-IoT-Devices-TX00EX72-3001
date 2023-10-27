@@ -107,7 +107,7 @@ int main(){
             if (gpio_get(BUTTON_INC) == 0){
                 inc_dutycycle();
                 for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
-                    printf("setup led %d\n duty up", i);
+                    printf("setup led %d duty up\n", i);
                     gpio_set_function(i, GPIO_FUNC_PWM);
                     uint slice_num = pwm_gpio_to_slice_num(i);
                     uint chan = pwm_gpio_to_channel(i);
@@ -120,7 +120,7 @@ int main(){
             if (gpio_get(BUTTON_DEC) == 0){
                 dec_dutycycle();
                 for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
-                    printf("setup led %d\n duty down", i);
+                    printf("setup led %d duty down\n", i);
                     gpio_set_function(i, GPIO_FUNC_PWM);
                     uint slice_num = pwm_gpio_to_slice_num(i);
                     uint chan = pwm_gpio_to_channel(i);
