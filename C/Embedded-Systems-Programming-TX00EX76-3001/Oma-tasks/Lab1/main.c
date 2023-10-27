@@ -8,11 +8,10 @@
 
 #define N_LED 3
 #define STARTING_LED 20
-
 #define STARTING_DUTYCYCLE 10
 
 void inc_dutycycle(int *dutycycle){
-    printf("inc_dutycycle\n");
+    printf("inc_dutycycle: ");
     if (*dutycycle < 99){
         *dutycycle = *dutycycle + 10;
         if (*dutycycle >= 99)
@@ -20,11 +19,11 @@ void inc_dutycycle(int *dutycycle){
             *dutycycle = 99;
         }
     }
-    printf("dutycycle: %d\n", *dutycycle);
+    printf("%d\n", *dutycycle);
 }
 
 void dec_dutycycle(int *dutycycle){
-    printf("dec_dutycycle\n");
+    printf("dec_dutycycle: ");
     if (*dutycycle > 1){
         *dutycycle = *dutycycle - 10;
         if (*dutycycle <= 1)
@@ -32,7 +31,7 @@ void dec_dutycycle(int *dutycycle){
             *dutycycle = 0;
         }
     }
-    printf("dutycycle: %d\n", *dutycycle);
+    printf("%d\n", *dutycycle);
 }
 
 uint32_t pwm_set_freq_duty(uint slice_num, uint chan, uint32_t f, int d){
@@ -49,7 +48,7 @@ uint32_t pwm_set_freq_duty(uint slice_num, uint chan, uint32_t f, int d){
 }
 
 void turn_on_leds(const int dutycycle){
-    printf("turn_on_leds\n");
+    printf("turn_on_leds: %d\n", dutycycle);
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
         gpio_set_function(i, GPIO_FUNC_PWM);
         uint slice_num = pwm_gpio_to_slice_num(i);
@@ -70,11 +69,11 @@ void turn_off_leds(){
 
 
 int main(){
+    char OnOff[2][10] = {"OFF", "ON"};
     int dutycycle = STARTING_DUTYCYCLE;
 
     // setup led(s).
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
-        printf("setup led %d\n", i);
         gpio_set_function(i, GPIO_FUNC_PWM);
         uint slice_num = pwm_gpio_to_slice_num(i);
         uint chan = pwm_gpio_to_channel(i);
@@ -110,6 +109,7 @@ int main(){
             else if (led_state == true){
                 if (dutycycle == 0){
                     turn_on_leds(50);
+                    dutycycle = 50;
                 }
                 else{
                     led_state = false;
@@ -117,7 +117,7 @@ int main(){
                 }
             }
             while (gpio_get(BUTTON_ON_OFF) == 0);
-            printf("Led state: %d\n", led_state);
+            printf("Led state: %s\n", OnOff[led_state]);
             sleep_ms(250);
         }
         if (led_state == true && gpio_get(BUTTON_INC) == 0){
