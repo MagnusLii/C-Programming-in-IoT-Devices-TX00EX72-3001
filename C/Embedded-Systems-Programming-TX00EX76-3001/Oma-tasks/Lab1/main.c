@@ -100,21 +100,28 @@ int main(){
     printf("start loop\n");
     while (1){
         if (gpio_get(BUTTON_ON_OFF) == 0){
-            sleep(0.1);
-            toggle_leds(&led_state, dutycycle);
+            sleep_ms(150);
+            if (led_state == false){
+                led_state = true;
+                turn_on_leds(&led_state, dutycycle);
+            }
+            else if (led_state == true){
+                led_state = false;
+                turn_off_leds(&led_state);
+            }
             while (gpio_get(BUTTON_ON_OFF) == 0);
             printf("Led state: %d\n", led_state);
         }
         if (led_state == true && gpio_get(BUTTON_INC) == 0){
-            sleep(0.1);
+            sleep_ms(150);
             inc_dutycycle(&dutycycle);
-            toggle_leds(&led_state, dutycycle);
+            turn_on_leds(&led_state, dutycycle);
             while (gpio_get(BUTTON_INC) == 0);
         }
         if (led_state == true && gpio_get(BUTTON_DEC) == 0){
-            sleep(0.1);
+            sleep_ms(150);
             dec_dutycycle(&dutycycle);
-            toggle_leds(&led_state, dutycycle);
+            turn_on_leds(&led_state, dutycycle);
             while (gpio_get(BUTTON_DEC) == 0);
         }
     }
