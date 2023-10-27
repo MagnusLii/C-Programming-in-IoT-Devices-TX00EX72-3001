@@ -96,7 +96,7 @@ int main(){
     while (1){
         if (gpio_get(BUTTON_ON_OFF) == 0){
             printf("Led state: %d\n", led_state);
-            toggle_leds(led_state, dutycycle);
+            toggle_leds(&led_state, dutycycle);
             while (gpio_get(BUTTON_ON_OFF) == 0);
         }
         if (led_state == true && gpio_get(BUTTON_INC) == 0){
