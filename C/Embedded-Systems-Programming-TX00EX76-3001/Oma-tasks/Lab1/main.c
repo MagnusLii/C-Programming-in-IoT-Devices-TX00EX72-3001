@@ -9,29 +9,28 @@
 #define N_LED 3
 #define STARTING_LED 20
 
-int dutycycle = 75;
-bool led_state = false;
-
-void inc_dutycycle(){
+void inc_dutycycle(*dutycycle){
     printf("inc_dutycycle\n");
-    if (dutycycle < 99){
-        dutycycle = dutycycle + 10;
-        if (dutycycle >= 99)
+    if (*dutycycle < 99){
+        *dutycycle = *dutycycle + 10;
+        if (*dutycycle >= 99)
         {
-            dutycycle = 99;
+            *dutycycle = 99;
         }
     }
+    printf("dutycycle: %d\n", *dutycycle);
 }
 
-void dec_dutycycle(){
+void dec_dutycycle(*dutycycle){
     printf("dec_dutycycle\n");
-    if (dutycycle > 1){
-        dutycycle = dutycycle - 10;
-        if (dutycycle <= 1)
+    if (*dutycycle > 1){
+        *dutycycle = *dutycycle - 10;
+        if (*dutycycle <= 1)
         {
-            dutycycle = 0;
+            *dutycycle = 0;
         }
     }
+    printf("dutycycle: %d\n", *dutycycle);
 }
 
 uint32_t pwm_set_freq_duty(uint slice_num, uint chan, uint32_t f, int d){
@@ -47,7 +46,7 @@ uint32_t pwm_set_freq_duty(uint slice_num, uint chan, uint32_t f, int d){
     return wrap;
 }
 
-void toggle_leds(){
+void toggle_leds(bool led_state, const int dutycycle){
     printf("toggle_leds\n");
     led_state = !led_state;
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
@@ -65,6 +64,7 @@ void toggle_leds(){
 
 int main(){
     int dutycycle = 75;
+    bool led_state = false;
 
     // setup led(s).
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
@@ -98,14 +98,14 @@ int main(){
     while (1){
         bool on_off_state = gpio_get(BUTTON_ON_OFF) == 0;
         if (on_off_state && !prev_on_off_state){
-            toggle_leds();
+            toggle_leds(led_state, dutycycle);
             sleep_ms(1000); // Debounce delay
         }
         prev_on_off_state = on_off_state;
 
         if(led_state) {
             if (gpio_get(BUTTON_INC) == 0){
-                inc_dutycycle();
+                inc_dutycycle(&dutycycle);
                 for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
                     printf("setup led %d duty up\n", i);
                     gpio_set_function(i, GPIO_FUNC_PWM);
@@ -118,7 +118,7 @@ int main(){
                 sleep_ms(100); // Smooth dimming delay
             }
             if (gpio_get(BUTTON_DEC) == 0){
-                dec_dutycycle();
+                dec_dutycycle(&dutycycle);
                 for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
                     printf("setup led %d duty down\n", i);
                     gpio_set_function(i, GPIO_FUNC_PWM);
@@ -130,8 +130,6 @@ int main(){
                 sleep_ms(100); // Smooth dimming delay
             }
         }
-        
     }
-    
 }
 
