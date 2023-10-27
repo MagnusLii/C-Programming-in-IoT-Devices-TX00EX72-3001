@@ -97,7 +97,7 @@ int main(){
         if (gpio_get(BUTTON_ON_OFF) == 0){
             toggle_leds(led_state, dutycycle);
         }
-        if (gpio_get(BUTTON_INC) ?= 0){
+        if (gpio_get(BUTTON_INC) == 0){
             inc_dutycycle(&dutycycle);
             toggle_leds(led_state, dutycycle);
         }
