@@ -103,7 +103,7 @@ int main(){
             sleep_ms(150);
             if (led_state == false){
                 led_state = true;
-                turn_on_leds(&led_state, dutycycle);
+                turn_on_leds(dutycycle);
             }
             else if (led_state == true){
                 led_state = false;
@@ -115,13 +115,13 @@ int main(){
         if (led_state == true && gpio_get(BUTTON_INC) == 0){
             sleep_ms(150);
             inc_dutycycle(&dutycycle);
-            turn_on_leds(&led_state, dutycycle);
+            turn_on_leds(dutycycle);
             while (gpio_get(BUTTON_INC) == 0);
         }
         if (led_state == true && gpio_get(BUTTON_DEC) == 0){
             sleep_ms(150);
             dec_dutycycle(&dutycycle);
-            turn_on_leds(&led_state, dutycycle);
+            turn_on_leds(dutycycle);
             while (gpio_get(BUTTON_DEC) == 0);
         }
     }
