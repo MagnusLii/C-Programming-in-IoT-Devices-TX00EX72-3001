@@ -9,37 +9,36 @@
 #define N_LED 3
 #define STARTING_LED 20
 #define STARTING_DUTYCYCLE 10
+#define LED_DUTYCYCLE_STEP 10
+#define LED_DUTYCYCLE_MAX 99
+#define LED_DUTYCYCLE_MIN 1
 
 void inc_dutycycle(int *dutycycle){
-    printf("inc_dutycycle: ");
-    if (*dutycycle < 99){
-        *dutycycle = *dutycycle + 10;
-        if (*dutycycle >= 99)
+    if (*dutycycle < LED_DUTYCYCLE_MAX){
+        *dutycycle = *dutycycle + LED_DUTYCYCLE_STEP;
+        if (*dutycycle > LED_DUTYCYCLE_MAX)
         {
-            *dutycycle = 99;
+            *dutycycle = LED_DUTYCYCLE_MAX;
         }
     }
-    printf("%d\n", *dutycycle);
 }
 
 void dec_dutycycle(int *dutycycle){
-    printf("dec_dutycycle: ");
-    if (*dutycycle > 1){
-        *dutycycle = *dutycycle - 10;
-        if (*dutycycle <= 1)
+    if (*dutycycle > LED_DUTYCYCLE_MIN){
+        *dutycycle = *dutycycle - LED_DUTYCYCLE_STEP;
+        if (*dutycycle < LED_DUTYCYCLE_MIN)
         {
             *dutycycle = 0;
         }
     }
-    printf("%d\n", *dutycycle);
 }
 
 uint32_t pwm_set_freq_duty(uint slice_num, uint chan, uint32_t f, int d){
     uint32_t clock = 125000000;
     uint32_t divider16 = clock / f / 4096 + (clock % (f * 4096) != 0);
-    if (divider16 / 16 == 0)
+    if (divider16 / 16 == 0){
         divider16 = 16;
-
+    }
     uint32_t wrap = clock * 16 / divider16 / f - 1;
     pwm_set_clkdiv_int_frac(slice_num, divider16 / 16, divider16 & 0xF);
     pwm_set_wrap(slice_num, wrap);
