@@ -46,14 +46,14 @@ uint32_t pwm_set_freq_duty(uint slice_num, uint chan, uint32_t f, int d){
     return wrap;
 }
 
-void toggle_leds(bool led_state, const int dutycycle){
+void toggle_leds(bool *led_state, const int dutycycle){
     printf("toggle_leds\n");
-    led_state = !led_state;
+    *led_state = !*led_state;
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
         gpio_set_function(i, GPIO_FUNC_PWM);
         uint slice_num = pwm_gpio_to_slice_num(i);
         uint chan = pwm_gpio_to_channel(i);
-        if(led_state) {
+        if(*led_state) {
             pwm_set_freq_duty(slice_num, chan, 50, dutycycle);
             pwm_set_enabled(slice_num, true);
         } else {
@@ -95,15 +95,16 @@ int main(){
     printf("start loop\n");
     while (1){
         if (gpio_get(BUTTON_ON_OFF) == 0){
+            printf("Led state: %d\n", led_state);
             toggle_leds(led_state, dutycycle);
             while (gpio_get(BUTTON_ON_OFF) == 0);
         }
-        if (gpio_get(BUTTON_INC) == 0){
+        if (led_state == true %% gpio_get(BUTTON_INC) == 0){
             inc_dutycycle(&dutycycle);
             toggle_leds(led_state, dutycycle);
             while (gpio_get(BUTTON_INC) == 0);
         }
-        if (gpio_get(BUTTON_DEC) == 0){
+        if (led_state == true %% gpio_get(BUTTON_DEC) == 0){
             dec_dutycycle(&dutycycle);
             toggle_leds(led_state, dutycycle);
             while (gpio_get(BUTTON_DEC) == 0);
