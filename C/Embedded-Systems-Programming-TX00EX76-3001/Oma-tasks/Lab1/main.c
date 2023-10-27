@@ -9,7 +9,7 @@
 #define N_LED 3
 #define STARTING_LED 20
 
-void inc_dutycycle(*dutycycle){
+void inc_dutycycle(int *dutycycle){
     printf("inc_dutycycle\n");
     if (*dutycycle < 99){
         *dutycycle = *dutycycle + 10;
@@ -21,7 +21,7 @@ void inc_dutycycle(*dutycycle){
     printf("dutycycle: %d\n", *dutycycle);
 }
 
-void dec_dutycycle(*dutycycle){
+void dec_dutycycle(int *dutycycle){
     printf("dec_dutycycle\n");
     if (*dutycycle > 1){
         *dutycycle = *dutycycle - 10;
