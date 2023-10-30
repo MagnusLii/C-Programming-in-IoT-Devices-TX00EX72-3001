@@ -8,10 +8,23 @@
 
 #define N_LED 3
 #define STARTING_LED 20
-#define STARTING_DUTYCYCLE 10
-#define LED_DUTYCYCLE_STEP 10
-#define LED_DUTYCYCLE_MAX 99
+#define STARTING_DUTYCYCLE 200
+#define LED_DUTYCYCLE_STEP 100
+#define LED_DUTYCYCLE_MAX 999
 #define LED_DUTYCYCLE_MIN 1
+
+void setup_pwm(uint gpio_pin) {
+    uint slice_num = pwm_gpio_to_slice_num(gpio_pin);
+    uint channel = pwm_gpio_to_channel(gpio_pin);
+    pwm_set_enabled(slice_num, false);
+    pwm_config config = pwm_get_default_config();
+    pwm_config_set_clkdiv_int(&config, 125);
+    pwm_config_set_wrap(&config, 1000); // 1kHz
+    pwm_init(slice_num, &config, false);
+    pwm_set_chan_level(slice_num, channel, 500); // 50% duty cycle
+    gpio_set_function(gpio_pin, GPIO_FUNC_PWM);
+    pwm_set_enabled(slice_num, true);
+}
 
 void inc_dutycycle(int *dutycycle){
     if (*dutycycle < LED_DUTYCYCLE_MAX){
@@ -33,17 +46,8 @@ void dec_dutycycle(int *dutycycle){
     }
 }
 
-uint32_t pwm_set_freq_duty(uint slice_num, uint chan, uint32_t f, int dutycycle){
-    uint32_t clock = 125000000;
-    uint32_t divider16 = clock / f / 4096 + (clock % (f * 4096) != 0);
-    if (divider16 / 16 == 0){
-        divider16 = 16;
-    }
-    uint32_t wrap = clock * 16 / divider16 / f - 1;
-    pwm_set_clkdiv_int_frac(slice_num, divider16 / 16, divider16 & 0xF);
-    pwm_set_wrap(slice_num, wrap);
-    pwm_set_chan_level(slice_num, chan, wrap * d / 100);
-    return wrap;
+void pwm_set_freq_duty(uint slice_num, uint chan, int dutycycle){
+    pwm_set_chan_level(slice_num, chan, dutycycle);
 }
 
 void turn_on_leds(const int dutycycle){
@@ -52,7 +56,7 @@ void turn_on_leds(const int dutycycle){
         gpio_set_function(i, GPIO_FUNC_PWM);
         uint slice_num = pwm_gpio_to_slice_num(i);
         uint chan = pwm_gpio_to_channel(i);
-        pwm_set_freq_duty(slice_num, chan, 50, dutycycle);
+        pwm_set_freq_duty(slice_num, chan, dutycycle);
     }
 }
 
@@ -62,7 +66,7 @@ void turn_off_leds(){
         gpio_set_function(i, GPIO_FUNC_PWM);
         uint slice_num = pwm_gpio_to_slice_num(i);
         uint chan = pwm_gpio_to_channel(i);
-        pwm_set_freq_duty(slice_num, chan, 50, 0);
+        pwm_set_freq_duty(slice_num, chan, 0);
     }
 }
 
@@ -73,11 +77,17 @@ int main(){
 
     // setup led(s).
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
-        gpio_set_function(i, GPIO_FUNC_PWM);
         uint slice_num = pwm_gpio_to_slice_num(i);
         uint chan = pwm_gpio_to_channel(i);
-        pwm_set_freq_duty(slice_num, chan, 50, dutycycle);
+        pwm_set_enabled(slice_num, false);
+        pwm_config config = pwm_get_default_config();
+        pwm_config_set_clkdiv_int(&config, 125);
+        pwm_config_set_wrap(&config, 1000); // 1kHz
+        pwm_init(slice_num, &config, false);
+        pwm_set_chan_level(slice_num, chan, 500); // 50% duty cycle
+        gpio_set_function(i, GPIO_FUNC_PWM);
         pwm_set_enabled(slice_num, true);
+        pwm_set_freq_duty(slice_num, chan, dutycycle);
     }
     bool led_state = true;
 
@@ -107,8 +117,8 @@ int main(){
             }
             else if (led_state == true){
                 if (dutycycle == 0){
-                    turn_on_leds(50);
-                    dutycycle = 50;
+                    turn_on_leds(500);
+                    dutycycle = 500;
                 }
                 else{
                     led_state = false;
