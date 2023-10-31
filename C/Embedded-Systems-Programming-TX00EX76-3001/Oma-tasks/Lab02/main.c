@@ -66,6 +66,7 @@ void gpio_callback(uint gpio, uint32_t events){
         }
         status_changed = true;
     } else if (gpio == ROT_SW && led_status_changed == false){
+        sleep_ms(100)
         led_state = !led_state;
         led_status_changed = true;
     }
@@ -107,7 +108,6 @@ int main(){
     stdio_init_all();
 
     while (1) {
-        sleep_ms(100);
         if (status_changed == true){
             change_bright();
             printf("Brightness: %d\n", brightness);
