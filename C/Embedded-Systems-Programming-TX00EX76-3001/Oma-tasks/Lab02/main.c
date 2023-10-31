@@ -54,7 +54,6 @@ void gpio_callback2(uint gpio, uint32_t events){
 }
 
 void gpio_callback(uint gpio, uint32_t events){
-
     if (gpio == ROT_A){
         if (gpio_get(ROT_B)) {
             if (brightness > LED_BRIGHT_MIN){
@@ -105,25 +104,32 @@ int main(){
     gpio_set_irq_enabled_with_callback(ROT_A, GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
     gpio_set_irq_enabled_with_callback(ROT_SW, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
-    stdio_init_all();
-
     bool button_state = gpio_get(ROT_SW);
     bool rot_a_state = gpio_get(ROT_A);
+    int button_counter = 0;
+    bool previous_status = false;
 
     while (1) {
         button_state = gpio_get(ROT_SW);
         rot_a_state = gpio_get(ROT_A);
 
-        if (status_changed == true && rot_a_state == gpio_get(ROT_A)){
+
+        if (status_changed == true){
             change_bright();
             printf("Brightness: %d\n", brightness);
             status_changed = false;
         }
-        if (led_status_changed == true && button_state == false){
+        if (led_status_changed == true && button_counter > 5){
             while (gpio_get(ROT_SW) == false);  // wait for button release
             toggle_leds();
             printf("LEDs: %s\n", OnOff[led_state]);
             led_status_changed = false;
+        }
+        if (gpio_get(ROT_SW) == previous_status){
+            button_counter++;
+        } else {
+            previous_status = gpio_get(ROT_SW);
+            button_counter = 0;
         }
         sleep_ms(100);
     }
