@@ -82,7 +82,6 @@ void gpio_callback(uint gpio, uint32_t events){
     } 
     
     else if (gpio == ROT_SW && led_status_changed == false){
-        led_state = !led_state;
         led_status_changed = true;
 
         //clear release debounce.
