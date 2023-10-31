@@ -107,6 +107,7 @@ int main(){
                 pullup_counter = 0;
             }
         }
+
         if (status_changed == true){
             change_bright();
             printf("Brightness: %d\n", brightness);
