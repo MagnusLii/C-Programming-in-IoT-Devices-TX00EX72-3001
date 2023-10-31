@@ -119,8 +119,8 @@ int main(){
 
     stdio_init_all();
 
-    int button_counter = 0;
-    bool previous_status = false;
+    //int button_counter = 0;
+    //bool previous_status = false;
     while (1) {
 
         if (status_changed == true){
@@ -128,7 +128,7 @@ int main(){
             printf("Brightness: %d\n", brightness);
             status_changed = false;
         }
-        if (led_status_changed == true && button_counter > 5){
+        if (led_status_changed == true ){
             while (gpio_get(ROT_SW) == false);  // wait for button release
             toggle_leds();
             printf("LEDs: %s\n", OnOff[led_state]);
