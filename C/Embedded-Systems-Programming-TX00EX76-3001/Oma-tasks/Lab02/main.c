@@ -1,5 +1,6 @@
 #include "pico/stdlib.h"
 #include "hardware/pwm.h"
+#include "util/queue.h"
 #include <stdio.h>
 
 #define ROT_A 10
@@ -112,7 +113,7 @@ int main(){
 
     stdio_init_all();
 
-    queue_init(&events, sizeof(int), 100);
+    //queue_init(&events, sizeof(int), 100);
 
     while (1) {
         if (status_changed == true){
