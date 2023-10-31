@@ -43,7 +43,6 @@ void toggle_leds(){
 }
 
 void gpio_callback(uint gpio, uint32_t events){
-    int pullup_counter = 0;
     printf("callback by gpio %d\n", gpio);
 
     if (gpio == ROT_A){
@@ -60,16 +59,10 @@ void gpio_callback(uint gpio, uint32_t events){
     } else if (gpio == ROT_SW && led_status_changed == false){
         led_state = !led_state;
         led_status_changed = true;
-
-        while (pullup_counter < 1000000){
-            if (gpio_get(ROT_SW) == true){
-                pullup_counter++;
-            } else {
-                pullup_counter = 0;
-            }
-        }
     }
 }
+
+int pullup_counter = 0;
 
 int main(){
     char OnOff[2][10] = {"OFF", "ON"};
@@ -77,16 +70,16 @@ int main(){
     // setup led(s).
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
         uint slice_num = pwm_gpio_to_slice_num(i);
-        //uint chan = pwm_gpio_to_channel(i);
+        uint chan = pwm_gpio_to_channel(i);
         pwm_set_enabled(slice_num, false);
         pwm_config config = pwm_get_default_config();
         pwm_config_set_clkdiv_int(&config, 125);
         pwm_config_set_wrap(&config, 1000); // 1kHz
         pwm_init(slice_num, &config, false);
-        //pwm_set_chan_level(slice_num, chan, 500); // 50% duty cycle
+        pwm_set_chan_level(slice_num, chan, 500); // 50% duty cycle
         gpio_set_function(i, GPIO_FUNC_PWM);
+
     }
-    change_bright(); // Turn leds on at start.
 
     // setup button pin for on/off.
     gpio_init(ROT_SW);
@@ -116,8 +109,14 @@ int main(){
             toggle_leds();
             printf("LEDs: %s\n", OnOff[led_state]);
             led_status_changed = false;
+            while (pullup_counter < 500000){
+                if (gpio_get(ROT_SW) == true){
+                    pullup_counter++;
+                } else {
+                    pullup_counter = 0;
+                }
+            }
         }
-        // handle only one interupt here
     }
     return 0;
 }
