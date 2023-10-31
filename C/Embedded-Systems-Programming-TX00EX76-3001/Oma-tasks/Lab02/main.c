@@ -75,7 +75,7 @@ void gpio_callback(uint gpio, uint32_t events){
         led_status_changed = true;
 
         while (pullup_counter < 40){
-            if (gpio_get(ROT_SW) == false){
+            if (gpio_get(ROT_SW) == true){
                 pullup_counter++;
             } else {
                 pullup_counter = 0;
@@ -134,7 +134,7 @@ int main(){
             counter_since_button_press = 0;
         }
 
-        if (gpio_get(ROT_SW) == false){
+        if (gpio_get(ROT_SW) == true){
             counter_since_button_press++;
         }
         else {
