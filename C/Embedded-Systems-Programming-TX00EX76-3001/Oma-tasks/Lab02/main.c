@@ -74,13 +74,12 @@ void gpio_callback(uint gpio, uint32_t events){
         led_state = !led_state;
         led_status_changed = true;
 
-        while (pullup_counter < 40){
+        while (pullup_counter < 1000000){
             if (gpio_get(ROT_SW) == true){
                 pullup_counter++;
             } else {
                 pullup_counter = 0;
             }
-            sleep_ms(1);
         }
     }
 }
