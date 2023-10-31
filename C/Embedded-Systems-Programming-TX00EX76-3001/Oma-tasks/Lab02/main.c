@@ -17,23 +17,25 @@ volatile uint brightness = 500;
 volatile bool status_changed = false;
 volatile bool led_status_changed = false;
 
-void turn_on_leds(const int dutycycle){
-    printf("turn_on_leds: %d\n", dutycycle);
+void change_bright(){
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
         gpio_set_function(i, GPIO_FUNC_PWM);
         uint slice_num = pwm_gpio_to_slice_num(i);
         uint chan = pwm_gpio_to_channel(i);
-        pwm_set_chan_level(slice_num, chan, dutycycle);
+        pwm_set_chan_level(slice_num, chan, brightness);
     }
 }
 
-void turn_off_leds(){
-    printf("turn_off_leds\n");
+void toggle_leds(){
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
         gpio_set_function(i, GPIO_FUNC_PWM);
         uint slice_num = pwm_gpio_to_slice_num(i);
         uint chan = pwm_gpio_to_channel(i);
-        pwm_set_chan_level(slice_num, chan, 0);
+        if (led_state == true ){
+            pwm_set_chan_level(slice_num, chan, brightness);
+        } else {
+            pwm_set_chan_level(slice_num, chan, 0);
+        }
     }
 }
 
@@ -54,12 +56,12 @@ void gpio_callback2(uint gpio, uint32_t events){
 void gpio_callback(uint gpio, uint32_t events){
     if (gpio == ROT_A){
         if (gpio_get(ROT_B)) {
-            if (brightness < LED_BRIGHT_MAX){
-                brightness += LED_BRIGHT_STEP;
-            }
-        } else {
             if (brightness > LED_BRIGHT_MIN){
                 brightness -= LED_BRIGHT_STEP;
+            }
+        } else {
+            if (brightness < LED_BRIGHT_MAX){
+                brightness += LED_BRIGHT_STEP;
             }
         }
         status_changed = true;
@@ -99,22 +101,21 @@ int main(){
     gpio_init(ROT_B);
     gpio_set_dir(ROT_B, GPIO_IN);
 
-    gpio_set_irq_enabled_with_callback(ROT_A, GPIO_IRQ_EDGE_RISE, true, &gpio_callback2);
-    gpio_set_irq_enabled_with_callback(ROT_SW, GPIO_IRQ_EDGE_FALL, true, &gpio_callback2);
+    gpio_set_irq_enabled_with_callback(ROT_A, GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
+    gpio_set_irq_enabled_with_callback(ROT_SW, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
     stdio_init_all();
 
     while (1) {
-        if (led_state == true && status_changed == true) {
-            turn_on_leds(brightness);
-            printf("Status: %s, brightness: %d\n", OnOff[led_state], brightness);
-            status_changed = false;            
-        } else if (led_state == false && led_status_changed == true) {
-            sleep_ms(100);
-            turn_off_leds();
-            printf("Status: %s\n", OnOff[led_state]);
+        if (status_changed == true){
+            change_bright();
+            printf("Brightness: %d\n", brightness);
             status_changed = false;
-            sleep_ms(100);
+        }
+        if (led_status_changed == true){
+            toggle_leds();
+            printf("LEDs: %s\n", OnOff[led_state]);
+            led_status_changed = false;
         }
     }
     return 0;
