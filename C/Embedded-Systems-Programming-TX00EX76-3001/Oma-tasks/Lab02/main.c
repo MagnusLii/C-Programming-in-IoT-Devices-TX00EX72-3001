@@ -46,7 +46,7 @@ void gpio_callback(uint gpio, uint32_t events){
     int debounce_counter = 0;
     int timeout = 0;
 
-    // Set light to 50% if it is off.
+    // Toggle light to 50% if it is off.
     if (brightness == 0 && gpio == ROT_SW){
         brightness = 500;
     }
@@ -66,7 +66,6 @@ void gpio_callback(uint gpio, uint32_t events){
     } 
     
     else if (gpio == ROT_SW && led_status_changed == false){
-        led_state = !led_state;
         led_status_changed = true;
 
         //clear release debounce.
@@ -101,13 +100,11 @@ int main(){
     // setup led(s).
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
         uint slice_num = pwm_gpio_to_slice_num(i);
-        //uint chan = pwm_gpio_to_channel(i);
         pwm_set_enabled(slice_num, false);
         pwm_config config = pwm_get_default_config();
         pwm_config_set_clkdiv_int(&config, 125);
         pwm_config_set_wrap(&config, 1000); // 1kHz
         pwm_init(slice_num, &config, false);
-        //pwm_set_chan_level(slice_num, chan, 500); // 50% duty cycle
         gpio_set_function(i, GPIO_FUNC_PWM);
         pwm_set_enabled(slice_num, true);
     }
@@ -132,7 +129,6 @@ int main(){
     stdio_init_all();
 
     while (1) {
-        //pullup();
         if (status_changed == true){
             change_bright();
             printf("Brightness: %d\n", brightness);
@@ -140,8 +136,8 @@ int main(){
         }
         if (led_status_changed == true){
             toggle_leds();
+            led_state = !led_state;
             printf("LEDs: %s\n", OnOff[led_state]);
-            //pullup();
             led_status_changed = false;
         }
     }
