@@ -54,7 +54,8 @@ void gpio_callback2(uint gpio, uint32_t events){
 }
 
 void gpio_callback(uint gpio, uint32_t events){
-    bool previous_status = false;
+    bool previous_status;
+    int pullup_counter = 0;
     printf("callback by gpio %d\n", gpio);
 
     if (gpio == ROT_A){
@@ -71,7 +72,15 @@ void gpio_callback(uint gpio, uint32_t events){
     } else if (gpio == ROT_SW && led_status_changed == false){
         led_state = !led_state;
         led_status_changed = true;
-        
+
+        while (pullup_counter < 15){
+            previous_status = gpio_get(ROT_SW);
+            if (previous_status == gpio_get(ROT_SW)){
+                pullup_counter++;
+            } else {
+                pullup_counter = 0;
+            }
+        }
     }
 }
 
@@ -125,6 +134,7 @@ int main(){
             printf("LEDs: %s\n", OnOff[led_state]);
             led_status_changed = false;
         }
+        /*
         if (gpio_get(ROT_SW) == previous_status){
             button_counter++;
         } else {
@@ -132,6 +142,7 @@ int main(){
             button_counter = 0;
         }
         sleep_ms(10);
+        */
     }
     return 0;
 }
