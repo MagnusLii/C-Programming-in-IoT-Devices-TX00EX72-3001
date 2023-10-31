@@ -26,22 +26,6 @@ void change_bright(){
     }
 }
 
-void toggle_leds2(){
-    for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
-        gpio_set_function(i, GPIO_FUNC_PWM);
-        uint slice_num = pwm_gpio_to_slice_num(i);
-        uint chan = pwm_gpio_to_channel(i);
-        if (led_state == true ){
-            if (brightness == 0){
-                brightness = 500;
-            }
-            pwm_set_chan_level(slice_num, chan, brightness);
-        } else {
-            pwm_set_chan_level(slice_num, chan, 0);
-        }
-    }
-}
-
 void toggle_leds(){
     // Toggle logic
     if (brightness == 0 && led_state == true){
@@ -59,14 +43,7 @@ void toggle_leds(){
 
 void gpio_callback(uint gpio, uint32_t events){
     int debounce_counter = 0;
-    int timeout = 0;
-
-    // Toggle light to 50% if it is off.
-    if (brightness == 0 && gpio == ROT_SW){
-        brightness = 500;
-    }
     
-
     if (gpio == ROT_A){
         if (gpio_get(ROT_B)) {
             if (brightness > LED_BRIGHT_MIN){
@@ -88,24 +65,10 @@ void gpio_callback(uint gpio, uint32_t events){
         {
             if (gpio_get(ROT_SW) == 1){
                 debounce_counter++;
-                timeout = 0;
             } else {
-                timeout++;
                 debounce_counter = 0;
             }
         }
-    }
-}
-
-void pullup(){
-    int pullup_counter = 0;
-    while (pullup_counter < 3) {
-        if (gpio_get(ROT_SW) == 1){
-            pullup_counter++;
-        } else {
-            pullup_counter = 0;
-        }
-        sleep_ms(100);
     }
 }
 
