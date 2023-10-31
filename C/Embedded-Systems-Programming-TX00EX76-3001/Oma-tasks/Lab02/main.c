@@ -44,6 +44,7 @@ void toggle_leds(){
 
 void gpio_callback(uint gpio, uint32_t events){
     int debounce_counter = 0;
+    int timeout = 0;
     printf("callback by gpio %d\n", gpio);
 
     if (gpio == ROT_A){
@@ -66,13 +67,19 @@ void gpio_callback(uint gpio, uint32_t events){
                 debounce_counter = 0;
             }
         }
-        led_state = !led_state;
-        led_status_changed = true;
         //clear release debounce.
         while (debounce_counter < 100000) {
+            // Toggle led state if successful.
             if (gpio_get(ROT_SW) == 1){
+                led_state = !led_state;
+                led_status_changed = true;
                 debounce_counter++;
+            }
+            // timeout kickout.
+            if (timeout > 1000000){
+                break;
             } else {
+                timeout++;
                 debounce_counter = 0;
             }
         }
