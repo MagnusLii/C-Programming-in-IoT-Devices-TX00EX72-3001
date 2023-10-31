@@ -31,7 +31,7 @@ void toggle_leds(){
         change_bright();
     } else if (led_state == false){
         led_state = true;
-        change_bright
+        change_bright();
     } else if (led_state == true){
         led_state = false;
         for (int led_pin = STARTING_LED; led_pin < STARTING_LED + N_LED; led_pin++){
