@@ -91,9 +91,11 @@ int main(){
             printf("Status: %s, brightness: %d\n", OnOff[led_state], brightness);
             status_changed = false;            
         } else if (!led_state && status_changed == true){
+            sleep_ms(100);
             turn_off_leds();
             printf("Status: %s\n", OnOff[led_state]);
             status_changed = false;
+            sleep_ms(100);
         }
     }
     return 0;
