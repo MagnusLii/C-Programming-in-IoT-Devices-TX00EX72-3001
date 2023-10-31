@@ -1,6 +1,5 @@
 #include "pico/stdlib.h"
 #include "hardware/pwm.h"
-#include "util/queue.h"
 #include <stdio.h>
 
 #define ROT_A 10
@@ -17,13 +16,6 @@ volatile bool led_state = true;
 volatile uint brightness = 500;
 volatile bool status_changed = false;
 volatile bool led_status_changed = false;
-
-static queue_t events;
-
-static void gpio_handler(uint gpio, uint32_t event_mask){
-    int button_value = 1
-    queue_try_add(&events, &button_value);
-}
 
 void change_bright(){
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
@@ -112,8 +104,6 @@ int main(){
     gpio_set_irq_enabled_with_callback(ROT_SW, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
     stdio_init_all();
-
-    //queue_init(&events, sizeof(int), 100);
 
     while (1) {
         if (status_changed == true){
