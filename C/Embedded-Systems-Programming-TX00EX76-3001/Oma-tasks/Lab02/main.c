@@ -75,7 +75,7 @@ void gpio_callback(uint gpio, uint32_t events){
 
         while (pullup_counter < 40){
             previous_status = gpio_get(ROT_SW);
-            if (previous_status == gpio_get(ROT_SW)){
+            if (previous_status == false){
                 pullup_counter++;
             } else {
                 pullup_counter = 0;
