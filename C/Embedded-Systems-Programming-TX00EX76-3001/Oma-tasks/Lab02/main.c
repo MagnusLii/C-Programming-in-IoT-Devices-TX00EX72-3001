@@ -46,6 +46,12 @@ void gpio_callback(uint gpio, uint32_t events){
     int debounce_counter = 0;
     int timeout = 0;
 
+    // Set light to 50% if it is off.
+    if (brightness == 0 && gpio == ROT_SW){
+        brightness = 500;
+    }
+    
+
     if (gpio == ROT_A){
         if (gpio_get(ROT_B)) {
             if (brightness > LED_BRIGHT_MIN){
