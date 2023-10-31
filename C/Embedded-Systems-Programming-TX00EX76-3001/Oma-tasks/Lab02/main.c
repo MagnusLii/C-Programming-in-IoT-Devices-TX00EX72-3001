@@ -26,7 +26,7 @@ void change_bright(){
     }
 }
 
-void toggle_leds(){
+void toggle_leds2(){
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
         gpio_set_function(i, GPIO_FUNC_PWM);
         uint slice_num = pwm_gpio_to_slice_num(i);
@@ -39,6 +39,22 @@ void toggle_leds(){
         } else {
             pwm_set_chan_level(slice_num, chan, 0);
         }
+    }
+}
+
+void toggle_leds(){
+    // Toggle logic
+    if (brightness == 0 && led_state == true){
+        brightness = 500;
+    } else if (led_state == false){
+        led_state = true;
+    } else if (led_state == true){
+        led_state = false;
+    }
+
+    // Magic!
+    for (int led_pin = STARTING_LED; led_pin < STARTING_LED + N_LED; led_pin++){
+        pwm_set_enabled(led_pin, led_state);
     }
 }
 
@@ -66,6 +82,7 @@ void gpio_callback(uint gpio, uint32_t events){
     } 
     
     else if (gpio == ROT_SW && led_status_changed == false){
+        led_state = !led_state;
         led_status_changed = true;
 
         //clear release debounce.
@@ -98,14 +115,14 @@ int main(){
     char OnOff[2][10] = {"OFF", "ON"};
 
     // setup led(s).
-    for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
-        uint slice_num = pwm_gpio_to_slice_num(i);
+    for (int led_pin = STARTING_LED; led_pin < STARTING_LED + N_LED; led_pin++){
+        uint slice_num = pwm_gpio_to_slice_num(led_pin);
         pwm_set_enabled(slice_num, false);
         pwm_config config = pwm_get_default_config();
         pwm_config_set_clkdiv_int(&config, 125);
         pwm_config_set_wrap(&config, 1000); // 1kHz
         pwm_init(slice_num, &config, false);
-        gpio_set_function(i, GPIO_FUNC_PWM);
+        gpio_set_function(led_pin, GPIO_FUNC_PWM);
         pwm_set_enabled(slice_num, true);
     }
     change_bright();
@@ -136,7 +153,6 @@ int main(){
         }
         if (led_status_changed == true){
             toggle_leds();
-            led_state = !led_state;
             printf("LEDs: %s\n", OnOff[led_state]);
             led_status_changed = false;
         }
