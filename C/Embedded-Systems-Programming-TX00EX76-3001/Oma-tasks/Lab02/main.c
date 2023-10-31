@@ -16,6 +16,7 @@ volatile bool led_state = true;
 volatile uint brightness = 500;
 volatile bool status_changed = false;
 volatile bool led_status_changed = false;
+int counter_since_button_press = 0;
 
 void change_bright(){
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
@@ -69,7 +70,7 @@ void gpio_callback(uint gpio, uint32_t events){
             }
         }
         status_changed = true;
-    } else if (gpio == ROT_SW && led_status_changed == false){
+    } else if (gpio == ROT_SW && led_status_changed == false && counter_since_button_press > 40){
         led_state = !led_state;
         led_status_changed = true;
 
@@ -118,6 +119,7 @@ int main(){
     gpio_set_irq_enabled_with_callback(ROT_SW, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
     stdio_init_all();
+
     while (1) {
 
         if (status_changed == true){
@@ -125,11 +127,19 @@ int main(){
             printf("Brightness: %d\n", brightness);
             status_changed = false;
         }
-        if (led_status_changed == true ){
+        if (led_status_changed == true){
             while (gpio_get(ROT_SW) == false);  // wait for button release
             toggle_leds();
             printf("LEDs: %s\n", OnOff[led_state]);
             led_status_changed = false;
+            counter_since_button_press = 0;
+        }
+
+        if (gpio_get(ROT_SW) == false){
+            counter_since_button_press++;
+        }
+        else {
+            counter_since_button_press = 0;
         }
     }
     return 0;
