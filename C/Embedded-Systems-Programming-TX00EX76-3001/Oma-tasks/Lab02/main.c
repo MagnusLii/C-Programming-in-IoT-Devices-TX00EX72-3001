@@ -54,6 +54,8 @@ void gpio_callback2(uint gpio, uint32_t events){
 }
 
 void gpio_callback(uint gpio, uint32_t events){
+    int button_checks = 0;
+    bool button_debounced = false;
     if (gpio == ROT_A){
         if (gpio_get(ROT_B)) {
             if (brightness > LED_BRIGHT_MIN){
@@ -68,6 +70,17 @@ void gpio_callback(uint gpio, uint32_t events){
     } else if (gpio == ROT_SW && led_status_changed == false){
         led_state = !led_state;
         led_status_changed = true;
+        while (button_debounced == false){
+            sleep_ms(50);
+            if (button_checks > 3)
+            {
+                button_debounced = true;
+            }  if (gpio_get(ROT_SW) == 0){
+                button_checks++;
+            } else {
+                button_checks = 0;
+            }
+        }
     }
 }
 
