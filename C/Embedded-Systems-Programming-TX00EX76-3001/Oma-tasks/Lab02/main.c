@@ -100,6 +100,13 @@ int main(){
     stdio_init_all();
 
     while (1) {
+        while (pullup_counter < 500000){
+            if (gpio_get(ROT_SW) == true){
+                pullup_counter++;
+            } else {
+                pullup_counter = 0;
+            }
+        }
         if (status_changed == true){
             change_bright();
             printf("Brightness: %d\n", brightness);
