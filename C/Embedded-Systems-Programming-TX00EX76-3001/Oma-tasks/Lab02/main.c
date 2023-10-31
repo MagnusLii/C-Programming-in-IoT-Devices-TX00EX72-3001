@@ -54,6 +54,9 @@ void gpio_callback2(uint gpio, uint32_t events){
 }
 
 void gpio_callback(uint gpio, uint32_t events){
+
+    printf("callback by gpio %d\n", gpio);
+
     if (gpio == ROT_A){
         if (gpio_get(ROT_B)) {
             if (brightness > LED_BRIGHT_MIN){
