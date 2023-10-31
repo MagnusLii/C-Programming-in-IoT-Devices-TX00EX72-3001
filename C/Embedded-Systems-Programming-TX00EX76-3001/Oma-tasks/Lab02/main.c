@@ -73,6 +73,7 @@ void gpio_callback(uint gpio, uint32_t events){
         while (button_debounced == false){
             if (button_checks > 10)
             {
+                while (gpio_get(ROT_SW) == 0);
                 button_debounced = true;
             }  if (gpio_get(ROT_SW) == 0){
                 button_checks++;
