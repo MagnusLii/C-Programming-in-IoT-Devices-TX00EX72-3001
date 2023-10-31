@@ -43,6 +43,7 @@ void toggle_leds(){
 }
 
 void gpio_callback(uint gpio, uint32_t events){
+    int debounce_counter = 0;
     printf("callback by gpio %d\n", gpio);
 
     if (gpio == ROT_A){
@@ -57,8 +58,24 @@ void gpio_callback(uint gpio, uint32_t events){
         }
         status_changed = true;
     } else if (gpio == ROT_SW && led_status_changed == false){
+        // clear press debounce.
+        while (debounce_counter < 100000) {
+            if (gpio_get(ROT_SW) == 0){
+                debounce_counter++;
+            } else {
+                debounce_counter = 0;
+            }
+        }
         led_state = !led_state;
         led_status_changed = true;
+        //clear release debounce.
+        while (debounce_counter < 100000) {
+            if (gpio_get(ROT_SW) == 1){
+                debounce_counter++;
+            } else {
+                debounce_counter = 0;
+            }
+        }
     }
 }
 
@@ -111,7 +128,7 @@ int main(){
     stdio_init_all();
 
     while (1) {
-        pullup();
+        //pullup();
         if (status_changed == true){
             change_bright();
             printf("Brightness: %d\n", brightness);
@@ -120,7 +137,7 @@ int main(){
         if (led_status_changed == true){
             toggle_leds();
             printf("LEDs: %s\n", OnOff[led_state]);
-            pullup();
+            //pullup();
             led_status_changed = false;
         }
     }
