@@ -54,7 +54,7 @@ void gpio_callback2(uint gpio, uint32_t events){
 }
 
 void gpio_callback(uint gpio, uint32_t events){
-
+    bool previous_status = false;
     printf("callback by gpio %d\n", gpio);
 
     if (gpio == ROT_A){
@@ -71,6 +71,7 @@ void gpio_callback(uint gpio, uint32_t events){
     } else if (gpio == ROT_SW && led_status_changed == false){
         led_state = !led_state;
         led_status_changed = true;
+        
     }
 }
 
@@ -130,7 +131,7 @@ int main(){
             previous_status = gpio_get(ROT_SW);
             button_counter = 0;
         }
-        sleep_ms(100);
+        sleep_ms(10);
     }
     return 0;
 }
