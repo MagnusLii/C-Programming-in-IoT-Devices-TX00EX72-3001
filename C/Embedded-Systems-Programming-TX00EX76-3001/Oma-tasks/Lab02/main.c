@@ -138,10 +138,6 @@ int main(){
                 counter_since_button_press = 15;
             }
         }
-        else {
-            counter_since_button_press = 0;
-        }
-        sleep_ms(1);
     }
     return 0;
 }
