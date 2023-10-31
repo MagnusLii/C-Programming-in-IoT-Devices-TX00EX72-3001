@@ -19,7 +19,6 @@ volatile bool led_status_changed = false;
 
 void change_bright(){
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
-        gpio_set_function(i, GPIO_FUNC_PWM);
         uint slice_num = pwm_gpio_to_slice_num(i);
         uint chan = pwm_gpio_to_channel(i);
         pwm_set_chan_level(slice_num, chan, brightness);
@@ -27,17 +26,20 @@ void change_bright(){
 }
 
 void toggle_leds(){
-    // Toggle logic
-    if (brightness == 0 || led_state == false){
+    if (brightness == 0 && led_state == true){
         brightness = 500;
+        change_bright();
+    } else if (led_state == false){
         led_state = true;
+        change_bright
     } else if (led_state == true){
         led_state = false;
-        brightness = 0;
+        for (int led_pin = STARTING_LED; led_pin < STARTING_LED + N_LED; led_pin++){
+            uint slice_num = pwm_gpio_to_slice_num(led_pin);
+            uint chan = pwm_gpio_to_channel(led_pin);
+            pwm_set_chan_level(slice_num, chan, 0);
+        }
     }
-
-    // Magic!
-    change_bright();
 }
 
 void gpio_callback(uint gpio, uint32_t events){
