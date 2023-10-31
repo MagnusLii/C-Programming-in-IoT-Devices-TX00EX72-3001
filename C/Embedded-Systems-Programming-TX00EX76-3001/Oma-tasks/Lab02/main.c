@@ -78,7 +78,7 @@ int main(){
         pwm_init(slice_num, &config, false);
         pwm_set_chan_level(slice_num, chan, 500); // 50% duty cycle
         gpio_set_function(i, GPIO_FUNC_PWM);
-
+        pwm_set_enabled(slice_num, true);
     }
 
     // setup button pin for on/off.
