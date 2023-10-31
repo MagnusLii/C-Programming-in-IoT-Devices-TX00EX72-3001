@@ -62,7 +62,17 @@ void gpio_callback(uint gpio, uint32_t events){
     }
 }
 
-int pullup_counter = 0;
+voi pullup(){
+    int pullup_counter = 0;
+    while (pullup_counter < 3) {
+        if (gpio_get(ROT_SW) == 1){
+            pullup_counter++;
+        } else {
+            pullup_counter = 0;
+        }
+        sleep_ms(100);
+    }
+}
 
 int main(){
     char OnOff[2][10] = {"OFF", "ON"};
@@ -100,15 +110,7 @@ int main(){
     stdio_init_all();
 
     while (1) {
-        while (pullup_counter < 3){
-            if (gpio_get(ROT_SW) == 1){
-                    pullup_counter++;
-            } else {
-                pullup_counter = 0;
-            }
-            sleep_ms(100);
-        }
-        sleep_ms(150);
+        pullup();
         if (status_changed == true){
             change_bright();
             printf("Brightness: %d\n", brightness);
@@ -116,15 +118,7 @@ int main(){
         }
         if (led_status_changed == true){
             toggle_leds();
-            while (pullup_counter < 3){
-                if (gpio_get(ROT_SW) == 1){
-                    pullup_counter++;
-                } else {
-                    pullup_counter = 0;
-                }
-                sleep_ms(100);
-            }
-            
+            pullup();
             led_status_changed = false;
         }
     }
