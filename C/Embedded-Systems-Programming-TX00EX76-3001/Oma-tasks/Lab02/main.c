@@ -50,12 +50,11 @@ void toggle_leds(){
         led_state = true;
     } else if (led_state == true){
         led_state = false;
+        brightness = 0;
     }
 
     // Magic!
-    for (int led_pin = STARTING_LED; led_pin < STARTING_LED + N_LED; led_pin++){
-        pwm_set_enabled(led_pin, led_state);
-    }
+    change_bright();
 }
 
 void gpio_callback(uint gpio, uint32_t events){
