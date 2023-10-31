@@ -71,9 +71,9 @@ void gpio_callback(uint gpio, uint32_t events){
         led_state = !led_state;
         led_status_changed = true;
         while (button_debounced == false){
-            if (button_checks > 10)
-            {
+            if (button_checks > 10){
                 while (gpio_get(ROT_SW) == 0);
+                printf("Button Released\n")
                 button_debounced = true;
             }  if (gpio_get(ROT_SW) == 0){
                 button_checks++;
