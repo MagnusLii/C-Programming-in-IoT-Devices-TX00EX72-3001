@@ -28,9 +28,8 @@ void change_bright(){
 
 void toggle_leds(){
     // Toggle logic
-    if (brightness == 0 && led_state == true){
+    if (brightness == 0 || led_state == false){
         brightness = 500;
-    } else if (led_state == false){
         led_state = true;
     } else if (led_state == true){
         led_state = false;
