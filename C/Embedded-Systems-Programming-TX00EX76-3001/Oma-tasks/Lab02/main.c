@@ -113,7 +113,7 @@ int main(){
         button_state = gpio_get(ROT_SW);
         rot_a_state = gpio_get(ROT_A);
 
-        if (status_changed == true && rot_a_state == rot_a_state){
+        if (status_changed == true && rot_a_state == gpio_get(ROT_A)){
             change_bright();
             printf("Brightness: %d\n", brightness);
             status_changed = false;
