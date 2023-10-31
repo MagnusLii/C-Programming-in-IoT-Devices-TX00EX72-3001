@@ -40,10 +40,10 @@ void turn_off_leds(){
 void gpio_callback2(uint gpio, uint32_t events){
     if (gpio == ROT_A){
         if (gpio_get(ROT_B)){
-            printf("clockwise\n");
+            printf("counter-clockwise\n");
         }
         else {
-            printf("counter-clockwise\n");
+            printf("clockwise\n");
         }
     }
     else if (gpio == ROT_SW){
@@ -94,12 +94,10 @@ int main(){
     // setup button pin for increase.
     gpio_init(ROT_A);
     gpio_set_dir(ROT_A, GPIO_IN);
-    gpio_pull_up(ROT_A);
 
     // setup button pin for decrease.
     gpio_init(ROT_B);
     gpio_set_dir(ROT_B, GPIO_IN);
-    gpio_pull_up(ROT_B);
 
     gpio_set_irq_enabled_with_callback(ROT_A, GPIO_IRQ_EDGE_RISE, true, &gpio_callback2);
     gpio_set_irq_enabled_with_callback(ROT_SW, GPIO_IRQ_EDGE_FALL, true, &gpio_callback2);
