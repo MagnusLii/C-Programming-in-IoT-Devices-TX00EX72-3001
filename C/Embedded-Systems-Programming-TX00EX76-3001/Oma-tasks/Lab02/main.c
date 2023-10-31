@@ -108,7 +108,6 @@ int main(){
         if (led_status_changed == true){
             toggle_leds();
             printf("LEDs: %s\n", OnOff[led_state]);
-            led_status_changed = false;
             while (pullup_counter < 500000){
                 if (gpio_get(ROT_SW) == true){
                     pullup_counter++;
@@ -116,6 +115,7 @@ int main(){
                     pullup_counter = 0;
                 }
             }
+            led_status_changed = false;
         }
     }
     return 0;
