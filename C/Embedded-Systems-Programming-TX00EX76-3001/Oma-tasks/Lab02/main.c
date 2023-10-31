@@ -73,7 +73,7 @@ void gpio_callback(uint gpio, uint32_t events){
         led_state = !led_state;
         led_status_changed = true;
 
-        while (pullup_counter < 15){
+        while (pullup_counter < 40){
             previous_status = gpio_get(ROT_SW);
             if (previous_status == gpio_get(ROT_SW)){
                 pullup_counter++;
@@ -118,9 +118,6 @@ int main(){
     gpio_set_irq_enabled_with_callback(ROT_SW, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
     stdio_init_all();
-
-    //int button_counter = 0;
-    //bool previous_status = false;
     while (1) {
 
         if (status_changed == true){
@@ -134,15 +131,6 @@ int main(){
             printf("LEDs: %s\n", OnOff[led_state]);
             led_status_changed = false;
         }
-        /*
-        if (gpio_get(ROT_SW) == previous_status){
-            button_counter++;
-        } else {
-            previous_status = gpio_get(ROT_SW);
-            button_counter = 0;
-        }
-        sleep_ms(10);
-        */
     }
     return 0;
 }
