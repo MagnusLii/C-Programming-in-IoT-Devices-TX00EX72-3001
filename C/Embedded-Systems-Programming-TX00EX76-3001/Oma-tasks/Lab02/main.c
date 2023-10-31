@@ -104,15 +104,11 @@ int main(){
     gpio_set_irq_enabled_with_callback(ROT_A, GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
     gpio_set_irq_enabled_with_callback(ROT_SW, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
-    bool button_state = gpio_get(ROT_SW);
-    bool rot_a_state = gpio_get(ROT_A);
+    gpio_init_all();
+    
     int button_counter = 0;
     bool previous_status = false;
-
     while (1) {
-        button_state = gpio_get(ROT_SW);
-        rot_a_state = gpio_get(ROT_A);
-
 
         if (status_changed == true){
             change_bright();
