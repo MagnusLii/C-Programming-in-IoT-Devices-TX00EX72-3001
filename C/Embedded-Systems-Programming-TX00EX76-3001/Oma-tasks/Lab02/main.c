@@ -100,6 +100,14 @@ int main(){
     stdio_init_all();
 
     while (1) {
+        while (pullup_counter < 3){
+            if (gpio_get(ROT_SW) == 1){
+                    pullup_counter++;
+            } else {
+                pullup_counter = 0;
+            }
+            sleep_ms(100);
+        }
         sleep_ms(150);
         if (status_changed == true){
             change_bright();
@@ -108,14 +116,15 @@ int main(){
         }
         if (led_status_changed == true){
             toggle_leds();
-            printf("LEDs: %s\n", OnOff[led_state]);
-            while (pullup_counter < 500000){
-                if (gpio_get(ROT_SW) == true){
+            while (pullup_counter < 3){
+                if (gpio_get(ROT_SW) == 1){
                     pullup_counter++;
                 } else {
                     pullup_counter = 0;
                 }
+                sleep_ms(100);
             }
+            
             led_status_changed = false;
         }
     }
