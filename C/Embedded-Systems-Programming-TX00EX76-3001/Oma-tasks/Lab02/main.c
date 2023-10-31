@@ -10,10 +10,12 @@
 #define STARTING_LED 20
 #define LED_BRIGHT_MAX 999
 #define LED_BRIGHT_MIN 0
+#define LED_BRIGHT_STEP 10
 
 volatile bool led_state = true;
 volatile uint brightness = 500;
 volatile bool status_changed = false;
+volatile bool led_status_changed = false;
 
 void turn_on_leds(const int dutycycle){
     printf("turn_on_leds: %d\n", dutycycle);
@@ -35,17 +37,36 @@ void turn_off_leds(){
     }
 }
 
+void gpio_callback2(uint gpio, uint32_t events){
+    if (gpio == ROT_A){
+        if (gpio_get(ROT_B)){
+            printf("clockwise\n");
+        }
+        else {
+            printf("counter-clockwise\n");
+        }
+    }
+    else if (gpio == ROT_SW){
+        printf("button pressed\n");
+    }
+}
+
 void gpio_callback(uint gpio, uint32_t events){
     if (gpio == ROT_A){
         if (gpio_get(ROT_B)) {
-            if (brightness < LED_BRIGHT_MAX) brightness++;
+            if (brightness < LED_BRIGHT_MAX){
+                brightness += LED_BRIGHT_STEP;
+            }
         } else {
-            if (brightness > LED_BRIGHT_MIN) brightness--;
+            if (brightness > LED_BRIGHT_MIN){
+                brightness -= LED_BRIGHT_STEP;
+            }
         }
-    } else if (gpio == ROT_SW){
+        status_changed = true;
+    } else if (gpio == ROT_SW && led_status_changed == false){
         led_state = !led_state;
+        led_status_changed = true;
     }
-    status_changed = true;
 }
 
 int main(){
@@ -80,17 +101,17 @@ int main(){
     gpio_set_dir(ROT_B, GPIO_IN);
     gpio_pull_up(ROT_B);
 
-    gpio_set_irq_enabled_with_callback(ROT_A, GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
-    gpio_set_irq_enabled_with_callback(ROT_SW, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+    gpio_set_irq_enabled_with_callback(ROT_A, GPIO_IRQ_EDGE_RISE, true, &gpio_callback2);
+    gpio_set_irq_enabled_with_callback(ROT_SW, GPIO_IRQ_EDGE_FALL, true, &gpio_callback2);
 
     stdio_init_all();
 
     while (1) {
-        if (led_state && status_changed == true) {
+        if (led_state == true && status_changed == true) {
             turn_on_leds(brightness);
             printf("Status: %s, brightness: %d\n", OnOff[led_state], brightness);
             status_changed = false;            
-        } else if (!led_state && status_changed == true){
+        } else if (led_state == false && led_status_changed == true) {
             sleep_ms(100);
             turn_off_leds();
             printf("Status: %s\n", OnOff[led_state]);
