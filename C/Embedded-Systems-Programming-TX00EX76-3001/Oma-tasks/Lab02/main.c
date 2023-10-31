@@ -44,8 +44,18 @@ void toggle_leds(){
 
 void gpio_callback(uint gpio, uint32_t events){
     int debounce_counter = 0;
-    int timeout = 0;
-    printf("callback by gpio %d\n", gpio);
+    bool prev_state = gpio_get(ROT_SW);
+
+    while (debounce_counter < 100000)
+    {
+        if (gpio_get(ROT_SW) == prev_state){
+            debounce_counter++;
+        } else {
+            prev_state = !prev_state;
+            debounce_counter = 0;
+        }
+    }
+    
 
     if (gpio == ROT_A){
         if (gpio_get(ROT_B)) {
@@ -58,28 +68,31 @@ void gpio_callback(uint gpio, uint32_t events){
             }
         }
         status_changed = true;
-    } else if (gpio == ROT_SW && led_status_changed == false){
-        // clear press debounce.
-        while (debounce_counter < 100000) {
-            if (gpio_get(ROT_SW) == 0){
+    } 
+    
+    
+    else if (gpio == ROT_SW && led_status_changed == false){
+        //clear press debounce.
+        while (debounce_counter < 100000)
+        {
+            if (gpio_get(ROT_SW) == prev_state){
                 debounce_counter++;
             } else {
+                prev_state = !prev_state;
                 debounce_counter = 0;
             }
         }
+
+        led_state = !led_state;
+        led_status_changed = true;
+
         //clear release debounce.
-        while (debounce_counter < 100000) {
-            // Toggle led state if successful.
-            if (gpio_get(ROT_SW) == 1){
-                led_state = !led_state;
-                led_status_changed = true;
+        while (debounce_counter < 100000)
+        {
+            if (gpio_get(ROT_SW) == prev_state){
                 debounce_counter++;
-            }
-            // timeout kickout.
-            if (timeout > 1000000){
-                break;
             } else {
-                timeout++;
+                prev_state = !prev_state;
                 debounce_counter = 0;
             }
         }
