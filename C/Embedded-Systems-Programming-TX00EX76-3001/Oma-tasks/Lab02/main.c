@@ -62,7 +62,7 @@ void gpio_callback(uint gpio, uint32_t events){
     }
 }
 
-voi pullup(){
+void pullup(){
     int pullup_counter = 0;
     while (pullup_counter < 3) {
         if (gpio_get(ROT_SW) == 1){
@@ -80,16 +80,17 @@ int main(){
     // setup led(s).
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
         uint slice_num = pwm_gpio_to_slice_num(i);
-        uint chan = pwm_gpio_to_channel(i);
+        //uint chan = pwm_gpio_to_channel(i);
         pwm_set_enabled(slice_num, false);
         pwm_config config = pwm_get_default_config();
         pwm_config_set_clkdiv_int(&config, 125);
         pwm_config_set_wrap(&config, 1000); // 1kHz
         pwm_init(slice_num, &config, false);
-        pwm_set_chan_level(slice_num, chan, 500); // 50% duty cycle
+        //pwm_set_chan_level(slice_num, chan, 500); // 50% duty cycle
         gpio_set_function(i, GPIO_FUNC_PWM);
         pwm_set_enabled(slice_num, true);
     }
+    change_bright();
 
     // setup button pin for on/off.
     gpio_init(ROT_SW);
@@ -118,6 +119,7 @@ int main(){
         }
         if (led_status_changed == true){
             toggle_leds();
+            printf("LEDs: %s\n", OnOff[led_state]);
             pullup();
             led_status_changed = false;
         }
