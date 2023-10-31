@@ -107,6 +107,7 @@ int main(){
     stdio_init_all();
 
     while (1) {
+        sleep_ms(100);
         if (status_changed == true){
             change_bright();
             printf("Brightness: %d\n", brightness);
