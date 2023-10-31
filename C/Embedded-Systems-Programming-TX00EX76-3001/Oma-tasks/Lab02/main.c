@@ -67,6 +67,7 @@ void gpio_callback(uint gpio, uint32_t events){
         }
         status_changed = true;
     } else if (gpio == ROT_SW && led_status_changed == false){
+        led_state = !led_state;
         led_status_changed = true;
     }
 }
@@ -119,6 +120,7 @@ int main(){
             status_changed = false;
         }
         if (led_status_changed == true && button_state == false){
+            while (gpio_get(ROT_SW) == false);  // wait for button release
             toggle_leds();
             printf("LEDs: %s\n", OnOff[led_state]);
             led_status_changed = false;
