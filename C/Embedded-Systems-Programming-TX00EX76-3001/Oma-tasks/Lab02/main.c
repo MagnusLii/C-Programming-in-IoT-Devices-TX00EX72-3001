@@ -54,8 +54,7 @@ void gpio_callback2(uint gpio, uint32_t events){
 }
 
 void gpio_callback(uint gpio, uint32_t events){
-    int button_checks = 0;
-    bool button_debounced = false;
+
     if (gpio == ROT_A){
         if (gpio_get(ROT_B)) {
             if (brightness > LED_BRIGHT_MIN){
@@ -69,18 +68,6 @@ void gpio_callback(uint gpio, uint32_t events){
         status_changed = true;
     } else if (gpio == ROT_SW && led_status_changed == false){
         led_status_changed = true;
-        while (button_debounced == false){
-            if (button_checks > 10){
-                while (gpio_get(ROT_SW) == 0);
-                printf("Button Released\n");
-                led_state = !led_state;
-                button_debounced = true;
-            }  if (gpio_get(ROT_SW) == 0){
-                button_checks++;
-            } else {
-                button_checks = 0;
-            }
-        }
     }
 }
 
@@ -119,17 +106,24 @@ int main(){
 
     stdio_init_all();
 
+    bool button_state = gpio_get(ROT_SW);
+    bool rot_a_state = gpio_get(ROT_A);
+
     while (1) {
-        if (status_changed == true){
+        button_state = gpio_get(ROT_SW);
+        rot_a_state = gpio_get(ROT_A);
+
+        if (status_changed == true && rot_a_state == rot_a_state){
             change_bright();
             printf("Brightness: %d\n", brightness);
             status_changed = false;
         }
-        if (led_status_changed == true){
+        if (led_status_changed == true && button_state == false){
             toggle_leds();
             printf("LEDs: %s\n", OnOff[led_state]);
             led_status_changed = false;
         }
+        sleep_ms(100);
     }
     return 0;
 }
