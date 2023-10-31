@@ -104,8 +104,8 @@ int main(){
     gpio_set_irq_enabled_with_callback(ROT_A, GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
     gpio_set_irq_enabled_with_callback(ROT_SW, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
-    gpio_init_all();
-    
+    stdio_init_all();
+
     int button_counter = 0;
     bool previous_status = false;
     while (1) {
