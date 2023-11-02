@@ -109,8 +109,10 @@ int main(){
 
     while (1) {
         if (status_changed == true){
-            change_bright();
-            printf("Brightness: %d\n", brightness);
+            if (led_state != false){
+                change_bright();
+                printf("Brightness: %d\n", brightness);
+            }
             status_changed = false;
         }
         if (led_status_changed == true){
