@@ -3,7 +3,6 @@
 #include "hardware/uart.h"
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
 
 #define SW_0_PIN 9
 #define TX_PIN 4
@@ -15,9 +14,9 @@
 #define BUFFER_SIZE 256
 
 void send_command(const char* command);
-bool read_response(int max_attempts);
+bool read_response(const char expected_response[], const int response_len, int max_attempts);
 void uart_rx_handler();
-int process_uart_data();
+bool process_uart_data(const char expected_response[], const int response_len);
 
 
 char circular_buffer[BUFFER_SIZE];
@@ -57,7 +56,7 @@ int main() {
         } else if (state == 2) {
             printf("Connecting to LoRa module...\n");
             send_command("AT\r\n");
-            if (read_response(5) == true) {
+            if (read_response("+AT: OK", strlen("+AT: OK"), 5) == true) {
                 printf("Connected to LoRa module\n");
                 state = 3;
             } else {
@@ -67,8 +66,7 @@ int main() {
         } else if (state == 3) {
             printf("Reading firmware ver...\n");
             send_command("AT+VER\r\n");
-            if (read_response(5) == true) {
-                printf("\n");
+            if (read_response("+VER: ", strlen("+VER: "), 5) == true) {
             } else {
                 printf("Module not responding\n");
             }
@@ -82,11 +80,11 @@ void send_command(const char* command) {
     uart_puts(UART_ID, command);
 }
 
-bool read_response(int max_attempts) {
+bool read_response(const char expected_response[], const int response_len, int max_attempts) {
     for (int i = 0; i < max_attempts; i++) {
         sleep_ms(TIMEOUT_MS);
-        int datalen = process_uart_data();
-        if (datalen > 1) {
+        bool msg_status = process_uart_data();
+        if (msg_status == true) {
             return true;
         }
     }
@@ -107,7 +105,7 @@ void uart_rx_handler() {
     }
 }
 
-int process_uart_data() {
+bool process_uart_data(const char expected_response[], const int response_len) {
     int datalen = 0;
     char data[BUFFER_SIZE];
 
@@ -117,8 +115,9 @@ int process_uart_data() {
         buffer_tail = (buffer_tail + 1) % BUFFER_SIZE;
         datalen++;
     }
-    if (strlen(data) > 1){
+    if (strncmp(data, expected_response, strlen(expected_response)) == 0){
         printf("received: %s\n", data);
+        return true:
     }
-    return datalen;
+    return false;
 }
