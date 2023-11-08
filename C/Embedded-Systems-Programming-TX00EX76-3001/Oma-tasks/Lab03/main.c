@@ -115,6 +115,8 @@ int main() {
             printf("\n");
             state = 1;
         }
+        printf("End of loop\n");
+        sleep_ms(1000);
     }
 
     return 0;
