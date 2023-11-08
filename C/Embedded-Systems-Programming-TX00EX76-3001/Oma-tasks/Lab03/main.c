@@ -1,6 +1,9 @@
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hardware/uart.h"
+#include <stdio.h>
+#include <string.h>
+
 
 #define SW_0_PIN 9
 #define TX_PIN 6
