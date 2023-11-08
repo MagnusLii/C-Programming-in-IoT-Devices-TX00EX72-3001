@@ -102,7 +102,7 @@ int main() {
             state = 2;
         } else if (state == 2) {
             printf("Connecting to LoRa module...\n");
-            send_command("+AT: OK")
+            send_command("+AT: OK\r\n");
             if (read_response("OK", 5)) {
                 printf("Connected to LoRa module\n");
                 state = 3;
@@ -116,8 +116,6 @@ int main() {
             printf("\n");
             state = 1;
         }
-        printf("End of loop\n");
-        sleep_ms(1000);
     }
 
     return 0;
