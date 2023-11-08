@@ -144,7 +144,7 @@ void process_DevEui(char DevEui[], const int DevEui_len) {
         }
     }
 
-        // remove "+ID: DevEui, " from the string
+    // remove "+ID: DevEui, " from the string
     for (int i = 0; i < strlen("+ID: DevEui "); i++){
         for (int j = 0; j < DevEui_len; j++){
             DevEui[j] = DevEui[j + 1];
