@@ -7,9 +7,9 @@
 
 
 #define SW_0_PIN 9
-#define TX_PIN 6
-#define RX_PIN 7
-#define UART_ID uart0
+#define TX_PIN 4
+#define RX_PIN 5
+#define UART_ID uart1
 #define BAUD_RATE 9600
 #define TIMEOUT_MS 500
 #define STRLEN 128
@@ -102,6 +102,7 @@ int main() {
             state = 2;
         } else if (state == 2) {
             printf("Connecting to LoRa module...\n");
+            send_command("+AT: OK")
             if (read_response("OK", 5)) {
                 printf("Connected to LoRa module\n");
                 state = 3;
