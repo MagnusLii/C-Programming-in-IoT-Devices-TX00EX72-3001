@@ -115,7 +115,7 @@ bool process_uart_data(const char expected_response[], const int response_len) {
     }
     if (strncmp(data, expected_response, strlen(expected_response)) == 0){
         printf("received: %s\n", data);
-        return true:
+        return true;
     }
     return false;
 }
