@@ -126,6 +126,7 @@ bool process_uart_data(const char expected_response[], const int response_len, c
     }
     if (strncmp(data, expected_response, response_len) == 0){
         strncpy(pstring_to_store_to, data, datalen);
+        pstring_to_store_to[datalen] = '\0';
         return true;
     }
     return false;
