@@ -1,7 +1,6 @@
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hardware/uart.h"
-#include "pico/multicore.h"
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -54,22 +53,19 @@ void uart_rx_handler() {
             circular_buffer[buffer_head] = received_char;
             buffer_head = next_head;
         } else {
-            // Buffer overflow, handle or discard the data
+            // Discard the data
         }
     }
 }
 
-void uart_receiver_thread() {
-    while (true) {
-        // Check if there is data in the circular buffer
-        while (buffer_tail != buffer_head) {
-            char data = circular_buffer[buffer_tail];
-            buffer_tail = (buffer_tail + 1) % BUFFER_SIZE;
+void process_uart_data() {
+    // Check if there is data in the circular buffer
+    while (buffer_tail != buffer_head) {
+        char data = circular_buffer[buffer_tail];
+        buffer_tail = (buffer_tail + 1) % BUFFER_SIZE;
 
-            // Process the received data
-            printf("Received: %c\n", data);
-        }
-        sleep_ms(10); // Adjust this value based on your application's requirements
+        // Process the received data
+        printf("Received: %c\n", data);
     }
 }
 
@@ -89,14 +85,14 @@ int main() {
     irq_set_exclusive_handler(UART1_IRQ, uart_rx_handler);
     irq_set_enabled(UART1_IRQ, true);
 
-    multicore_launch_core1(uart_receiver_thread);
-
     int state = 1;
 
     printf("LoRa module test\n");
     sleep_ms(1000);
 
     while (true) {
+        process_uart_data(); // Process UART data in the background
+
         if (state == 1) {
             printf("Press SW_0 to start communication with the LoRa module...\n");
             while (gpio_get(SW_0_PIN)) {
