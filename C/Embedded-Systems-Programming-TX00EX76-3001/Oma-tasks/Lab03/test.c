@@ -11,8 +11,8 @@
 #define UART_ID uart1
 #define BAUD_RATE 9600
 #define TIMEOUT_MS 500
-#define STRLEN 128
-#define BUFFER_SIZE 128
+#define STRLEN 256
+#define BUFFER_SIZE 256
 
 char circular_buffer[BUFFER_SIZE];
 volatile int buffer_head = 0;
@@ -23,22 +23,11 @@ void send_command(const char* command) {
 }
 
 bool read_response(int max_attempts) {
-    char response[STRLEN];
-    int pos = 0;
     for (int i = 0; i < max_attempts; i++) {
         sleep_ms(TIMEOUT_MS);
-        while (uart_is_readable(UART_ID)) {
-            char c = uart_getc(UART_ID);
-            if (c == '\r' || c == '\n') {
-                response[pos] = '\0';
-                printf("received: %s\n", response);
-                pos = 0;  // Start over after the line is printed
-                return true;
-            } else {
-                if (pos < STRLEN - 1) {
-                    response[pos++] = c;
-                }
-            }
+        int datalen = process_uart_data();
+        if (datalen > 1) {
+            return true;
         }
     }
     return false;
@@ -58,15 +47,20 @@ void uart_rx_handler() {
     }
 }
 
-void process_uart_data() {
+int process_uart_data() {
+    int datalen = 0;
+    char data[BUFFER_SIZE];
+
     // Check if there is data in the circular buffer
     while (buffer_tail != buffer_head) {
-        char data = circular_buffer[buffer_tail];
+        data[datalen] = circular_buffer[buffer_tail];
         buffer_tail = (buffer_tail + 1) % BUFFER_SIZE;
-
-        // Process the received data
-        printf("Received: %c\n", data);
+        datalen++;
     }
+    if (strlen(data) > 1){
+        printf("received: %s\n", data);
+    }
+    return datalen;
 }
 
 int main() {
