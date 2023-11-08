@@ -29,6 +29,7 @@ bool read_response(const char expected_response, const char command, int max_att
     }
 
     for (int max_retries = 0; max_retries < max_attempts; max_retries++){
+        printf("Sending command %s", &command)
         send_command(&command);
         sleep_ms(TIMEOUT_MS);
         while (uart_is_readable(UART_ID)) {
