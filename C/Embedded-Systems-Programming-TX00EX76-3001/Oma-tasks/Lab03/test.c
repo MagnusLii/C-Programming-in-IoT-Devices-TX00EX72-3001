@@ -16,7 +16,7 @@ void send_command(const char* command);
 bool read_response(const char expected_response[], int response_len, int max_attempts);
 void uart_rx_handler();
 bool process_uart_data(const char expected_response[], int response_len);
-
+bool process_uart_data(const char expected_response[], const int response_len, char *pstring_to_store_to);
 
 char circular_buffer[BUFFER_SIZE];
 volatile int buffer_head = 0;
@@ -39,6 +39,7 @@ int main() {
     irq_set_enabled(UART1_IRQ, true);
 
     int state = 1;
+    char read_data[BUFFER_SIZE];
 
     while (true) {
         if (state == 1) {
@@ -50,8 +51,9 @@ int main() {
         } else if (state == 2) {
             printf("Connecting to LoRa module...\n");
             send_command("AT\r\n");
-            if (read_response("+AT: OK", strlen("+AT: OK"), 5) == true) {
+            if (read_response("+AT: OK", strlen("+AT: OK"), 5, &read_data) == true) {
                 printf("Connected to LoRa module\n");
+                printf("%s", read_data);
                 state = 3;
             } else {
                 printf("Module not responding\n");
@@ -60,7 +62,8 @@ int main() {
         } else if (state == 3) {
             printf("Reading firmware ver...\n");
             send_command("AT+VER\r\n");
-            if (read_response("+VER: ", strlen("+VER: "), 5) == true) {
+            if (read_response("+VER: ", strlen("+VER: "), 5, &read_data) == true) {
+                printf("%s", read_data);
                 state = 4;
             } else {
                 printf("Module not responding\n");
@@ -69,12 +72,13 @@ int main() {
         } else if(state == 4) {
             printf("Reading DevEui...\n");
             send_command("AT+ID=DevEui\r\n");
-            if (read_response("+ID: DevEui,", strlen("+ID: DevEui,"), 5) == true) {
-                state = 4;
+            if (read_response("+ID: DevEui,", strlen("+ID: DevEui,"), 5, &read_data) == true) {
+                process_DevEui(read_data, strlen(read_data));
+                printf("%s", read_data);
             } else {
                 printf("Module not responding\n");
-                state = 1;
             }
+            state = 1;
         }
     }
     return 0;
@@ -84,10 +88,10 @@ void send_command(const char* command) {
     uart_puts(UART_ID, command);
 }
 
-bool read_response(const char expected_response[], const int response_len, int max_attempts) {
+bool read_response(const char expected_response[], const int response_len, int max_attempts, char *pstring_to_store_to) {
     for (int i = 0; i < max_attempts; i++) {
         sleep_ms(TIMEOUT_MS);
-        bool msg_status = process_uart_data(expected_response, response_len);
+        bool msg_status = process_uart_data(expected_response, response_len, pstring_to_store_to);
         if (msg_status == true) {
             return true;
         }
@@ -109,7 +113,7 @@ void uart_rx_handler() {
     }
 }
 
-bool process_uart_data(const char expected_response[], const int response_len) {
+bool process_uart_data(const char expected_response[], const int response_len, char *pstring_to_store_to) {
     int datalen = 0;
     char data[BUFFER_SIZE];
 
@@ -120,8 +124,29 @@ bool process_uart_data(const char expected_response[], const int response_len) {
         datalen++;
     }
     if (strncmp(data, expected_response, response_len) == 0){
-        printf("received: %s\n", data);
+        strncpy(pstring_to_store_to, data, datalen);
         return true;
     }
     return false;
 }
+
+void process_DevEui(char DevEui[], const int DevEui_len) {
+
+    for (int strlen = 0; strlen < DevEui_len; strlen++){
+        if (DevEui[strlen] == ';'){
+            for (int i = 0; i < strlen; i++){
+                DevEui[i] = DevEui[i + 1]; // remove ; from the string
+            }
+        } else {
+            tolower(DevEui[strlen]); // convert to lowercase
+        }
+    }
+
+        // remove "+ID: DevEui, " from the string
+    for (int i = 0; i < 12; i++){
+        for (int j = 0; j < DevEui_len; j++){
+            DevEui[j] = DevEui[j + 1];
+        }
+    }
+}
+
