@@ -135,7 +135,7 @@ bool process_uart_data(const char expected_response[], const int response_len, c
 void process_DevEui(char DevEui[], const int DevEui_len) {
 
     for (int strlen = 0; strlen < DevEui_len; strlen++){
-        if (DevEui[strlen] == ';'){
+        if (DevEui[strlen] == ':'){
             for (int i = 0; i < strlen; i++){
                 DevEui[i] = DevEui[i + 1]; // remove ; from the string
             }
@@ -145,7 +145,7 @@ void process_DevEui(char DevEui[], const int DevEui_len) {
     }
 
         // remove "+ID: DevEui, " from the string
-    for (int i = 0; i < 12; i++){
+    for (int i = 0; i < strlen("+ID: DevEui "); i++){
         for (int j = 0; j < DevEui_len; j++){
             DevEui[j] = DevEui[j + 1];
         }
