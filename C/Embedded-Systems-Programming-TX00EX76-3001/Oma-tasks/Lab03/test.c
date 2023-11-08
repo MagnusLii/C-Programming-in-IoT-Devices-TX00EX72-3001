@@ -15,8 +15,8 @@
 void send_command(const char* command);
 bool read_response(const char expected_response[], int response_len, int max_attempts);
 void uart_rx_handler();
-bool process_uart_data(const char expected_response[], int response_len);
 bool process_uart_data(const char expected_response[], const int response_len, char *pstring_to_store_to);
+void process_DevEui(char DevEui[], const int DevEui_len);
 
 char circular_buffer[BUFFER_SIZE];
 volatile int buffer_head = 0;
