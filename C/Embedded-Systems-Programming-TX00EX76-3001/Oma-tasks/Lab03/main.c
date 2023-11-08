@@ -3,6 +3,7 @@
 #include "hardware/uart.h"
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 
 #define SW_0_PIN 9
