@@ -90,6 +90,9 @@ int main() {
 
     int state = 1;
 
+    printf("LoRa module test\n");
+    sleep_ms(1000);
+
     while (1) {
         if (state == 1) {
             printf("Press SW_0 to start communication with the LoRa module...\n");
