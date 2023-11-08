@@ -23,21 +23,21 @@ bool read_response(const char expected_response, const char command, int max_att
     char response[STRLEN];
     int pos = 0;
 
-    if (strncmp("N/A", expected_response, 3) == 0){
+    if (strncmp("N/A", &expected_response, 3) == 0){
         printf("No response expected.");
         expect_specific_response = false;
     }
 
     for (int max_retries = 0; max_retries < max_attempts; max_retries++){
-        send_command(command)
-        sleep_ms(TIMEOUT_MS)
+        send_command(&command);
+        sleep_ms(TIMEOUT_MS);
         while (uart_is_readable(UART_ID)) {
             char c = uart_getc(UART_ID);
             if (c == '\r' || c == '\n') {
                 response[pos] = '\0';
                 printf("received: %s\n", response);
                 pos = 0;  // Start over after the line is printed
-                if (expect_specific_response == true && strncmp(response, expected_response, strlen(expected_response)) == 0){
+                if (expect_specific_response == true && strncmp(response, &expected_response, strlen(&expected_response)) == 0){
                     return true;
                 }
             } else {
