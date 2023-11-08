@@ -14,54 +14,15 @@
 #define STRLEN 256
 #define BUFFER_SIZE 256
 
+void send_command(const char* command);
+bool read_response(int max_attempts);
+void uart_rx_handler();
+int process_uart_data();
+
+
 char circular_buffer[BUFFER_SIZE];
 volatile int buffer_head = 0;
 volatile int buffer_tail = 0;
-
-void send_command(const char* command) {
-    uart_puts(UART_ID, command);
-}
-
-bool read_response(int max_attempts) {
-    for (int i = 0; i < max_attempts; i++) {
-        sleep_ms(TIMEOUT_MS);
-        int datalen = process_uart_data();
-        if (datalen > 1) {
-            return true;
-        }
-    }
-    return false;
-}
-
-void uart_rx_handler() {
-    while (uart_is_readable(UART_ID)) {
-        char received_char = uart_getc(UART_ID);
-        int next_head = (buffer_head + 1) % BUFFER_SIZE;
-
-        if (next_head != buffer_tail) {
-            circular_buffer[buffer_head] = received_char;
-            buffer_head = next_head;
-        } else {
-            // Discard the data
-        }
-    }
-}
-
-int process_uart_data() {
-    int datalen = 0;
-    char data[BUFFER_SIZE];
-
-    // Check if there is data in the circular buffer
-    while (buffer_tail != buffer_head) {
-        data[datalen] = circular_buffer[buffer_tail];
-        buffer_tail = (buffer_tail + 1) % BUFFER_SIZE;
-        datalen++;
-    }
-    if (strlen(data) > 1){
-        printf("received: %s\n", data);
-    }
-    return datalen;
-}
 
 int main() {
     stdio_init_all();
@@ -115,4 +76,49 @@ int main() {
         }
     }
     return 0;
+}
+
+void send_command(const char* command) {
+    uart_puts(UART_ID, command);
+}
+
+bool read_response(int max_attempts) {
+    for (int i = 0; i < max_attempts; i++) {
+        sleep_ms(TIMEOUT_MS);
+        int datalen = process_uart_data();
+        if (datalen > 1) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void uart_rx_handler() {
+    while (uart_is_readable(UART_ID)) {
+        char received_char = uart_getc(UART_ID);
+        int next_head = (buffer_head + 1) % BUFFER_SIZE;
+
+        if (next_head != buffer_tail) {
+            circular_buffer[buffer_head] = received_char;
+            buffer_head = next_head;
+        } else {
+            // Discard the data
+        }
+    }
+}
+
+int process_uart_data() {
+    int datalen = 0;
+    char data[BUFFER_SIZE];
+
+    // Check if there is data in the circular buffer
+    while (buffer_tail != buffer_head) {
+        data[datalen] = circular_buffer[buffer_tail];
+        buffer_tail = (buffer_tail + 1) % BUFFER_SIZE;
+        datalen++;
+    }
+    if (strlen(data) > 1){
+        printf("received: %s\n", data);
+    }
+    return datalen;
 }
