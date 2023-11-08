@@ -19,6 +19,32 @@ char circular_buffer[BUFFER_SIZE];
 volatile int buffer_head = 0;
 volatile int buffer_tail = 0;
 
+void send_command(const char* command) {
+    uart_puts(UART_ID, command);
+}
+
+bool read_response(int max_attempts) {
+    char response[STRLEN];
+    int pos = 0;
+    for (int i = 0; i < max_attempts; i++) {
+        sleep_ms(TIMEOUT_MS);
+        while (uart_is_readable(UART_ID)) {
+            char c = uart_getc(UART_ID);
+            if (c == '\r' || c == '\n') {
+                response[pos] = '\0';
+                printf("received: %s\n", response);
+                pos = 0;  // Start over after the line is printed
+                return true;
+            } else {
+                if (pos < STRLEN - 1) {
+                    response[pos++] = c;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 void uart_rx_handler() {
     while (uart_is_readable(UART_ID)) {
         char received_char = uart_getc(UART_ID);
