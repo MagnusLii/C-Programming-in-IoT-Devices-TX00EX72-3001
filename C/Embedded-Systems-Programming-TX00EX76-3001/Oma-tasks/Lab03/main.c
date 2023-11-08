@@ -37,7 +37,7 @@ bool read_response(const char expected_response, const char command, int max_att
                 response[pos] = '\0';
                 printf("received: %s\n", response);
                 pos = 0;  // Start over after the line is printed
-                if (expect_specific_response == true && strncmp(response, &expected_response, strlen(&expected_response)) == 0){
+                if (expect_specific_response == true /*&& strncmp(response, &expected_response, strlen(&expected_response)) == 0*/){
                     return true;
                 }
             } else {
