@@ -139,8 +139,9 @@ void process_DevEui(char DevEui[], const int DevEui_len) {
             for (int i = strlen; i < DevEui_len; i++){
                 DevEui[i] = DevEui[i + 1]; // remove : from the string
             }
+        } else {
+            DevEui[strlen] = tolower(DevEui[strlen]); // convert to lowercase
         }
-        tolower(DevEui[strlen]); // convert to lowercase
     }
 
         // remove "+ID: DevEui, " from the string
