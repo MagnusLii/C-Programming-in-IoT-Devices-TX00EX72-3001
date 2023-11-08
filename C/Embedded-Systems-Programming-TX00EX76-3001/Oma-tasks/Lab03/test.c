@@ -10,13 +10,12 @@
 #define UART_ID uart1
 #define BAUD_RATE 9600
 #define TIMEOUT_MS 500
-#define STRLEN 256
 #define BUFFER_SIZE 256
 
 void send_command(const char* command);
-bool read_response(const char expected_response[], const int response_len, int max_attempts);
+bool read_response(const char expected_response[], int response_len, int max_attempts);
 void uart_rx_handler();
-bool process_uart_data(const char expected_response[], const int response_len);
+bool process_uart_data(const char expected_response[], int response_len);
 
 
 char circular_buffer[BUFFER_SIZE];
@@ -40,9 +39,6 @@ int main() {
     irq_set_enabled(UART1_IRQ, true);
 
     int state = 1;
-
-    printf("LoRa module test\n");
-    sleep_ms(1000);
 
     while (true) {
         if (state == 1) {
@@ -113,7 +109,7 @@ bool process_uart_data(const char expected_response[], const int response_len) {
         buffer_tail = (buffer_tail + 1) % BUFFER_SIZE;
         datalen++;
     }
-    if (strncmp(data, expected_response, strlen(expected_response)) == 0){
+    if (strncmp(data, expected_response, response_len) == 0){
         printf("received: %s\n", data);
         return true;
     }
