@@ -106,7 +106,7 @@ int main() {
             if (read_response("+ID: DevAddr,", "AT\r\n", 5)) {
                 printf("Connected to LoRa module\n");
                 state = 3;
-                sleep_ms(10000)
+                sleep_ms(10000);
             } else {
                 printf("Module not responding\n");
                 state = 1;
