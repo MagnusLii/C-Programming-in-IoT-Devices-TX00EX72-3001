@@ -16,7 +16,7 @@ void send_command(const char* command);
 bool read_response(const char expected_response[], int response_len, int max_attempts);
 void uart_rx_handler();
 bool process_uart_data(const char expected_response[], int response_len);
-
+bool process_DevEui_data(const char expected_response[], int response_len);
 
 char circular_buffer[BUFFER_SIZE];
 volatile int buffer_head = 0;
@@ -39,32 +39,73 @@ int main() {
     irq_set_enabled(UART1_IRQ, true);
 
     int state = 1;
+    int attempts = 0;
+    bool msg_status = false;
 
     while (true) {
+        // Waiting for user to press SW_0
         if (state == 1) {
             printf("Press SW_0 to start communication with the LoRa module...\n");
             while (gpio_get(SW_0_PIN)) {
                 sleep_ms(10);
             }
             state = 2;
-        } else if (state == 2) {
+        } 
+        
+        // Connecting to LoRa module
+        else if (state == 2) {
             printf("Connecting to LoRa module...\n");
             send_command("AT\r\n");
-            if (read_response("+AT: OK", strlen("+AT: OK"), 5) == true) {
+            do
+            {
+                attempts++;
+                msg_status = process_uart_data("+AT: OK", strlen("+AT: OK"));
+            } while (attempts < 5 && msg_status == false);
+            
+            if (msg_status == true) {
                 printf("Connected to LoRa module\n");
                 state = 3;
             } else {
                 printf("Module not responding\n");
                 state = 1;
             }
-        } else if (state == 3) {
+            msg_status = false;
+            attempts = 0;
+        }   
+        
+        // Reading firmware version
+        else if (state == 3) {
             printf("Reading firmware ver...\n");
             send_command("AT+VER\r\n");
-            if (read_response("+VER: ", strlen("+VER: "), 5) == true) {
+            do
+            {
+                attempts++;
+                msg_status = process_uart_data("+VER: ", strlen("+VER: "));
+            } while (attempts < 5 && msg_status == false);
+
+
+            if (msg_status == true) {
+                state = 4;
             } else {
                 printf("Module not responding\n");
+                state == 1;
             }
-            state = 1;
+        } 
+        
+        // Reading DevEui
+        else if(state == 4) {
+            printf("Reading DevEui...\n");
+            send_command("AT+ID=DevEui\r\n");
+            do
+            {
+                attempts++;
+                msg_status = process_DevEui_data("+ID: DevEui,", strlen("+ID: DevEui,"));
+            } while (attempts < 5 && msg_status == false);
+
+            if (msg_status == false) {
+                printf("Module not responding\n");
+            }
+            state == 1;
         }
     }
     return 0;
@@ -72,17 +113,6 @@ int main() {
 
 void send_command(const char* command) {
     uart_puts(UART_ID, command);
-}
-
-bool read_response(const char expected_response[], const int response_len, int max_attempts) {
-    for (int i = 0; i < max_attempts; i++) {
-        sleep_ms(TIMEOUT_MS);
-        bool msg_status = process_uart_data(expected_response, response_len);
-        if (msg_status == true) {
-            return true;
-        }
-    }
-    return false;
 }
 
 void uart_rx_handler() {
@@ -112,6 +142,38 @@ bool process_uart_data(const char expected_response[], const int response_len) {
     if (strncmp(data, expected_response, response_len) == 0){
         printf("received: %s\n", data);
         return true;
+    }
+    return false;
+}
+
+bool process_DevEui_data(const char expected_response[], const int response_len) {
+    int datalen = 0;
+    char data[BUFFER_SIZE];
+
+    // Check if there is data in the circular buffer
+    while (buffer_tail != buffer_head) {
+        data[datalen] = circular_buffer[buffer_tail];
+        buffer_tail = (buffer_tail + 1) % BUFFER_SIZE;
+        datalen++;
+    }
+
+    if (strncmp(data, expected_response, response_len) == 0){
+        for (int strlen = 0; strlen < datalen; strlen++){
+            if (data[strlen] == ';'){
+                for (int i = 0; i < strlen; i++){
+                    data[i] = data[i + 1]; // remove ; from the string
+                }
+            } else {
+                tolower(data[strlen]); // convert to lowercase
+            }
+        }
+
+        // remove "+ID: DevEui, " from the string
+        for (int i = 0; i < 12; i++){
+            for (int j = 0; j < datalen; j++){
+                data[j] = data[j + 1];
+            }
+        }
     }
     return false;
 }
