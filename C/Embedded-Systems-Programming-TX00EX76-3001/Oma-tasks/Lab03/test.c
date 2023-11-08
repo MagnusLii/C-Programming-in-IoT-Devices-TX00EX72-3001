@@ -3,6 +3,7 @@
 #include "hardware/uart.h"
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define SW_0_PIN 9
 #define TX_PIN 4
@@ -13,7 +14,6 @@
 #define BUFFER_SIZE 256
 
 void send_command(const char* command);
-bool read_response(const char expected_response[], int response_len, int max_attempts);
 void uart_rx_handler();
 bool process_uart_data(const char expected_response[], int response_len);
 bool process_DevEui_data(const char expected_response[], int response_len);
@@ -60,6 +60,7 @@ int main() {
             {
                 attempts++;
                 msg_status = process_uart_data("+AT: OK", strlen("+AT: OK"));
+                sleep_ms(TIMEOUT_MS);
             } while (attempts < 5 && msg_status == false);
             
             if (msg_status == true) {
@@ -81,6 +82,7 @@ int main() {
             {
                 attempts++;
                 msg_status = process_uart_data("+VER: ", strlen("+VER: "));
+                sleep_ms(TIMEOUT_MS);
             } while (attempts < 5 && msg_status == false);
 
 
@@ -88,7 +90,7 @@ int main() {
                 state = 4;
             } else {
                 printf("Module not responding\n");
-                state == 1;
+                state = 1;
             }
         } 
         
@@ -100,12 +102,13 @@ int main() {
             {
                 attempts++;
                 msg_status = process_DevEui_data("+ID: DevEui,", strlen("+ID: DevEui,"));
+                sleep_ms(TIMEOUT_MS);
             } while (attempts < 5 && msg_status == false);
 
             if (msg_status == false) {
                 printf("Module not responding\n");
             }
-            state == 1;
+            state = 1;
         }
     }
     return 0;
