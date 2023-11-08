@@ -45,8 +45,6 @@ int main() {
     sleep_ms(1000);
 
     while (true) {
-        process_uart_data(); // Process UART data in the background
-
         if (state == 1) {
             printf("Press SW_0 to start communication with the LoRa module...\n");
             while (gpio_get(SW_0_PIN)) {
@@ -83,7 +81,7 @@ void send_command(const char* command) {
 bool read_response(const char expected_response[], const int response_len, int max_attempts) {
     for (int i = 0; i < max_attempts; i++) {
         sleep_ms(TIMEOUT_MS);
-        bool msg_status = process_uart_data();
+        bool msg_status = process_uart_data(expected_response, response_len);
         if (msg_status == true) {
             return true;
         }
