@@ -19,21 +19,24 @@ void send_command(const char* command) {
     uart_putc(UART_ID, '\n'); // End each command with '\n'
 }
 
-bool read_response(const char* expected_response, int max_attempts) {
+bool read_response(const char expected_response, int max_attempts){
+    bool expect_specific_response = true;
     char response[STRLEN];
     int pos = 0;
 
-    for (int i = 0; i < max_attempts; i++) {
-        send_command("AT+COMMAND?"); // Query
-        sleep_ms(TIMEOUT_MS);
+    if (strncmp("N/A", expected_response, 3) == 0){
+        printf("No response expected.");
+        expect_specific_response = false;
+    }
 
+    for (int max_retries = 0; max_retries < max_attempts; max_retries++){
         while (uart_is_readable(UART_ID)) {
             char c = uart_getc(UART_ID);
             if (c == '\r' || c == '\n') {
                 response[pos] = '\0';
                 printf("received: %s\n", response);
                 pos = 0;  // Start over after the line is printed
-                if (strstr(response, expected_response) != NULL) {
+                if (expect_specific_response == true && strncmp(response, expected_response, strlen(expected_response)) == 0){
                     return true;
                 }
             } else {
@@ -47,8 +50,6 @@ bool read_response(const char* expected_response, int max_attempts) {
 }
 
 void read_dev_eui() {
-    send_command("AT+COMMAND=DATA"); // Set value format
-    sleep_ms(TIMEOUT_MS);
 
     char response[STRLEN];
     int pos = 0;
@@ -90,8 +91,7 @@ int main() {
 
     int state = 1;
 
-    printf("LoRa module test\n");
-    sleep_ms(1000);
+    sleep_ms(10000);
 
     while (1) {
         if (state == 1) {
@@ -102,8 +102,8 @@ int main() {
             state = 2;
         } else if (state == 2) {
             printf("Connecting to LoRa module...\n");
-            send_command("+AT: OK\r\n");
-            if (read_response("OK", 5)) {
+            send_command("AT\r\n");
+            if (read_response("+ID: DevAddr,", 5)) {
                 printf("Connected to LoRa module\n");
                 state = 3;
             } else {
