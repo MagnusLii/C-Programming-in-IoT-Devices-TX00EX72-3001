@@ -16,10 +16,9 @@
 
 void send_command(const char* command) {
     uart_puts(UART_ID, command);
-    uart_putc(UART_ID, '\n'); // End each command with '\n'
 }
 
-bool read_response(const char expected_response, int max_attempts){
+bool read_response(const char expected_response, const char command, int max_attempts){
     bool expect_specific_response = true;
     char response[STRLEN];
     int pos = 0;
@@ -30,6 +29,8 @@ bool read_response(const char expected_response, int max_attempts){
     }
 
     for (int max_retries = 0; max_retries < max_attempts; max_retries++){
+        send_command(command)
+        sleep_ms(TIMEOUT_MS)
         while (uart_is_readable(UART_ID)) {
             char c = uart_getc(UART_ID);
             if (c == '\r' || c == '\n') {
@@ -102,10 +103,10 @@ int main() {
             state = 2;
         } else if (state == 2) {
             printf("Connecting to LoRa module...\n");
-            send_command("AT\r\n");
-            if (read_response("+ID: DevAddr,", 5)) {
+            if (read_response("+ID: DevAddr,", "AT\r\n", 5)) {
                 printf("Connected to LoRa module\n");
                 state = 3;
+                sleep_ms(10000)
             } else {
                 printf("Module not responding\n");
                 state = 1;
