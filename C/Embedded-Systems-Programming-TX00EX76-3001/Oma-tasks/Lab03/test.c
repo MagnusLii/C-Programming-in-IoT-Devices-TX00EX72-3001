@@ -74,6 +74,7 @@ int main() {
             printf("Reading DevEui...\n");
             send_command("AT+ID=DevEui\r\n");
             if (read_response("+ID: DevEui,", strlen("+ID: DevEui,"), 5, read_data) == true) {
+                printf("DevEui: %s", read_data);
                 process_DevEui(read_data, strlen(read_data));
                 printf("%s", read_data);
             } else {
@@ -137,11 +138,12 @@ void process_DevEui(char DevEui[], const int DevEui_len) {
     for (int strlen = 0; strlen < DevEui_len; strlen++){
         if (DevEui[strlen] == ':'){
             for (int i = 0; i < strlen; i++){
-                DevEui[i] = DevEui[i + 1]; // remove ; from the string
+                DevEui[i] = DevEui[i + 1]; // remove : from the string
             }
         } else {
             tolower(DevEui[strlen]); // convert to lowercase
         }
+        printf("%s", DevEui);
     }
 
         // remove "+ID: DevEui, " from the string
