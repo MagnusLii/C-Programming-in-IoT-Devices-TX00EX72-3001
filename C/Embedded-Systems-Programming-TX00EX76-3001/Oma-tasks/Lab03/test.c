@@ -56,7 +56,7 @@ int main() {
             send_command("AT\r\n");
             if (read_response("+AT: OK", strlen("+AT: OK"), 5, read_data) == true) {
                 printf("Connected to LoRa module\n");
-                printf("%s", read_data);
+                printf("Response: %s", read_data);
                 state = 3;
             } else {
                 printf("Module not responding\n");
@@ -66,7 +66,7 @@ int main() {
             printf("Reading firmware ver...\n");
             send_command("AT+VER\r\n");
             if (read_response("+VER: ", strlen("+VER: "), 5, read_data) == true) {
-                printf("%s", read_data);
+                printf("Response: %s", read_data);
                 state = 4;
             } else {
                 printf("Module not responding\n");
@@ -77,7 +77,7 @@ int main() {
             send_command("AT+ID=DevEui\r\n");
             if (read_response("+ID: DevEui,", strlen("+ID: DevEui,"), 5, read_data) == true) {
                 process_DevEui(read_data, strlen(read_data));
-                printf("%s", read_data);
+                printf("Response: %s", read_data);
             } else {
                 printf("Module not responding\n");
             }
