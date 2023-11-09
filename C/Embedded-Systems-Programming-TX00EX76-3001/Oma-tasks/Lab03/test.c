@@ -12,7 +12,7 @@
 #define BAUD_RATE 9600
 #define TIMEOUT_MS 500
 #define BUFFER_SIZE 256
-#define SEPARATOR "\n\n----------------------------------------\n\n"
+#define SEPARATOR "\n----------------------------------------\n"
 
 void send_command(const char* command);
 bool read_response(const char expected_response[], int response_len, int max_attempts, char *pstring_to_store_to);
