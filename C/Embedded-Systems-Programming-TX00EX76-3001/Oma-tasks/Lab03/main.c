@@ -76,8 +76,9 @@ int main() {
             printf("Reading DevEui...\n");
             send_command("AT+ID=DevEui\r\n");
             if (read_response("+ID: DevEui,", strlen("+ID: DevEui,"), 5, read_data) == true) {
-                process_DevEui(read_data, strlen(read_data));
                 printf("Response: %s", read_data);
+                process_DevEui(read_data, strlen(read_data));
+                printf("Formatted DevEui: %s", read_data);
             } else {
                 printf("Module not responding\n");
             }
@@ -98,6 +99,7 @@ bool read_response(const char expected_response[], const int response_len, int m
         if (msg_status == true) {
             return true;
         }
+        printf("No response from module, retrying...\n");
     }
     return false;
 }
