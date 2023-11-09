@@ -12,6 +12,7 @@
 #define BAUD_RATE 9600
 #define TIMEOUT_MS 500
 #define BUFFER_SIZE 256
+#define SEPARATOR "\n\n----------------------------------------\n\n"
 
 void send_command(const char* command);
 bool read_response(const char expected_response[], int response_len, int max_attempts, char *pstring_to_store_to);
@@ -44,6 +45,7 @@ int main() {
 
     while (true) {
         if (state == 1) {
+            printf(SEPARATOR);
             printf("Press SW_0 to start communication with the LoRa module...\n");
             while (gpio_get(SW_0_PIN)) {
                 sleep_ms(10);
