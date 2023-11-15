@@ -45,7 +45,7 @@ inverted value, we can avoid case where both bytes are identical, a typical case
 memory, to be accepted as a valid value.
 For example:
 
-´´´
+```
 typedef struct ledstate {
 uint8_t state;
 uint8_t not_state;
@@ -55,7 +55,7 @@ void set_led_state(ledstate *ls, uint8_t value)
 ls->state = value;
 ls->not_state = ~value;
 }
-´´´
+```
 
 Above is a helper function that sets both values in the struct. By using helper functions, we can ensure that
 both values are set correctly in the structure. In the same style we can write a function that validates the
