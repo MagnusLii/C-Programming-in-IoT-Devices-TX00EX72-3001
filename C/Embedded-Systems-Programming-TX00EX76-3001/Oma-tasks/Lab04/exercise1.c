@@ -82,17 +82,13 @@ int main(){
     ledstate ls;
 
     // If the LED state is not valid, set all LEDs on and write to EEPROM
-    /*printf("reading more\n");
     if (!led_state_is_valid(&ls)) {
         led_state = true;
         set_led_state(&ls, true);  // LEDs on
         write_led_state_to_eeprom(&ls, 1);
-    }*/
+    }
 
     read_led_state_from_eeprom(&ls, LED_STATE_ADDR);
-    //syncing led states
-    led_state = ls.state;
-    led_status_changed = true;
 
     while (1) {
         if (status_changed == true){
@@ -147,6 +143,7 @@ void read_led_state_from_eeprom(ledstate *ls, uint16_t mem_addr) {
     ls->state = data[0];
     ls->not_state = data[1];
     printf("data: %d, %d\n", data[0], data[1]);
+    led_status_changed = true;
 }
 
 void change_bright(){
@@ -158,21 +155,21 @@ void change_bright(){
 }
 
 void toggle_leds(ledstate *ls){
-    if (brightness == 0 && led_state == true){
+    if (brightness == 0 && ls->state == true){
         brightness = 500;
         change_bright();
         write_led_state_to_eeprom(ls, LED_STATE_ADDR);
-    } else if (led_state == false){
-        led_state = true;
+    } else if (ls->state == false){
+        set_led_state(ls, true);
         change_bright();
         write_led_state_to_eeprom(ls, LED_STATE_ADDR);
-    } else if (led_state == true){
-        led_state = false;
+    } else if (ls->state == true){
+        set_led_state(ls, false);
+        write_led_state_to_eeprom(ls, LED_STATE_ADDR);
         for (int led_pin = STARTING_LED; led_pin < STARTING_LED + N_LED; led_pin++){
             uint slice_num = pwm_gpio_to_slice_num(led_pin);
             uint chan = pwm_gpio_to_channel(led_pin);
             pwm_set_chan_level(slice_num, chan, 0);
-            write_led_state_to_eeprom(ls, LED_STATE_ADDR);
         }
     }
 }
