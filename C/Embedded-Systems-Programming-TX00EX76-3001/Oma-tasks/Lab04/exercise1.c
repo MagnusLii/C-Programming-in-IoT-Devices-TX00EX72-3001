@@ -19,7 +19,7 @@
 #define SDA_PIN 21
 #define SCL_PIN 22
 
-volatile bool led_state = true;
+volatile bool led_state = false;
 volatile uint brightness = 500;
 volatile bool status_changed = false;
 volatile bool led_status_changed = false;
