@@ -102,6 +102,8 @@ int main(){
         }
         if (led_status_changed == true){
             toggle_leds();
+            write_led_state_to_eeprom(&ls, 1);
+            printf("ls.state: %d\n", ls.state);
             printf("LEDs: %s\n", OnOff[led_state]);
             led_status_changed = false;
         }
@@ -118,6 +120,7 @@ void set_led_state(ledstate *ls, bool value) {
 
 // Function to check if the LED state and its inverted value match
 bool led_state_is_valid(ledstate *ls) {
+    printf("state: %d, not_state: %d\n", ls->state, ls->not_state);
     return ls->state == !ls->not_state;
 }
 
