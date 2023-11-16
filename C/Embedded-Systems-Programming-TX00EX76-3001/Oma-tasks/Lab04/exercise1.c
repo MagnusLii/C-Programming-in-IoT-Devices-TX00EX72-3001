@@ -129,7 +129,9 @@ bool led_state_is_valid(ledstate *ls) {
 
 // Function to write the LED state to the EEPROM
 void write_led_state_to_eeprom(ledstate *ls, uint16_t mem_addr) {
+    printf("writing\n")
     uint8_t data[2] = {ls->state, ls->not_state};
+    printf("data: %d, %d\n", data[0], data[1])
     uint8_t reg_addr[2] = {mem_addr >> 8, mem_addr & 0xFF};  // High and low bytes of the EEPROM address
     uint8_t combined[4] = {reg_addr[0], reg_addr[1], data[0], data[1]};  // Combine the register address and data {[led state], [not led state]}
     i2c_write_blocking(i2c_default, EEPROM_ADDR, combined, 4, false);
@@ -137,12 +139,14 @@ void write_led_state_to_eeprom(ledstate *ls, uint16_t mem_addr) {
 
 // Function to read the LED state from the EEPROM
 void read_led_state_from_eeprom(ledstate *ls, uint16_t mem_addr) {
+    printf("reading\n");
     uint8_t reg_addr[2] = {mem_addr >> 8, mem_addr & 0xFF};  // High and low bytes of the EEPROM address
     i2c_write_blocking(i2c_default, EEPROM_ADDR, reg_addr, 2, true);  // Write the register address with nostop=true
     uint8_t data[2];
     i2c_read_blocking(i2c_default, EEPROM_ADDR, data, 2, false);
     ls->state = data[0];
     ls->not_state = data[1];
+    printf("data: %d, %d\n", data[0], data[1]);
 }
 
 void change_bright(){
