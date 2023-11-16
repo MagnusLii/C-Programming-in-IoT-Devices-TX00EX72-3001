@@ -145,7 +145,6 @@ void read_led_state_from_eeprom(ledstate *ls, uint16_t mem_addr) {
     ls->state = data[0];
     ls->not_state = data[1];
     printf("data: %d, %d\n", data[0], data[1]);
-    led_status_changed = true;
 }
 
 void change_bright(){
