@@ -21,7 +21,7 @@ When you have multibyte reads and writes working then start developing the highe
 
 
 
-Exercise 1 – Store the state of the program to EEPROM
+**Exercise 1 – Store the state of the program to EEPROM**
 Implement a program that switches LEDs on and off and remembers the state of the LEDs across reboot
 and/or power off. The program should work as follows:
 
@@ -72,7 +72,7 @@ promoted to an integer. Typecast to 8-bit value discards the extra bits that got
 
 
 
-Exercise 2 – Store log strings in EEPROM
+**Exercise 2 – Store log strings in EEPROM**
 Improve Exercise 1 by adding a persistent log that stores messages to EEPROM. When the program starts it
 writes “Boot” to the log and every time when state or LEDs is changed the state change message, as
 described in Exercise 1, is also written to the log.
