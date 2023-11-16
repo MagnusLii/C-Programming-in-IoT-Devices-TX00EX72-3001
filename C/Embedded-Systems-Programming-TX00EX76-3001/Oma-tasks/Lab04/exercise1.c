@@ -82,7 +82,6 @@ int main(){
 
     // If the LED state is not valid, set all LEDs on and write to EEPROM
     if (!led_state_is_valid(&ls)) {
-        led_state = true;
         set_led_state(&ls, true);  // LEDs on
         write_led_state_to_eeprom(&ls, 1);
     }
@@ -91,7 +90,7 @@ int main(){
 
     while (1) {
         if (status_changed == true){
-            if (led_state != false){
+            if (ls.state != false){
                 change_bright();
                 printf("Brightness: %d\n", brightness);
             }
