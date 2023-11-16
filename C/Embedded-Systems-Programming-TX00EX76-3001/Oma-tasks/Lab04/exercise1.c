@@ -29,7 +29,6 @@ volatile bool led_state = false;
 volatile uint brightness = 500;
 volatile bool status_changed = false;
 volatile bool led_status_changed = false;
-ledstate ls;
 
 void set_led_state(ledstate *ls, bool value);
 bool led_state_is_valid(ledstate *ls);
@@ -83,6 +82,9 @@ int main(){
 
     ledstate ls;
     
+    printf("led_state: %d\n", led_state);
+    printf("ls.state: %d\n", ls.state);
+
     // If the LED state is not valid, set all LEDs on and write to EEPROM
     /*printf("reading more\n");
     if (!led_state_is_valid(&ls)) {
@@ -95,7 +97,7 @@ int main(){
 
     while (1) {
         if (status_changed == true){
-            if (ls.state != false){
+            if (led_state != false){
                 change_bright();
                 printf("Brightness: %d\n", brightness);
             }
@@ -105,7 +107,7 @@ int main(){
             toggle_leds();
             write_led_state_to_eeprom(&ls, 1);
             printf("ls.state: %d\n", ls.state);
-            printf("LEDs: %s\n", OnOff[ls.state]);
+            printf("LEDs: %s\n", OnOff[led_state]);
             led_status_changed = false;
         }
     }
@@ -140,9 +142,10 @@ void read_led_state_from_eeprom(ledstate *ls, uint16_t mem_addr) {
     uint8_t data[2];
     i2c_read_blocking(i2c_default, EEPROM_ADDR, data, 2, false);
     printf("data: %d, %d\n", data[0], data[1]); // {[led state], [not led state]}
+    led_state = data[0];
+    led_status_changed = true;
     ls->state = data[0];
     ls->not_state = data[1];
-    led_status_changed = true;
 }
 
 void change_bright(){
@@ -154,14 +157,14 @@ void change_bright(){
 }
 
 void toggle_leds(){
-    if (brightness == 0 && ls.state == true){
+    if (brightness == 0 && led_state == true){
         brightness = 500;
         change_bright();
-    } else if (ls.state == false){
-        ls.state = true;
+    } else if (led_state == false){
+        led_state = true;
         change_bright();
-    } else if (ls.state == true){
-        ls.state = false;
+    } else if (led_state == true){
+        led_state = false;
         for (int led_pin = STARTING_LED; led_pin < STARTING_LED + N_LED; led_pin++){
             uint slice_num = pwm_gpio_to_slice_num(led_pin);
             uint chan = pwm_gpio_to_channel(led_pin);
