@@ -154,14 +154,14 @@ void change_bright(){
 }
 
 void toggle_leds(){
-    if (brightness == 0 && ls->state == true){
+    if (brightness == 0 && ls.state == true){
         brightness = 500;
         change_bright();
-    } else if (ls->state == false){
-        ls->state = true;
+    } else if (ls.state == false){
+        ls.state = true;
         change_bright();
-    } else if (ls->state == true){
-        ls->state = false;
+    } else if (ls.state == true){
+        ls.state = false;
         for (int led_pin = STARTING_LED; led_pin < STARTING_LED + N_LED; led_pin++){
             uint slice_num = pwm_gpio_to_slice_num(led_pin);
             uint chan = pwm_gpio_to_channel(led_pin);
