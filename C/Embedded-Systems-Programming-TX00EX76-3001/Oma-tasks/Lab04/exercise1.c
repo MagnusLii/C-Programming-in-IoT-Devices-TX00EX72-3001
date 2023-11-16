@@ -19,16 +19,17 @@
 #define SDA_PIN 17
 #define SCL_PIN 16
 
-volatile bool led_state = false;
-volatile uint brightness = 500;
-volatile bool status_changed = false;
-volatile bool led_status_changed = false;
-
 // Structure to hold the LED state and its inverted value
 typedef struct ledstate {
     bool state;  // The actual state of the LEDs
     bool not_state;  // The inverted state of the LEDs
 } ledstate;
+
+volatile bool led_state = false;
+volatile uint brightness = 500;
+volatile bool status_changed = false;
+volatile bool led_status_changed = false;
+ledstate ls;
 
 void set_led_state(ledstate *ls, bool value);
 bool led_state_is_valid(ledstate *ls);
@@ -94,7 +95,7 @@ int main(){
 
     while (1) {
         if (status_changed == true){
-            if (led_state != false){
+            if (ls.state != false){
                 change_bright();
                 printf("Brightness: %d\n", brightness);
             }
@@ -104,7 +105,7 @@ int main(){
             toggle_leds();
             write_led_state_to_eeprom(&ls, 1);
             printf("ls.state: %d\n", ls.state);
-            printf("LEDs: %s\n", OnOff[led_state]);
+            printf("LEDs: %s\n", OnOff[ls.state]);
             led_status_changed = false;
         }
     }
@@ -128,7 +129,7 @@ bool led_state_is_valid(ledstate *ls) {
 void write_led_state_to_eeprom(ledstate *ls, uint16_t mem_addr) {
     uint8_t data[2] = {ls->state, ls->not_state};
     uint8_t reg_addr[2] = {mem_addr >> 8, mem_addr & 0xFF};  // High and low bytes of the EEPROM address
-    uint8_t combined[4] = {reg_addr[0], reg_addr[1], data[0], data[1]};  // Combine the register address and data
+    uint8_t combined[4] = {reg_addr[0], reg_addr[1], data[0], data[1]};  // Combine the register address and data {[led state], [not led state]}
     i2c_write_blocking(i2c_default, EEPROM_ADDR, combined, 4, false);
 }
 
@@ -138,11 +139,10 @@ void read_led_state_from_eeprom(ledstate *ls, uint16_t mem_addr) {
     i2c_write_blocking(i2c_default, EEPROM_ADDR, reg_addr, 2, true);  // Write the register address with nostop=true
     uint8_t data[2];
     i2c_read_blocking(i2c_default, EEPROM_ADDR, data, 2, false);
-    printf("data: %d, %d\n", data[0], data[1]);
-    led_state = data[0];
-    led_status_changed = true;
+    printf("data: %d, %d\n", data[0], data[1]); // {[led state], [not led state]}
     ls->state = data[0];
     ls->not_state = data[1];
+    led_status_changed = true;
 }
 
 void change_bright(){
@@ -154,14 +154,14 @@ void change_bright(){
 }
 
 void toggle_leds(){
-    if (brightness == 0 && led_state == true){
+    if (brightness == 0 && ls->state == true){
         brightness = 500;
         change_bright();
-    } else if (led_state == false){
-        led_state = true;
+    } else if (ls->state == false){
+        ls->state = true;
         change_bright();
-    } else if (led_state == true){
-        led_state = false;
+    } else if (ls->state == true){
+        ls->state = false;
         for (int led_pin = STARTING_LED; led_pin < STARTING_LED + N_LED; led_pin++){
             uint slice_num = pwm_gpio_to_slice_num(led_pin);
             uint chan = pwm_gpio_to_channel(led_pin);
