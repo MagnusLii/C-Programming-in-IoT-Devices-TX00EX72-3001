@@ -80,6 +80,8 @@ int main(){
     gpio_set_irq_enabled_with_callback(ROT_A, GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
     gpio_set_irq_enabled_with_callback(ROT_SW, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
+    ledstate ls;
+    
     // If the LED state is not valid, set all LEDs on and write to EEPROM
     printf("reading more\n");
     if (!led_state_is_valid(&ls)) {
