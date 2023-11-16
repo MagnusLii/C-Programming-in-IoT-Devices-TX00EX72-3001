@@ -92,8 +92,8 @@ int main(){
 
     read_led_state_from_eeprom(&ls, 1);
 
-    printf("led_state: %d\n", OnOff[led_state]);
-    printf("ls.state: %d\n", OnOff[ls.state]);
+    printf("led_state: %s\n", OnOff[led_state]);
+    printf("ls.state: %s\n", OnOff[ls.state]);
 
     while (1) {
         if (status_changed == true){
@@ -106,8 +106,8 @@ int main(){
         if (led_status_changed == true){
             toggle_leds();
             write_led_state_to_eeprom(&ls, 1);
-            printf("led_state: %d\n", OnOff[led_state]);
-            printf("ls.state: %d\n", OnOff[ls.state]);
+            printf("led_state: %s\n", OnOff[led_state]);
+            printf("ls.state: %s\n", OnOff[ls.state]);
             led_status_changed = false;
         }
     }
