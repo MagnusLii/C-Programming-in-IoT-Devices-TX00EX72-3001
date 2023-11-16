@@ -81,9 +81,6 @@ int main(){
     gpio_set_irq_enabled_with_callback(ROT_SW, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
     ledstate ls;
-    
-    printf("led_state: %d\n", led_state);
-    printf("ls.state: %d\n", ls.state);
 
     // If the LED state is not valid, set all LEDs on and write to EEPROM
     /*printf("reading more\n");
@@ -94,6 +91,9 @@ int main(){
     }*/
 
     read_led_state_from_eeprom(&ls, 1);
+
+    printf("led_state: %d\n", led_state);
+    printf("ls.state: %d\n", ls.state);
 
     while (1) {
         if (status_changed == true){
