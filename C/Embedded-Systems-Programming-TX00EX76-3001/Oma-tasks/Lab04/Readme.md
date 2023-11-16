@@ -61,11 +61,11 @@ Above is a helper function that sets both values in the struct. By using helper 
 both values are set correctly in the structure. In the same style we can write a function that validates the
 integrity of the structure that was read from the EEPROM.
 
-´´´
+```
 bool led_state_is_valid(ledstate *ls) {
 return ls->state == (uint8_t) ~ls->not_state;
 }
-´´´
+```
 
 Typecast to uint8_t is needed for the compare to work correctly because operand of bitwise not gets
 promoted to an integer. Typecast to 8-bit value discards the extra bits that got added in the promotion.
@@ -103,7 +103,7 @@ Figure 1 Structure of log in EEPROM
 Use following code for CRC-calculation
 (adapted from: https://stackoverflow.com/questions/10564491/function-to-calculate-a-crc16-checksum )
 
-´´´
+```
 uint16_t crc16(const uint8_t *data_p, size_t length) {
 uint8_t x;
 uint16_t crc = 0xFFFF;
@@ -114,14 +114,14 @@ crc = (crc << 8) ^ ((uint16_t) (x << 12)) ^ ((uint16_t) (x << 5)) ^ ((uint16_t) 
 }
 return crc;
 }
-´´´
+```
 
 The property of CRC is such that when a CRC that is calculated over a number of data bytes is placed
 immediately after the bytes and the CRC is calculated over the data bytes plus the CRC-bytes the result is
 zero, provided that the data has not been modified after CRC was calculated.
 For example:
 
-´´´
+```
 uint8_t buffer[10] = { 51, 32, 93, 84, 75, 16, 17, 28 };
 uint16_t crc = crc16(buffer, 8);
 // put CRC after data
@@ -131,4 +131,4 @@ buffer[9] = (uint8_t) crc;
 if(crc16(buffer, 10) != 0) {
 printf("Error\n");
 }
-´´´
+```
