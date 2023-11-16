@@ -19,7 +19,6 @@
 #define SDA_PIN 17
 #define SCL_PIN 16
 
-// Structure to hold the LED state and its inverted value
 typedef struct ledstate {
     bool state;  // The actual state of the LEDs
     bool not_state;  // The inverted state of the LEDs
@@ -35,7 +34,7 @@ bool led_state_is_valid(ledstate *ls);
 void write_led_state_to_eeprom(ledstate *ls, uint16_t mem_addr);
 void read_led_state_from_eeprom(ledstate *ls, uint16_t mem_addr);
 void change_bright();
-void toggle_leds();
+void toggle_leds(ledstate *ls);
 void gpio_callback(uint gpio, uint32_t events);
 
 
@@ -104,7 +103,7 @@ int main(){
             status_changed = false;
         }
         if (led_status_changed == true){
-            toggle_leds();
+            toggle_leds(&ls);
             write_led_state_to_eeprom(&ls, LED_STATE_ADDR);
             read_led_state_from_eeprom(&ls, LED_STATE_ADDR);
             printf("led_state: %s\n", OnOff[led_state]);
@@ -154,7 +153,7 @@ void change_bright(){
     }
 }
 
-void toggle_leds(){
+void toggle_leds(ledstate *ls){
     if (brightness == 0 && led_state == true){
         brightness = 500;
         change_bright();
