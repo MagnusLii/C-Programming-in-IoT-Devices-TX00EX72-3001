@@ -30,7 +30,7 @@ typedef struct ledstate {
     bool not_state;  // The inverted state of the LEDs
 } ledstate;
 
-void set_led_state(ledstate *ls, uint8_t value);
+void set_led_state(ledstate *ls, bool value);
 bool led_state_is_valid(ledstate *ls);
 void write_led_state_to_eeprom(ledstate *ls);
 void read_led_state_from_eeprom(ledstate *ls);
