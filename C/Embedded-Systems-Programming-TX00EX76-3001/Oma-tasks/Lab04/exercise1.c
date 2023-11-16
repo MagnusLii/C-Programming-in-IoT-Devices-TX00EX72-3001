@@ -32,8 +32,8 @@ typedef struct ledstate {
 
 void set_led_state(ledstate *ls, bool value);
 bool led_state_is_valid(ledstate *ls);
-void write_led_state_to_eeprom(ledstate *ls);
-void read_led_state_from_eeprom(ledstate *ls);
+void write_led_state_to_eeprom(ledstate *ls, uint16_t mem_addr);
+void read_led_state_from_eeprom(ledstate *ls, uint16_t mem_addr);
 void change_bright();
 void toggle_leds();
 void gpio_callback(uint gpio, uint32_t events);
@@ -127,17 +127,17 @@ bool led_state_is_valid(ledstate *ls) {
 }
 
 // Function to write the LED state to the EEPROM
-void write_led_state_to_eeprom(ledstate *ls) {
+void write_led_state_to_eeprom(ledstate *ls, uint16_t mem_addr) {
     uint8_t data[2] = {ls->state, ls->not_state};
-    uint8_t reg_addr[2] = {LED_STATE_ADDR >> 8, LED_STATE_ADDR & 0xFF};  // High and low bytes of the EEPROM address
+    uint8_t reg_addr[2] = {mem_addr >> 8, mem_addr & 0xFF};  // High and low bytes of the EEPROM address
     uint8_t combined[4] = {reg_addr[0], reg_addr[1], data[0], data[1]};  // Combine the register address and data
     i2c_write_blocking(i2c_default, EEPROM_ADDR, combined, 4, false);
 }
 
 // Function to read the LED state from the EEPROM
-void read_led_state_from_eeprom(ledstate *ls) {
+void read_led_state_from_eeprom(ledstate *ls, uint16_t mem_addr) {
     printf("1\n");
-    uint8_t reg_addr[2] = {LED_STATE_ADDR >> 8, LED_STATE_ADDR & 0xFF};  // High and low bytes of the EEPROM address
+    uint8_t reg_addr[2] = {mem_addr >> 8, mem_addr & 0xFF};  // High and low bytes of the EEPROM address
     printf("2\n");
     i2c_write_blocking(i2c_default, EEPROM_ADDR, reg_addr, 2, true);  // Write the register address with nostop=true
     printf("3\n");
