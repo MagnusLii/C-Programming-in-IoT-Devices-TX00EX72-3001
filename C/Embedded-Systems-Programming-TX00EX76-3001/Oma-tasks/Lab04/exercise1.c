@@ -157,18 +157,18 @@ void toggle_leds(ledstate *ls){
     if (brightness == 0 && led_state == true){
         brightness = 500;
         change_bright();
-        write_led_state_to_eeprom(&ls, LED_STATE_ADDR);
+        write_led_state_to_eeprom(ls, LED_STATE_ADDR);
     } else if (led_state == false){
         led_state = true;
         change_bright();
-        write_led_state_to_eeprom(&ls, LED_STATE_ADDR);
+        write_led_state_to_eeprom(ls, LED_STATE_ADDR);
     } else if (led_state == true){
         led_state = false;
         for (int led_pin = STARTING_LED; led_pin < STARTING_LED + N_LED; led_pin++){
             uint slice_num = pwm_gpio_to_slice_num(led_pin);
             uint chan = pwm_gpio_to_channel(led_pin);
             pwm_set_chan_level(slice_num, chan, 0);
-            write_led_state_to_eeprom(&ls, LED_STATE_ADDR);
+            write_led_state_to_eeprom(ls, LED_STATE_ADDR);
         }
     }
 }
