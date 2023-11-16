@@ -45,7 +45,7 @@ inverted value, we can avoid case where both bytes are identical, a typical case
 memory, to be accepted as a valid value.  
 For example:  
 
-```
+```c
 typedef struct ledstate {
 uint8_t state;
 uint8_t not_state;
@@ -61,7 +61,7 @@ Above is a helper function that sets both values in the struct. By using helper 
 both values are set correctly in the structure. In the same style we can write a function that validates the
 integrity of the structure that was read from the EEPROM.  
 
-```
+```c
 bool led_state_is_valid(ledstate *ls) {
 return ls->state == (uint8_t) ~ls->not_state;
 }
@@ -104,7 +104,7 @@ Figure 1 Structure of log in EEPROM
 Use following code for CRC-calculation  
 (adapted from: https://stackoverflow.com/questions/10564491/function-to-calculate-a-crc16-checksum )  
 
-```
+```c
 uint16_t crc16(const uint8_t *data_p, size_t length) {
 uint8_t x;
 uint16_t crc = 0xFFFF;
@@ -122,7 +122,7 @@ immediately after the bytes and the CRC is calculated over the data bytes plus t
 zero, provided that the data has not been modified after CRC was calculated.  
 For example:
 
-```
+```c
 uint8_t buffer[10] = { 51, 32, 93, 84, 75, 16, 17, 28 };
 uint16_t crc = crc16(buffer, 8);
 // put CRC after data
