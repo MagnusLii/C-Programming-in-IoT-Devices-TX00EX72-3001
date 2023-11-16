@@ -135,6 +135,7 @@ void read_led_state_from_eeprom(ledstate *ls, uint16_t mem_addr) {
     i2c_write_blocking(i2c_default, EEPROM_ADDR, reg_addr, 2, true);  // Write the register address with nostop=true
     uint8_t data[2];
     i2c_read_blocking(i2c_default, EEPROM_ADDR, data, 2, false);
+    printf("data: %d, %d\n", data[0], data[1]);
     led_state = data[0];
     led_status_changed = true;
     ls->state = data[0];
