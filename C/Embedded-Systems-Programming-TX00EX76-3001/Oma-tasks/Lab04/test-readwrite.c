@@ -23,6 +23,16 @@ uint8_t read_eeprom(uint16_t mem_addr);
 
 int main()
 {
+
+    // init the I2C bus
+    i2c_init(i2c_default, 100 * 10000); //1Mhz
+    gpio_set_function(SDA_PIN, GPIO_FUNC_I2C);
+    gpio_set_function(SCL_PIN, GPIO_FUNC_I2C);
+    gpio_pull_up(SDA_PIN);
+    gpio_pull_up(SCL_PIN);
+
+
+    stdio_init_all();
     sleep_ms(1000);
     printf("Starting...\n");
 
