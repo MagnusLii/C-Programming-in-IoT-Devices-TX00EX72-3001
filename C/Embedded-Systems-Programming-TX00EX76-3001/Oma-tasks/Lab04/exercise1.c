@@ -16,8 +16,8 @@
 
 #define EEPROM_ADDR 0x50  // I2C address of the EEPROM
 #define LED_STATE_ADDR 0xFFFF  // Address in the EEPROM to store the LED state
-#define SDA_PIN 16
-#define SCL_PIN 17
+#define SDA_PIN 21
+#define SCL_PIN 22
 
 volatile bool led_state = true;
 volatile uint brightness = 500;
@@ -91,7 +91,7 @@ int main(){
         write_led_state_to_eeprom(&ls);
     }
 
-    read_led_state_from_eeprom(&ls)
+    read_led_state_from_eeprom(&ls);
     led_state = ls.state;
     led_status_changed = true;
 
@@ -127,13 +127,17 @@ bool led_state_is_valid(ledstate *ls) {
 // Function to write the LED state to the EEPROM
 void write_led_state_to_eeprom(ledstate *ls) {
     uint8_t data[2] = {ls->state, ls->not_state};
-    i2c_write_blocking(i2c_default, EEPROM_ADDR, LED_STATE_ADDR, 2, data, 2);
+    uint8_t reg_addr[2] = {LED_STATE_ADDR >> 8, LED_STATE_ADDR & 0xFF};  // High and low bytes of the EEPROM address
+    uint8_t combined[4] = {reg_addr[0], reg_addr[1], data[0], data[1]};  // Combine the register address and data
+    i2c_write_blocking(i2c_default, EEPROM_ADDR, combined, 4, false);
 }
 
 // Function to read the LED state from the EEPROM
 void read_led_state_from_eeprom(ledstate *ls) {
+    uint8_t reg_addr[2] = {LED_STATE_ADDR >> 8, LED_STATE_ADDR & 0xFF};  // High and low bytes of the EEPROM address
+    i2c_write_blocking(i2c_default, EEPROM_ADDR, reg_addr, 2, true);  // Write the register address with nostop=true
     uint8_t data[2];
-    i2c_read_blocking(i2c_default, EEPROM_ADDR, LED_STATE_ADDR, 2, data, 2);
+    i2c_read_blocking(i2c_default, EEPROM_ADDR, data, 2, false);
     ls->state = data[0];
     ls->not_state = data[1];
 }
