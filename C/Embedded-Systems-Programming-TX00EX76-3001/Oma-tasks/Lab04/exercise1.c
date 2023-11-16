@@ -21,7 +21,7 @@
 
 typedef struct ledstate {
     bool state;  // The actual state of the LEDs
-    bool not_state;  // The inverted state of the LEDs
+    int brightness  // The inverted state of the LEDs
 } ledstate;
 
 volatile uint brightness = 500;
@@ -195,3 +195,8 @@ void gpio_callback(uint gpio, uint32_t events){
         }
     }
 }
+
+// #TODO save brightness to eeprom.
+// #TODO rewrite code to use ledstate struct.
+// #TODO integrate a circular buffer to handle button.
+// #TODO refactor code to remove irrelevant shite.
