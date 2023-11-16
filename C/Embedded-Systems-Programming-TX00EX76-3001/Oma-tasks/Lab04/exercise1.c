@@ -16,8 +16,8 @@
 
 #define EEPROM_ADDR 0x50  // I2C address of the EEPROM
 #define LED_STATE_ADDR 0xFFFF  // Address in the EEPROM to store the LED state
-#define SDA_PIN 21
-#define SCL_PIN 22
+#define SDA_PIN 17
+#define SCL_PIN 16
 
 volatile bool led_state = false;
 volatile uint brightness = 500;
@@ -83,17 +83,17 @@ int main(){
     // Read the LED state from the EEPROM
     printf("Reading\n");
     ledstate ls;
-    read_led_state_from_eeprom(&ls);
+    read_led_state_from_eeprom(&ls, 1);
 
     // If the LED state is not valid, set all LEDs on and write to EEPROM
     printf("reading more\n");
     if (!led_state_is_valid(&ls)) {
         led_state = true;
         set_led_state(&ls, true);  // LEDs on
-        write_led_state_to_eeprom(&ls);
+        write_led_state_to_eeprom(&ls, 1);
     }
 
-    read_led_state_from_eeprom(&ls);
+    read_led_state_from_eeprom(&ls, 1);
     led_state = ls.state;
     led_status_changed = true;
 
@@ -177,7 +177,7 @@ void toggle_leds(){
 
 void gpio_callback(uint gpio, uint32_t events){
     int debounce_counter = 0;
-    
+
     if (gpio == ROT_A){
         if (gpio_get(ROT_B)) {
             if (brightness > LED_BRIGHT_MIN){
@@ -189,8 +189,8 @@ void gpio_callback(uint gpio, uint32_t events){
             }
         }
         status_changed = true;
-    } 
-    
+    }
+
     else if (gpio == ROT_SW && led_status_changed == false){
         led_status_changed = true;
 
