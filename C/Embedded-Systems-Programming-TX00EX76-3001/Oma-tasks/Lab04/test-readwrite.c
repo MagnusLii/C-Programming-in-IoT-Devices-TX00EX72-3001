@@ -15,8 +15,8 @@
 #define LED_BRIGHT_STEP 10
 
 #define EEPROM_ADDR 0x50  // I2C address of the EEPROM
-#define SDA_PIN 21
-#define SCL_PIN 22
+#define SDA_PIN 16
+#define SCL_PIN 17
 
 void write_eeprom(uint16_t mem_addr, uint8_t data);
 uint8_t read_eeprom(uint16_t mem_addr);
