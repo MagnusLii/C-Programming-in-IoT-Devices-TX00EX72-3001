@@ -24,7 +24,6 @@ typedef struct ledstate {
     bool not_state;  // The inverted state of the LEDs
 } ledstate;
 
-volatile bool led_state = false;
 volatile uint brightness = 500;
 volatile bool status_changed = false;
 volatile bool led_status_changed = false;
@@ -102,7 +101,6 @@ int main(){
             toggle_leds(&ls);
             write_led_state_to_eeprom(&ls, LED_STATE_ADDR);
             read_led_state_from_eeprom(&ls, LED_STATE_ADDR);
-            printf("led_state: %s\n", OnOff[led_state]);
             printf("ls.state: %s\n", OnOff[ls.state]);
             led_status_changed = false;
         }
