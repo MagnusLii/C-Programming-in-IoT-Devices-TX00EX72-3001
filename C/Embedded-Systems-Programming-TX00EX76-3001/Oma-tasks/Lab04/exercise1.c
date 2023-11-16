@@ -84,9 +84,11 @@ int main(){
     if (!led_state_is_valid(&ls)) {
         set_led_state(&ls, true);  // LEDs on
         write_led_state_to_eeprom(&ls, 1);
+        sleep_ms(10);
     }
 
     read_led_state_from_eeprom(&ls, LED_STATE_ADDR);
+    sleep_ms(10);
 
     while (1) {
         if (status_changed == true){
@@ -99,7 +101,9 @@ int main(){
         if (led_status_changed == true){
             toggle_leds(&ls);
             write_led_state_to_eeprom(&ls, LED_STATE_ADDR);
+            sleep_ms(10);
             read_led_state_from_eeprom(&ls, LED_STATE_ADDR);
+            sleep_ms(10);
             printf("ls.state: %s\n", OnOff[ls.state]);
             led_status_changed = false;
         }
@@ -156,13 +160,16 @@ void toggle_leds(ledstate *ls){
         brightness = 500;
         change_bright();
         write_led_state_to_eeprom(ls, LED_STATE_ADDR);
+        sleep_ms(10);
     } else if (ls->state == false){
         set_led_state(ls, true);
         change_bright();
         write_led_state_to_eeprom(ls, LED_STATE_ADDR);
+        sleep_ms(10);
     } else if (ls->state == true){
         set_led_state(ls, false);
         write_led_state_to_eeprom(ls, LED_STATE_ADDR);
+        sleep_ms(10);
         for (int led_pin = STARTING_LED; led_pin < STARTING_LED + N_LED; led_pin++){
             uint slice_num = pwm_gpio_to_slice_num(led_pin);
             uint chan = pwm_gpio_to_channel(led_pin);
