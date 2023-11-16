@@ -83,12 +83,12 @@ int main(){
     ledstate ls;
     
     // If the LED state is not valid, set all LEDs on and write to EEPROM
-    printf("reading more\n");
+    /*printf("reading more\n");
     if (!led_state_is_valid(&ls)) {
         led_state = true;
         set_led_state(&ls, true);  // LEDs on
         write_led_state_to_eeprom(&ls, 1);
-    }
+    }*/
 
     read_led_state_from_eeprom(&ls, 1);
 
