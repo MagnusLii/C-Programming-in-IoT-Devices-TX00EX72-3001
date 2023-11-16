@@ -14,17 +14,20 @@
 #define LED_BRIGHT_MIN 0
 #define LED_BRIGHT_STEP 10
 
-#define EEPROM_ADDR 0x50
-#define LED_STATE_ADDR 0xFFFF
+#define EEPROM_ADDR 0x50  // I2C address of the EEPROM
+#define LED_STATE_ADDR 0xFFFF  // Address in the EEPROM to store the LED state
+#define SDA_PIN 16
+#define SCL_PIN 17
 
 volatile bool led_state = true;
 volatile uint brightness = 500;
 volatile bool status_changed = false;
 volatile bool led_status_changed = false;
 
+// Structure to hold the LED state and its inverted value
 typedef struct ledstate {
-    uint8_t state;
-    uint8_t not_state;
+    bool state;  // The actual state of the LEDs
+    bool not_state;  // The inverted state of the LEDs
 } ledstate;
 
 void set_led_state(ledstate *ls, uint8_t value);
@@ -38,6 +41,13 @@ void gpio_callback(uint gpio, uint32_t events);
 
 int main(){
     stdio_init_all();
+
+    // init the I2C bus
+    i2c_init(i2c_default, 100 * 1000); //100khz
+    gpio_set_function(SDA_PIN, GPIO_FUNC_I2C);
+    gpio_set_function(SCL_PIN, GPIO_FUNC_I2C);
+    gpio_pull_up(SDA_PIN);
+    gpio_pull_up(SCL_PIN);
 
     char OnOff[2][10] = {"OFF", "ON"};
 
@@ -70,6 +80,21 @@ int main(){
     gpio_set_irq_enabled_with_callback(ROT_A, GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
     gpio_set_irq_enabled_with_callback(ROT_SW, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
+    // Read the LED state from the EEPROM
+    ledstate ls;
+    read_led_state_from_eeprom(&ls);
+
+    // If the LED state is not valid, set all LEDs on and write to EEPROM
+    if (!led_state_is_valid(&ls)) {
+        led_state = true;
+        set_led_state(&ls, true);  // LEDs on
+        write_led_state_to_eeprom(&ls);
+    }
+
+    read_led_state_from_eeprom(&ls)
+    led_state = ls.state;
+    led_status_changed = true;
+
     while (1) {
         if (status_changed == true){
             if (led_state != false){
@@ -88,43 +113,24 @@ int main(){
 }
 
 
-int main() {
-    stdio_init_all();
-    i2c_init(i2c_default, 100 * 1000);
-    gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
-    gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
-    gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
-    gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
-
-    ledstate ls;
-    read_led_state_from_eeprom(&ls);
-    if (!led_state_is_valid(&ls)) {
-        set_led_state(&ls, 0b00000100);  // Middle LED on
-        write_led_state_to_eeprom(&ls);
-    }
-
-    while (true) {
-        // TODO: Implement button press detection and LED state toggling
-    }
-
-    return 0;
-}
-
-
-void set_led_state(ledstate *ls, uint8_t value) {
+// Function to set the LED state and its inverted value in the ledstate structure
+void set_led_state(ledstate *ls, bool value) {
     ls->state = value;
-    ls->not_state = ~value;
+    ls->not_state = !value;
 }
 
+// Function to check if the LED state and its inverted value match
 bool led_state_is_valid(ledstate *ls) {
-    return ls->state == (uint8_t) ~ls->not_state;
+    return ls->state == !ls->not_state;
 }
 
+// Function to write the LED state to the EEPROM
 void write_led_state_to_eeprom(ledstate *ls) {
     uint8_t data[2] = {ls->state, ls->not_state};
     i2c_write_blocking(i2c_default, EEPROM_ADDR, LED_STATE_ADDR, 2, data, 2);
 }
 
+// Function to read the LED state from the EEPROM
 void read_led_state_from_eeprom(ledstate *ls) {
     uint8_t data[2];
     i2c_read_blocking(i2c_default, EEPROM_ADDR, LED_STATE_ADDR, 2, data, 2);
