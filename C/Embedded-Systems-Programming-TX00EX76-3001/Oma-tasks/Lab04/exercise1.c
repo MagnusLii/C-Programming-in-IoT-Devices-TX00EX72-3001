@@ -106,6 +106,7 @@ int main(){
         if (led_status_changed == true){
             toggle_leds();
             write_led_state_to_eeprom(&ls, 1);
+            read_led_state_from_eeprom(&ls, 1);
             printf("led_state: %s\n", OnOff[led_state]);
             printf("ls.state: %s\n", OnOff[ls.state]);
             led_status_changed = false;
@@ -141,9 +142,6 @@ void read_led_state_from_eeprom(ledstate *ls, uint16_t mem_addr) {
     i2c_write_blocking(i2c_default, EEPROM_ADDR, reg_addr, 2, true);  // Write the register address with nostop=true
     uint8_t data[2];
     i2c_read_blocking(i2c_default, EEPROM_ADDR, data, 2, false);
-    printf("data: %d, %d\n", data[0], data[1]); // {[led state], [not led state]}
-    led_state = data[0];
-    led_status_changed = true;
     ls->state = data[0];
     ls->not_state = data[1];
 }
