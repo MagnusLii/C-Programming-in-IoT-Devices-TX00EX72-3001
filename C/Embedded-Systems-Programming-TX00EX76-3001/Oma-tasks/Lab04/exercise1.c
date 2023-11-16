@@ -21,7 +21,7 @@
 
 typedef struct ledstate {
     bool state;  // The actual state of the LEDs
-    int brightness  // The inverted state of the LEDs
+    bool not_state;  // The inverted state of the LEDs
 } ledstate;
 
 volatile uint brightness = 500;
@@ -49,19 +49,6 @@ int main(){
 
     char OnOff[2][10] = {"OFF", "ON"};
 
-    // setup led(s).
-    for (int led_pin = STARTING_LED; led_pin < STARTING_LED + N_LED; led_pin++){
-        uint slice_num = pwm_gpio_to_slice_num(led_pin);
-        pwm_set_enabled(slice_num, false);
-        pwm_config config = pwm_get_default_config();
-        pwm_config_set_clkdiv_int(&config, 125);
-        pwm_config_set_wrap(&config, 1000); // 1kHz
-        pwm_init(slice_num, &config, false);
-        gpio_set_function(led_pin, GPIO_FUNC_PWM);
-        pwm_set_enabled(slice_num, true);
-    }
-    change_bright();
-
     // setup button pin for on/off.
     gpio_init(ROT_SW);
     gpio_set_dir(ROT_SW, GPIO_IN);
@@ -80,9 +67,35 @@ int main(){
 
     ledstate ls;
 
+    // If the LED state is not valid, set all LEDs on and write to EEPROM
+    /*if (!led_state_is_valid(&ls)) {
+        printf("LED state is not valid\n");
+        set_led_state(&ls, true);  // LEDs on
+        write_led_state_to_eeprom(&ls, 1);
+        sleep_ms(10);
+    }*/
+
     read_led_state_from_eeprom(&ls, LED_STATE_ADDR);
     sleep_ms(10);
-    toggle_leds(&ls);
+
+    // setup led(s).
+    for (int led_pin = STARTING_LED; led_pin < STARTING_LED + N_LED; led_pin++){
+        uint slice_num = pwm_gpio_to_slice_num(led_pin);
+        pwm_set_enabled(slice_num, false);
+        pwm_config config = pwm_get_default_config();
+        pwm_config_set_clkdiv_int(&config, 125);
+        pwm_config_set_wrap(&config, 1000); // 1kHz
+        pwm_init(slice_num, &config, false);
+        gpio_set_function(led_pin, GPIO_FUNC_PWM);
+        pwm_set_enabled(slice_num, true);
+    }
+    
+    if (ls.state == false){
+        brightness = 0;
+    } else {
+        brightness = 500;
+    }
+    change_bright();
 
     while (1) {
         if (status_changed == true){
@@ -105,6 +118,12 @@ int main(){
     return 0;
 }
 
+
+// Function to set the LED state and its inverted value in the ledstate structure
+void set_led_state(ledstate *ls, bool value) {
+    ls->state = value;
+    ls->not_state = !value;
+}
 
 // Function to check if the LED state and its inverted value match
 bool led_state_is_valid(ledstate *ls) {
