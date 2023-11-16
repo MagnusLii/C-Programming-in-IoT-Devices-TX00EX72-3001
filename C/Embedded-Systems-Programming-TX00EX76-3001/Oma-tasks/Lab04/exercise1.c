@@ -81,10 +81,12 @@ int main(){
     gpio_set_irq_enabled_with_callback(ROT_SW, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
     // Read the LED state from the EEPROM
+    printf("Reading\n");
     ledstate ls;
     read_led_state_from_eeprom(&ls);
 
     // If the LED state is not valid, set all LEDs on and write to EEPROM
+    printf("reading more\n");
     if (!led_state_is_valid(&ls)) {
         led_state = true;
         set_led_state(&ls, true);  // LEDs on
@@ -134,11 +136,17 @@ void write_led_state_to_eeprom(ledstate *ls) {
 
 // Function to read the LED state from the EEPROM
 void read_led_state_from_eeprom(ledstate *ls) {
+    printf("1\n");
     uint8_t reg_addr[2] = {LED_STATE_ADDR >> 8, LED_STATE_ADDR & 0xFF};  // High and low bytes of the EEPROM address
+    printf("2\n");
     i2c_write_blocking(i2c_default, EEPROM_ADDR, reg_addr, 2, true);  // Write the register address with nostop=true
+    printf("3\n");
     uint8_t data[2];
+    printf("4\n");
     i2c_read_blocking(i2c_default, EEPROM_ADDR, data, 2, false);
+    printf("5\n");
     ls->state = data[0];
+    printf("6\n");
     ls->not_state = data[1];
 }
 
