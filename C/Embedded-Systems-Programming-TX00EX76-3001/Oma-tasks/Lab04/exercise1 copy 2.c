@@ -30,13 +30,13 @@
 typedef struct ledStatus
 {
     bool ledState[3];
-    uint16_t brightness;
+    uint8_t brightness;
 } ledStatus;
 
 typedef struct queueTrain
 {
-    uint16_t gpioPin;
-    uint16_t pinState;
+    uint8_t gpioPin;
+    uint8_t pinState;
 } queueTrain;
 
 static void gpio_callback(uint gpio, uint32_t event_mask);
@@ -44,6 +44,8 @@ void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct);
 void incBrightness(struct ledStatus *ledStatusStruct);
 void decBrightness(struct ledStatus *ledStatusStruct);
 void buttonReleased(int gpioPin);
+void writeLedStateToEeprom(const struct ledStatus *ledStatusStruct);
+void readLedStateFromEeprom(struct ledStatus *ledStatusStruct);
 
 static queue_t irqEvents;
 
@@ -88,7 +90,7 @@ int main()
         pwm_config_set_clkdiv_int(&config, 125);
         pwm_config_set_wrap(&config, 1000); // 1kHz
         pwm_init(slice_num, &config, false);
-        // pwm_set_chan_level(slice_num, chan, ls.brightness); // brightness
+        pwm_set_chan_level(slice_num, chan, 300); // brightness
         gpio_set_function(i, GPIO_FUNC_PWM);
         pwm_set_enabled(slice_num, true);
     }
@@ -103,9 +105,6 @@ int main()
 
     int value = 0;
     int lastValue = 0;
-    bool buttonDebounced = false;
-    int debounceCounter = 0;
-    int debouceStorage = 0;
 
     while (true)
     {
@@ -116,7 +115,7 @@ int main()
             {
                 break;
             }
-            
+
             if (value == BUTTON1_PIN || value == BUTTON2_PIN || value == BUTTON3_PIN)
             {
                 buttonReleased(value);
@@ -202,7 +201,8 @@ void decBrightness(struct ledStatus *ledStatusStruct)
     }
 }
 
-void buttonReleased(int gpioPin){
+void buttonReleased(int gpioPin)
+{
     int debounceCounter = 0;
     bool buttonDebounced = false;
 
@@ -219,4 +219,78 @@ void buttonReleased(int gpioPin){
     }
 
     return;
+}
+
+void writeLedStateToEeprom(const struct ledStatus *ledStatusStruct)
+{
+    uint16_t ledStatusAddress = LED_STATE_ADDR;
+    uint16_t brightnessAddress = BRIGHTNESS_ADDR;
+
+    // Write led state to eeprom.
+    uint8_t statusAddr[2] = {ledStatusAddress >> 8, ledStatusAddress & 0xFF}; // High and low bytes of the EEPROM address
+    uint8_t statusData[5] = {statusAddr[0], statusAddr[1], ledStatusStruct->ledState[0], ledStatusStruct->ledState[1], ledStatusStruct->ledState[2]};
+    i2c_write_blocking(i2c_default, EEPROM_ADDR, statusData, 5, false);
+    sleep_ms(EEPROM_WRITE_DELAY_MS);
+
+    // Write inverse led state to eeprom.
+    uint8_t inverseStatusAddr[2] = {(ledStatusAddress - 1) >> 8, (ledStatusAddress - 1) & 0xFF}; // High and low bytes of the EEPROM address for inverse LED states
+    uint8_t inverseStatusData[3] = {inverseStatusAddr[0], inverseStatusAddr[1], !ledStatusStruct->ledState[0], !ledStatusStruct->ledState[1], !ledStatusStruct->ledState[2]};
+    i2c_write_blocking(i2c_default, EEPROM_ADDR, inverseStatusData, 5, false);
+    sleep_ms(EEPROM_WRITE_DELAY_MS);
+
+    // Write brightness to eeprom.
+    uint8_t brightnessAddr[2] = {brightnessAddress >> 8, brightnessAddress & 0xFF}; // High and low bytes of the EEPROM address
+    uint8_t brightnessData[3] = {brightnessAddr[0], brightnessAddr[1], ledStatusStruct->brightness};
+    i2c_write_blocking(i2c_default, EEPROM_ADDR, brightnessData, 3, false);
+    sleep_ms(EEPROM_WRITE_DELAY_MS);
+}
+
+bool readLedStateFromEeprom(struct ledstatus *ledStatusStruct)
+{
+    uint16_t ledStatusAddress = LED_STATE_ADDR;
+    uint16_t brightnessAddress = BRIGHTNESS_ADDR;
+    uint8_t normalStatusData[5];
+    uint8_t invertedStatusData[5];
+
+    // Read led state from eeprom.
+    uint8_t statusAddr[2] = {ledStatusAddress >> 8, ledStatusAddress & 0xFF}; // High and low bytes of the EEPROM address
+    i2c_write_blocking(i2c_default, EEPROM_ADDR, statusAddr, 2, true);        // Write the register address with nostop=true
+    uint8_t statusData[5];
+    i2c_read_blocking(i2c_default, EEPROM_ADDR, statusData, 5, false);
+
+    // Read inverted LED state data from EEPROM.
+    uint8_t invertedStatusAddr[2] = {(ledStatusAddress - 1) >> 8, (ledStatusAddress - 1) & 0xFF};
+    i2c_write_blocking(i2c_default, EEPROM_ADDR, invertedStatusAddr, 2, true);
+    i2c_read_blocking(i2c_default, EEPROM_ADDR, invertedStatusData, 5, false);
+
+    // Invert the inverted LED state data after reading.
+    invertedStatusData[2] = ~invertedStatusData[2];
+    invertedStatusData[3] = ~invertedStatusData[3];
+    invertedStatusData[4] = ~invertedStatusData[4];
+
+    // Compare the values.
+    for (int i = 2; i < 5; ++i)
+    {
+        if (normalStatusData[i] != invertedStatusData[i])
+        {
+            printf("LED state mismatch\n");
+            printf("normalStatusData: %d, %d, %d\n", normalStatusData[2], normalStatusData[3], normalStatusData[4]);
+            printf("invertedStatusData: %d, %d, %d\n", invertedStatusData[2], invertedStatusData[3], invertedStatusData[4]);
+            return false; // LED state mismatch
+        }
+    }
+
+    // store the led state.
+    ledStatusStruct->ledState[0] = normalStatusData[2];
+    ledStatusStruct->ledState[1] = normalStatusData[3];
+    ledStatusStruct->ledState[2] = normalStatusData[4];
+
+    // Read brightness from eeprom.
+    uint8_t brightnessAddr[2] = {brightnessAddress >> 8, brightnessAddress & 0xFF}; // High and low bytes of the EEPROM address
+    i2c_write_blocking(i2c_default, EEPROM_ADDR, brightnessAddr, 2, true);           // Write the register address with nostop=true
+    uint8_t brightnessData[3];
+    i2c_read_blocking(i2c_default, EEPROM_ADDR, brightnessData, 3, false);
+    ledStatusStruct->brightness = brightnessData[2];
+
+    return true; // LED state matches
 }
