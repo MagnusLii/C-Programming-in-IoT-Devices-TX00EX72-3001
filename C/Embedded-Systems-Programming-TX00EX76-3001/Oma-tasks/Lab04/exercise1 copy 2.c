@@ -188,6 +188,7 @@ void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct)
     printf("ledPin: %d\n", ledPin);
     gpio_set_function(ledPin, GPIO_FUNC_PWM);
     uint slice_num = pwm_gpio_to_slice_num(ledPin);
+    printf("slice_num: %d\n", slice_num);
     pwm_set_enabled(slice_num, ledStatusStruct->ledState[ledNum]);
 }
 
