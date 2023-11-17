@@ -45,7 +45,7 @@ static void gpio_callback(uint gpio, uint32_t event_mask)
     queue_try_add(&irqEvents, &gpio);
 }
 
-void main(){
+int main(){
     char OnOff[2][10] = {"OFF", "ON"};
 
     stdio_init_all();
@@ -88,9 +88,9 @@ void main(){
 
     gpio_set_irq_enabled_with_callback(ROT_A, GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
     gpio_set_irq_enabled_with_callback(ROT_SW, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
-    gpio_set_irq_enabled_with_callback(BUTTON1_PIN, GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
-    gpio_set_irq_enabled_with_callback(BUTTON2_PIN, GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
-    gpio_set_irq_enabled_with_callback(BUTTON3_PIN, GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
+    gpio_set_irq_enabled_with_callback(BUTTON1_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+    gpio_set_irq_enabled_with_callback(BUTTON2_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+    gpio_set_irq_enabled_with_callback(BUTTON3_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
     queue_init(&irqEvents, sizeof(int), BUFFER_SIZE);
 
@@ -103,5 +103,6 @@ void main(){
             printf("Got event: %d\r\n", value);
         }
     }
-    
+
+    return 0;
 }
