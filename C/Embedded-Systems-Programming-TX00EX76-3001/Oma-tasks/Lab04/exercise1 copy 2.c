@@ -27,11 +27,6 @@
 #define LED_STATE_ADDR 32768 // Address in the EEPROM to store the LED state
 #define BUFFER_SIZE 512
 
-static void gpio_callback(uint gpio, uint32_t event_mask);
-void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct);
-void incBrightness(struct ledStatus *ledStatusStruct);
-void decBrightness(struct ledStatus *ledStatusStruct);
-
 typedef struct ledStatus
 {
     bool ledState[3];
@@ -43,6 +38,11 @@ typedef struct queueTrain
     uint16_t gpioPin;
     uint16_t pinState;
 } queueTrain;
+
+static void gpio_callback(uint gpio, uint32_t event_mask);
+void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct);
+void incBrightness(struct ledStatus *ledStatusStruct);
+void decBrightness(struct ledStatus *ledStatusStruct);
 
 static queue_t irqEvents;
 
