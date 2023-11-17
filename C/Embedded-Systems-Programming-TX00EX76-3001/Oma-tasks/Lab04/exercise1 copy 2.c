@@ -102,6 +102,9 @@ int main()
 
     int value = 0;
     int lastValue = 0;
+    bool buttonDebounced = false;
+    int debounceCounter = 0;
+    int debouceStorage = 0;
 
     while (true)
     {
@@ -112,36 +115,41 @@ int main()
             {
                 break;
             }
+            
+            if (value == BUTTON1_PIN || value == BUTTON2_PIN || value == BUTTON3_PIN)
+            {
+                buttonReleased(value);
+            }
+
             lastValue = value;
-            sleep_ms(10);
         }
 
         // handling interrupt events.
         // LED toggle buttons.
-        if (value == BUTTON1_PIN || value == BUTTON2_PIN || value == BUTTON3_PIN)
+        if (lastValue == BUTTON1_PIN || lastValue == BUTTON2_PIN || lastValue == BUTTON3_PIN)
         {
-            toggleLED(value, &ledStatusStruct);
+            toggleLED(lastValue, &ledStatusStruct);
         }
 
         // RotA increaste brightness.
-        if (value == ROT_A)
+        if (lastValue == ROT_A)
         {
             incBrightness(&ledStatusStruct);
         }
 
         // RotB decrease brightness.
-        if (value == ROT_B)
+        if (lastValue == ROT_B)
         {
             decBrightness(&ledStatusStruct);
         }
 
         // Sanity check.
-        if (value != BUTTON1_PIN && value != BUTTON2_PIN && value != BUTTON3_PIN && value != ROT_A && value != ROT_B && value != 0)
+        if (lastValue != BUTTON1_PIN && lastValue != BUTTON2_PIN && lastValue != BUTTON3_PIN && lastValue != ROT_A && lastValue != ROT_B && lastValue != 0)
         {
-            printf("Unknown interrupt event: %d\n", value);
+            printf("Unknown interrupt event: %d\n", lastValue);
         }
 
-        // Reset value.
+        // Reset values.
         value = 0;
         lastValue = 0;
     }
@@ -191,4 +199,23 @@ void decBrightness(struct ledStatus *ledStatusStruct)
     {
         ledStatusStruct->brightness -= LED_BRIGHT_STEP;
     }
+}
+
+void buttonReleased(int gpioPin){
+    int debounceCounter = 0;
+    bool buttonDebounced = false;
+
+    while (debounceCounter < 100000)
+    {
+        if (gpio_get(gpioPin) == 1)
+        {
+            debounceCounter++;
+        }
+        else
+        {
+            debounceCounter = 0;
+        }
+    }
+
+    return;
 }
