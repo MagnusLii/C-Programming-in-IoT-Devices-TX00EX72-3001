@@ -113,6 +113,7 @@ int main()
                 break;
             }
             lastValue = value;
+            sleep_ms(10);
         }
 
         // handling interrupt events.
