@@ -45,7 +45,7 @@ void incBrightness(struct ledStatus *ledStatusStruct);
 void decBrightness(struct ledStatus *ledStatusStruct);
 void buttonReleased(int gpioPin);
 void writeLedStateToEeprom(const struct ledStatus *ledStatusStruct);
-bool readLedStateFromEeprom(struct ledStatus *ledStatusStruct);
+bool readLedStateFromEeprom(struct ledstatus *ledStatusStruct);
 
 static queue_t irqEvents;
 
