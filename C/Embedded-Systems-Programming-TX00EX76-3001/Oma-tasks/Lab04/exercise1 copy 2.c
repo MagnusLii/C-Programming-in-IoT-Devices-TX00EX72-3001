@@ -4,6 +4,7 @@
 #include "hardware/gpio.h"
 #include "pico/util/queue.h"
 #include <stdio.h>
+#include <stdbool.h>
 
 #define ROT_A 10
 #define ROT_B 11
@@ -45,7 +46,7 @@ void incBrightness(struct ledStatus *ledStatusStruct);
 void decBrightness(struct ledStatus *ledStatusStruct);
 void buttonReleased(int gpioPin);
 void writeLedStateToEeprom(const struct ledStatus *ledStatusStruct);
-bool readLedStateFromEeprom(struct ledstatus *ledStatusStruct);
+bool readLedStateFromEeprom(struct ledStatus *ledStatusStruct);
 
 static queue_t irqEvents;
 
@@ -245,7 +246,7 @@ void writeLedStateToEeprom(const struct ledStatus *ledStatusStruct)
     sleep_ms(EEPROM_WRITE_DELAY_MS);
 }
 
-bool readLedStateFromEeprom(struct ledstatus *ledStatusStruct)
+bool readLedStateFromEeprom(struct ledStatus *ledStatusStruct)
 {
     uint16_t ledStatusAddress = LED_STATE_ADDR;
     uint16_t brightnessAddress = BRIGHTNESS_ADDR;
