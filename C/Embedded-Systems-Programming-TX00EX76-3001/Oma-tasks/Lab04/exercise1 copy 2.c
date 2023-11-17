@@ -154,7 +154,7 @@ static void gpio_callback(uint gpio, uint32_t event_mask)
     {
         if (gpio_get(ROT_B))
         {
-            queue_try_add(&irqEvents, &ROT_B);
+            gpio = ROT_B;
         }
     }
     queue_try_add(&irqEvents, &gpio);
