@@ -176,9 +176,12 @@ void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct)
     printf("Toggle led pin %d\n", gpioPin);
 
     int ledNum = gpioPin - BUTTON1_PIN; // Results in 0, 1 or 2.
+    printf("ledNum: %d\n", ledNum);
     ledStatusStruct->ledState[ledNum] = !ledStatusStruct->ledState[ledNum];
+    printf("ledState: %d\n", ledStatusStruct->ledState[ledNum]);
 
     int ledPin = gpioPin + 13; // 13 is the offset between the button and led pins.
+    printf("ledPin: %d\n", ledPin);
     gpio_set_function(ledPin, GPIO_FUNC_PWM);
     uint slice_num = pwm_gpio_to_slice_num(ledPin);
     pwm_set_enabled(slice_num, ledStatusStruct->ledState[ledNum]);
