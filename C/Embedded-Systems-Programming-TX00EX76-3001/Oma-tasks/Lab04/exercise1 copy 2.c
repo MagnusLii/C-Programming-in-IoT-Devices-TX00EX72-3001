@@ -45,6 +45,7 @@ void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct);
 void incBrightness(struct ledStatus *ledStatusStruct);
 void decBrightness(struct ledStatus *ledStatusStruct);
 void buttonReleased(int gpioPin);
+void changeBrightness(struct ledStatus *ledStatusStruct);
 void writeLedStateToEeprom(const struct ledStatus *ledStatusStruct);
 bool readLedStateFromEeprom(struct ledStatus *ledStatusStruct);
 
