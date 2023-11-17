@@ -40,7 +40,7 @@ typedef struct queueTrain {
 
 static queue_t irqEvents;
 
-static void gpio_handler(uint gpio, uint32_t event_mask)
+static void gpio_callback(uint gpio, uint32_t event_mask)
 {
     queue_try_add(&irqEvents, &gpio);
 }
