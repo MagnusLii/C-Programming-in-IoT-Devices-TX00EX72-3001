@@ -185,15 +185,8 @@ void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct)
     uint slice_num = pwm_gpio_to_slice_num(ledPin);
     uint chan = pwm_gpio_to_channel(ledPin);
 
-    // Led is off.
-    if (ledStatusStruct->ledState[ledNum] == false)
-    {
-        ledStatusStruct->ledState[ledNum] = !ledStatusStruct->ledState[ledNum];
-        pwm_set_chan_level(slice_num, chan, ledStatusStruct->brightness);
-    }
-
     // Toggled led is off and brightness is 0
-    else if (ledStatusStruct->ledState[ledNum] == false && ledStatusStruct->brightness == LED_BRIGHT_MIN)
+    if (ledStatusStruct->ledState[ledNum] == false && ledStatusStruct->brightness == LED_BRIGHT_MIN)
     {
         ledStatusStruct->ledState[ledNum] = !ledStatusStruct->ledState[ledNum]; // Toggle pressed led on.
         ledStatusStruct->brightness = 500;
@@ -208,6 +201,13 @@ void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct)
                 pwm_set_chan_level(slice_num, chan, ledStatusStruct->brightness);
             }
         }
+    }
+
+    // Led is off.
+    else if (ledStatusStruct->ledState[ledNum] == false)
+    {
+        ledStatusStruct->ledState[ledNum] = !ledStatusStruct->ledState[ledNum];
+        pwm_set_chan_level(slice_num, chan, ledStatusStruct->brightness);
     }
 
     // Led is on but brightness is 0.
