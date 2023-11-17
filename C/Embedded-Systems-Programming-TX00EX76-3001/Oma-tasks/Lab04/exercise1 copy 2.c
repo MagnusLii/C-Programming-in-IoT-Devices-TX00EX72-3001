@@ -94,9 +94,11 @@ void main(){
 
     queue_init(&irqEvents, sizeof(int), BUFFER_SIZE);
 
+    int value = 0;
+
     while (true)
     {
-        while (queue_try_remove(&events, &value))
+        while (queue_try_remove(&irqEvents, &value))
         {
             printf("Got event: %d\r\n", value);
         }
