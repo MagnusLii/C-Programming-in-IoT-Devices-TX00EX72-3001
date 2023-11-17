@@ -135,7 +135,7 @@ int main()
         }
 
         // Sanity check.
-        if (value != BUTTON1_PIN && value != BUTTON2_PIN && value != BUTTON3_PIN && value != ROT_A && value != ROT_B)
+        if (value != BUTTON1_PIN && value != BUTTON2_PIN && value != BUTTON3_PIN && value != ROT_A && value != ROT_B && value != 0)
         {
             printf("Unknown interrupt event: %d\n", value);
         }
