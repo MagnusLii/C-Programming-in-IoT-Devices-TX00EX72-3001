@@ -194,10 +194,12 @@ void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct)
 
     if (ledStatusStruct->ledState[ledNum] == true)
     {
+        printf("ledState true\n");
         pwm_set_chan_level(slice_num, chan, ledStatusStruct->brightness);
     }
     else
     {
+        printf("ledState false\n");
         pwm_set_chan_level(slice_num, chan, 0);
     }
 }
@@ -208,6 +210,7 @@ void incBrightness(struct ledStatus *ledStatusStruct)
     if (ledStatusStruct->brightness < LED_BRIGHT_MAX)
     {
         ledStatusStruct->brightness += LED_BRIGHT_STEP;
+        printf("ledStatusStruct->brightness: %d\n", ledStatusStruct->brightness);
     }
 }
 
@@ -217,6 +220,7 @@ void decBrightness(struct ledStatus *ledStatusStruct)
     if (ledStatusStruct->brightness > LED_BRIGHT_MIN)
     {
         ledStatusStruct->brightness -= LED_BRIGHT_STEP;
+        printf("ledStatusStruct->brightness: %d\n", ledStatusStruct->brightness);
     }
 }
 
