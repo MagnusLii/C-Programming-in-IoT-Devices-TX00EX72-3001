@@ -195,7 +195,15 @@ void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct)
     else if (ledStatusStruct->ledState[ledNum] == true && ledStatusStruct->brightness == 0)
     {
         ledStatusStruct->brightness = 500;
-        pwm_set_chan_level(slice_num, chan, ledStatusStruct->brightness);
+
+        // Set all on state leds to 50% brightness.
+        for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
+            if (ledStatusStruct->ledState[i - STARTING_LED] == true){
+                uint slice_num = pwm_gpio_to_slice_num(i);
+                uint chan = pwm_gpio_to_channel(i);
+                pwm_set_chan_level(slice_num, chan, ledStatusStruct->brightness);
+            }
+        }
     }
     // Led is on and brightness is not 0.
     else
