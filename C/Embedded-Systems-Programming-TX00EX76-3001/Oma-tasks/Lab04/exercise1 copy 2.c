@@ -81,17 +81,16 @@ int main()
     }
 
     // #TODO: read from eeprom.
-    ledStatusStruct.brightness = LED_BRIGHT_MIN;
-    ledStatusStruct.ledState[0] = false;
-    ledStatusStruct.ledState[1] = false;
-    ledStatusStruct.ledState[2] = false;
+    ledStatusStruct.brightness = 500; // TEMP
+    ledStatusStruct.ledState[0] = true;
+    ledStatusStruct.ledState[1] = true;
+    ledStatusStruct.ledState[2] = true;
 
     // setup led(s).
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++)
     {
         uint slice_num = pwm_gpio_to_slice_num(i);
         uint chan = pwm_gpio_to_channel(i);
-        pwm_set_enabled(slice_num, false);
         pwm_config config = pwm_get_default_config();
         pwm_config_set_clkdiv_int(&config, 125);
         pwm_config_set_wrap(&config, 1000); // 1kHz
@@ -100,6 +99,8 @@ int main()
         pwm_set_enabled(slice_num, true);
         pwm_set_chan_level(slice_num, chan, 300); // brightness
     }
+    changeBrightness(&ledStatusStruct); // TEMP
+
 
     gpio_set_irq_enabled_with_callback(ROT_A, GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
     gpio_set_irq_enabled_with_callback(ROT_SW, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
