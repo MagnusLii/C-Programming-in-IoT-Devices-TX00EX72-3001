@@ -43,6 +43,7 @@ static void gpio_callback(uint gpio, uint32_t event_mask);
 void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct);
 void incBrightness(struct ledStatus *ledStatusStruct);
 void decBrightness(struct ledStatus *ledStatusStruct);
+void buttonReleased(int gpioPin);
 
 static queue_t irqEvents;
 
