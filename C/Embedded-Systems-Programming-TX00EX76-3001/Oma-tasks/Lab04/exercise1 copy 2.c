@@ -95,9 +95,9 @@ int main()
         pwm_config_set_clkdiv_int(&config, 125);
         pwm_config_set_wrap(&config, 1000); // 1kHz
         pwm_init(slice_num, &config, false);
-        pwm_set_chan_level(slice_num, chan, 300); // brightness
         gpio_set_function(i, GPIO_FUNC_PWM);
-        //pwm_set_enabled(slice_num, true);
+        pwm_set_enabled(slice_num, true);
+        pwm_set_chan_level(slice_num, chan, 300); // brightness
     }
 
     gpio_set_irq_enabled_with_callback(ROT_A, GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
