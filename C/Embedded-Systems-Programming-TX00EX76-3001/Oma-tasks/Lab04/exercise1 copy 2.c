@@ -205,7 +205,6 @@ void decBrightness(struct ledStatus *ledStatusStruct)
 void buttonReleased(int gpioPin)
 {
     int debounceCounter = 0;
-    bool buttonDebounced = false;
 
     while (debounceCounter < 100000)
     {
@@ -235,7 +234,7 @@ void writeLedStateToEeprom(const struct ledStatus *ledStatusStruct)
 
     // Write inverse led state to eeprom.
     uint8_t inverseStatusAddr[2] = {(ledStatusAddress - 1) >> 8, (ledStatusAddress - 1) & 0xFF}; // High and low bytes of the EEPROM address for inverse LED states
-    uint8_t inverseStatusData[3] = {inverseStatusAddr[0], inverseStatusAddr[1], !ledStatusStruct->ledState[0], !ledStatusStruct->ledState[1], !ledStatusStruct->ledState[2]};
+    uint8_t inverseStatusData[5] = {inverseStatusAddr[0], inverseStatusAddr[1], !ledStatusStruct->ledState[0], !ledStatusStruct->ledState[1], !ledStatusStruct->ledState[2]};
     i2c_write_blocking(i2c_default, EEPROM_ADDR, inverseStatusData, 5, false);
     sleep_ms(EEPROM_WRITE_DELAY_MS);
 
