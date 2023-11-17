@@ -101,7 +101,6 @@ int main()
     }
     changeBrightness(&ledStatusStruct); // TEMP
 
-
     gpio_set_irq_enabled_with_callback(ROT_A, GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
     gpio_set_irq_enabled_with_callback(ROT_SW, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
     gpio_set_irq_enabled_with_callback(BUTTON1_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
@@ -192,20 +191,42 @@ void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct)
         ledStatusStruct->ledState[ledNum] = !ledStatusStruct->ledState[ledNum];
         pwm_set_chan_level(slice_num, chan, ledStatusStruct->brightness);
     }
-    // Led is on but brightness is 0.
-    else if (ledStatusStruct->ledState[ledNum] == true && ledStatusStruct->brightness == 0)
+
+    // Toggled led is off and brightness is 0
+    else if (ledStatusStruct->ledState[ledNum] == false && ledStatusStruct->brightness == LED_BRIGHT_MIN)
     {
+        ledStatusStruct->ledState[ledNum] = !ledStatusStruct->ledState[ledNum]; // Toggle pressed led on.
         ledStatusStruct->brightness = 500;
 
         // Set all on state leds to 50% brightness.
-        for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++){
-            if (ledStatusStruct->ledState[i - STARTING_LED] == true){
+        for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++)
+        {
+            if (ledStatusStruct->ledState[i - STARTING_LED] == true)
+            {
                 uint slice_num = pwm_gpio_to_slice_num(i);
                 uint chan = pwm_gpio_to_channel(i);
                 pwm_set_chan_level(slice_num, chan, ledStatusStruct->brightness);
             }
         }
     }
+
+    // Led is on but brightness is 0.
+    else if (ledStatusStruct->ledState[ledNum] == true && ledStatusStruct->brightness == LED_BRIGHT_MIN)
+    {
+        ledStatusStruct->brightness = 500;
+
+        // Set all on state leds to 50% brightness.
+        for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++)
+        {
+            if (ledStatusStruct->ledState[i - STARTING_LED] == true)
+            {
+                uint slice_num = pwm_gpio_to_slice_num(i);
+                uint chan = pwm_gpio_to_channel(i);
+                pwm_set_chan_level(slice_num, chan, ledStatusStruct->brightness);
+            }
+        }
+    }
+
     // Led is on and brightness is not 0.
     else
     {
@@ -334,7 +355,7 @@ bool readLedStateFromEeprom(struct ledStatus *ledStatusStruct)
 
     // Read brightness from eeprom.
     uint8_t brightnessAddr[2] = {brightnessAddress >> 8, brightnessAddress & 0xFF}; // High and low bytes of the EEPROM address
-    i2c_write_blocking(i2c_default, EEPROM_ADDR, brightnessAddr, 2, true);           // Write the register address with nostop=true
+    i2c_write_blocking(i2c_default, EEPROM_ADDR, brightnessAddr, 2, true);          // Write the register address with nostop=true
     uint8_t brightnessData[3];
     i2c_read_blocking(i2c_default, EEPROM_ADDR, brightnessData, 3, false);
     ledStatusStruct->brightness = brightnessData[2];
