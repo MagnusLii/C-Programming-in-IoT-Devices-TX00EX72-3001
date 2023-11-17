@@ -80,6 +80,10 @@ int main()
     }
 
     // #TODO: read from eeprom.
+    ledStatusStruct.brightness = LED_BRIGHT_MIN;
+    ledStatusStruct.ledState[0] = false;
+    ledStatusStruct.ledState[1] = false;
+    ledStatusStruct.ledState[2] = false;
 
     // setup led(s).
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++)
