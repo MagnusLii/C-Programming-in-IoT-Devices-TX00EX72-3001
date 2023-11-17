@@ -6,7 +6,6 @@
 #include "hardware/gpio.h"
 #include "pico/util/queue.h"
 #include <stdio.h>
-#include <stbool.h>
 
 #define BUFFER_SIZE 100
 #define DEBOUNCE_COUNT 5
@@ -46,7 +45,8 @@ int main()
     stdio_init_all();
 
     queue_init(&events, sizeof(int), 10);
-    
+
+    int events = 0;
     int value = 0;
 
         // setup buttons
@@ -62,7 +62,7 @@ int main()
     {
         while (queue_try_remove(&events, &value))
         {
-            printf("Got event: %d\r\n", value);
+            printf("Got event: %d, %d\r\n", events, value);
         }
     }
 }
