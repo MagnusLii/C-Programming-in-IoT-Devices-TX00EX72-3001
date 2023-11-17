@@ -177,30 +177,29 @@ static void gpio_callback(uint gpio, uint32_t event_mask)
 
 void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct)
 {
-    printf("Toggle led pin %d\n", gpioPin);
-
     int ledNum = gpioPin - BUTTON1_PIN; // Results in 0, 1 or 2.
-    printf("ledNum: %d\n", ledNum);
-    ledStatusStruct->ledState[ledNum] = !ledStatusStruct->ledState[ledNum];
-    printf("ledState: %d\n", ledStatusStruct->ledState[ledNum]);
 
     int ledPin = gpioPin + 13; // 13 is the offset between the button and led pins.
-    printf("ledPin: %d\n", ledPin);
     gpio_set_function(ledPin, GPIO_FUNC_PWM);
     uint slice_num = pwm_gpio_to_slice_num(ledPin);
     uint chan = pwm_gpio_to_channel(ledPin);
-    printf("slice_num: %d\n", slice_num);
-    printf("chan: %d\n", chan);
-    //pwm_set_enabled(slice_num, ledStatusStruct->ledState[ledNum]); // scrapped due to overlapping slice
 
-    if (ledStatusStruct->ledState[ledNum] == true)
+    // Led is off.
+    if (ledStatusStruct->ledState[ledNum] == false)
     {
-        printf("ledState true\n");
+        ledStatusStruct->ledState[ledNum] = !ledStatusStruct->ledState[ledNum];
         pwm_set_chan_level(slice_num, chan, ledStatusStruct->brightness);
     }
+    // Led is on but brightness is 0.
+    else if (ledStatusStruct->ledState[ledNum] == true && ledStatusStruct->brightness == 0)
+    {
+        ledStatusStruct->brightness = 500;
+        pwm_set_chan_level(slice_num, chan, ledStatusStruct->brightness);
+    }
+    // Led is on and brightness is not 0.
     else
     {
-        printf("ledState false\n");
+        ledStatusStruct->ledState[ledNum] = !ledStatusStruct->ledState[ledNum];
         pwm_set_chan_level(slice_num, chan, 0);
     }
 }
@@ -213,6 +212,7 @@ void incBrightness(struct ledStatus *ledStatusStruct)
         ledStatusStruct->brightness += LED_BRIGHT_STEP;
         printf("ledStatusStruct->brightness: %d\n", ledStatusStruct->brightness);
     }
+    changeBrightness(ledStatusStruct);
 }
 
 void decBrightness(struct ledStatus *ledStatusStruct)
@@ -223,6 +223,7 @@ void decBrightness(struct ledStatus *ledStatusStruct)
         ledStatusStruct->brightness -= LED_BRIGHT_STEP;
         printf("ledStatusStruct->brightness: %d\n", ledStatusStruct->brightness);
     }
+    changeBrightness(ledStatusStruct);
 }
 
 void buttonReleased(int gpioPin)
@@ -242,6 +243,19 @@ void buttonReleased(int gpioPin)
     }
 
     return;
+}
+
+void changeBrightness(struct ledStatus *ledStatusStruct)
+{
+    for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++)
+    {
+        if (ledStatusStruct->ledState[i - STARTING_LED] == true)
+        {
+            uint slice_num = pwm_gpio_to_slice_num(i);
+            uint chan = pwm_gpio_to_channel(i);
+            pwm_set_chan_level(slice_num, chan, ledStatusStruct->brightness);
+        }
+    }
 }
 
 void writeLedStateToEeprom(const struct ledStatus *ledStatusStruct)
