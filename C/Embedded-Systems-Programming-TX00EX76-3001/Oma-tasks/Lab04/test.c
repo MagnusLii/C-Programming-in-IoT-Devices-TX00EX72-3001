@@ -44,10 +44,19 @@ int main()
 {
     // Initialize chosen serial port
     stdio_init_all();
+
     queue_init(&events, sizeof(int), 10);
+    
     int value = 0;
 
-    gpio_set_irq_enabled_with_callback(BUTTON1_PIN, GPIO_IRQ_EDGE_RISE true, &gpio_handler);
+        // setup buttons
+    for (int i = BUTTON1_PIN; i < BUTTON1_PIN + N_LED; i++){
+        gpio_init(i);
+        gpio_set_dir(i, GPIO_IN);
+        gpio_pull_up(i);
+    }
+
+    gpio_set_irq_enabled_with_callback(BUTTON1_PIN, GPIO_IRQ_EDGE_RISE, true, &gpio_handler);
 
     while (true)
     {
