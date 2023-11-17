@@ -31,7 +31,7 @@
 typedef struct ledStatus
 {
     bool ledState[3];
-    uint8_t brightness;
+    uint16_t brightness;
 } ledStatus;
 
 typedef struct queueTrain
