@@ -187,8 +187,8 @@ void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct)
     int ledPin = gpioPin + 13; // 13 is the offset between the button and led pins.
     printf("ledPin: %d\n", ledPin);
     gpio_set_function(ledPin, GPIO_FUNC_PWM);
-    uint slice_num = pwm_gpio_to_slice_num(gpioPin);
-    uint chan = pwm_gpio_to_channel(gpioPin);
+    uint slice_num = pwm_gpio_to_slice_num(ledNum);
+    uint chan = pwm_gpio_to_channel(ledNum);
     printf("slice_num: %d\n", slice_num);
     //pwm_set_enabled(slice_num, ledStatusStruct->ledState[ledNum]); // scrapped due to overlapping slice
 
