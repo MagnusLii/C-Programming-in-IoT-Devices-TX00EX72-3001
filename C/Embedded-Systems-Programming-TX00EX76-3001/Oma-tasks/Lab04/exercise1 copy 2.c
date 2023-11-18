@@ -47,7 +47,9 @@ void decBrightness(struct ledStatus *ledStatusStruct);
 void buttonReleased(int gpioPin);
 void changeBrightness(struct ledStatus *ledStatusStruct);
 void writeLedStateToEeprom(const struct ledStatus *ledStatusStruct);
+void writeBrightnessToEeprom(const struct ledStatus *ledStatusStruct);
 bool readLedStateFromEeprom(struct ledStatus *ledStatusStruct);
+void defaultLedStatus(struct ledStatus *ledStatusStruct);
 
 static queue_t irqEvents;
 
@@ -80,11 +82,14 @@ int main()
         gpio_pull_up(i);
     }
 
-    // #TODO: read from eeprom.
-    ledStatusStruct.brightness = 500; // TEMP
-    ledStatusStruct.ledState[0] = true;
-    ledStatusStruct.ledState[1] = true;
-    ledStatusStruct.ledState[2] = true;
+    // Verify LED status.
+    if (!readLedStateFromEeprom(&ledStatusStruct))
+    {
+        printf("Failed to read LED state from EEPROM\n");
+        defaultLedStatus(&ledStatusStruct);
+        writeLedStateToEeprom(&ledStatusStruct);
+    }
+
 
     // setup led(s).
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++)
@@ -97,7 +102,6 @@ int main()
         pwm_init(slice_num, &config, false);
         gpio_set_function(i, GPIO_FUNC_PWM);
         pwm_set_enabled(slice_num, true);
-        pwm_set_chan_level(slice_num, chan, 300); // brightness
     }
     changeBrightness(&ledStatusStruct); // TEMP
 
@@ -135,18 +139,21 @@ int main()
         if (lastValue == BUTTON1_PIN || lastValue == BUTTON2_PIN || lastValue == BUTTON3_PIN)
         {
             toggleLED(lastValue, &ledStatusStruct);
+            writeLedStateToEeprom(&ledStatusStruct);
         }
 
         // RotA increaste brightness.
         if (lastValue == ROT_A)
         {
             incBrightness(&ledStatusStruct);
+            writeBrightnessToEeprom(&ledStatusStruct);
         }
 
         // RotB decrease brightness.
         if (lastValue == ROT_B)
         {
             decBrightness(&ledStatusStruct);
+            writeBrightnessToEeprom(&ledStatusStruct);
         }
 
         // Sanity check.
@@ -178,6 +185,7 @@ static void gpio_callback(uint gpio, uint32_t event_mask)
 
 void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct)
 {
+    printf("ToggleLED\n");
     int ledNum = gpioPin - BUTTON1_PIN; // Results in 0, 1 or 2.
 
     int ledPin = gpioPin + 13; // 13 is the offset between the button and led pins.
@@ -237,7 +245,6 @@ void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct)
 
 void incBrightness(struct ledStatus *ledStatusStruct)
 {
-    printf("Increase brightness\n");
     if (ledStatusStruct->brightness < LED_BRIGHT_MAX)
     {
         ledStatusStruct->brightness += LED_BRIGHT_STEP;
@@ -248,7 +255,6 @@ void incBrightness(struct ledStatus *ledStatusStruct)
 
 void decBrightness(struct ledStatus *ledStatusStruct)
 {
-    printf("Decrease brightness\n");
     if (ledStatusStruct->brightness > LED_BRIGHT_MIN)
     {
         ledStatusStruct->brightness -= LED_BRIGHT_STEP;
@@ -278,6 +284,7 @@ void buttonReleased(int gpioPin)
 
 void changeBrightness(struct ledStatus *ledStatusStruct)
 {
+    printf("ChangeBrightness\n");
     for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++)
     {
         if (ledStatusStruct->ledState[i - STARTING_LED] == true)
@@ -291,6 +298,7 @@ void changeBrightness(struct ledStatus *ledStatusStruct)
 
 void writeLedStateToEeprom(const struct ledStatus *ledStatusStruct)
 {
+    printf("WriteLedStateToEeprom\n");
     uint16_t ledStatusAddress = LED_STATE_ADDR;
     uint16_t brightnessAddress = BRIGHTNESS_ADDR;
 
@@ -313,8 +321,20 @@ void writeLedStateToEeprom(const struct ledStatus *ledStatusStruct)
     sleep_ms(EEPROM_WRITE_DELAY_MS);
 }
 
+void writeBrightnessToEeprom(const struct ledStatus *ledStatusStruct){
+    printf("WriteBrightnessToEeprom\n");
+    uint16_t brightnessAddress = BRIGHTNESS_ADDR;
+
+    // Write brightness to eeprom.
+    uint8_t brightnessAddr[2] = {brightnessAddress >> 8, brightnessAddress & 0xFF}; // High and low bytes of the EEPROM address
+    uint8_t brightnessData[3] = {brightnessAddr[0], brightnessAddr[1], ledStatusStruct->brightness};
+    i2c_write_blocking(i2c_default, EEPROM_ADDR, brightnessData, 3, false);
+    sleep_ms(EEPROM_WRITE_DELAY_MS);
+}
+
 bool readLedStateFromEeprom(struct ledStatus *ledStatusStruct)
 {
+    printf("ReadLedStateFromEeprom\n");
     uint16_t ledStatusAddress = LED_STATE_ADDR;
     uint16_t brightnessAddress = BRIGHTNESS_ADDR;
     uint8_t normalStatusData[5];
@@ -361,4 +381,13 @@ bool readLedStateFromEeprom(struct ledStatus *ledStatusStruct)
     ledStatusStruct->brightness = brightnessData[2];
 
     return true; // LED state matches
+}
+
+void defaultLedStatus(struct ledStatus *ledStatusStruct)
+{
+    printf("DefaultLedStatus\n");
+    ledStatusStruct->ledState[0] = false;
+    ledStatusStruct->ledState[1] = true;
+    ledStatusStruct->ledState[2] = false;
+    ledStatusStruct->brightness = 500;
 }
