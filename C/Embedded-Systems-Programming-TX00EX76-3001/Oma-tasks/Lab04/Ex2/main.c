@@ -18,10 +18,6 @@
 
 #define N_LED 3
 #define STARTING_LED 20
-#define LED_TO_BUTTON_MAPPING \
-    {                         \
-        9, 8, 7               \
-    }
 #define LED_BRIGHT_MAX 999
 #define LED_BRIGHT_MIN 0
 #define LED_BRIGHT_STEP 10
@@ -48,6 +44,7 @@ void writeLedStateToEeprom(const struct ledStatus *ledStatusStruct);
 void writeBrightnessToEeprom(const struct ledStatus *ledStatusStruct);
 bool readLedStateFromEeprom(struct ledStatus *ledStatusStruct);
 void defaultLedStatus(struct ledStatus *ledStatusStruct);
+void readBrightnessFromEeprom(struct ledStatus *ledStatusStruct);
 
 static queue_t irqEvents;
 
@@ -55,7 +52,7 @@ int main()
 {
     stdio_init_all();
     uint64_t startTime = time_us_64(); // Initialize start time.
-    uint64_t actionTime = 0;
+    uint64_t actionTime;
 
     ledStatus ledStatusStruct;
 
@@ -83,11 +80,15 @@ int main()
     }
 
     // Verify LED status.
-    if (!readLedStateFromEeprom(&ledStatusStruct))
+    if (readLedStateFromEeprom(&ledStatusStruct) == false)
     {
         printf("Failed to read LED state from EEPROM\n");
         defaultLedStatus(&ledStatusStruct);
         writeLedStateToEeprom(&ledStatusStruct);
+    }
+    else
+    {
+        readBrightnessFromEeprom(&ledStatusStruct);
     }
 
     // setup led(s).
@@ -126,7 +127,7 @@ int main()
     {
         while (queue_try_remove(&irqEvents, &value))
         {
-            // breakout incase queue contains consecutive interrupts.
+            // breakout in case queue contains consecutive interrupts.
             if (value != lastValue && lastValue != 0)
             {
                 break;
@@ -150,7 +151,7 @@ int main()
             fprintf(stdout, "Led %d toggled to state %d, seconds since boot: %f\n", lastValue - BUTTON1_PIN + 1, ledStatusStruct.ledState[lastValue - BUTTON1_PIN], (double)(actionTime - startTime) / 1000000);
         }
 
-        // RotA increaste brightness.
+        // RotA increase brightness.
         if (lastValue == ROT_A)
         {
             incBrightness(&ledStatusStruct);
@@ -168,6 +169,7 @@ int main()
         if (lastValue != BUTTON1_PIN && lastValue != BUTTON2_PIN && lastValue != BUTTON3_PIN && lastValue != ROT_A && lastValue != ROT_B && lastValue != 0)
         {
             printf("Unknown interrupt event: %d\n", lastValue);
+            break;
         }
 
         // Reset values.
@@ -188,13 +190,12 @@ static void gpio_callback(uint gpio, uint32_t event_mask)
         }
     }
     queue_try_add(&irqEvents, &gpio);
-    return;
 }
 
 void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct)
 {
     printf("ToggleLED\n");
-    int ledNum = gpioPin - BUTTON1_PIN; // Results in 0, 1 or 2.
+    int ledNum = (int)gpioPin - BUTTON1_PIN; // Results in 0, 1 or 2.
 
     // reversing 1 and 3 to account for mismatched LED to button mapping.
     if (ledNum == 0)
@@ -206,7 +207,7 @@ void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct)
         ledNum = 0;
     }
 
-    int ledPin = gpioPin + 13; // 13 is the offset between the button and led pins.
+    int ledPin = (int)gpioPin + 13; // 13 is the offset between the button and led pins.
     gpio_set_function(ledPin, GPIO_FUNC_PWM);
     uint slice_num = pwm_gpio_to_slice_num(ledPin);
     uint chan = pwm_gpio_to_channel(ledPin);
@@ -217,13 +218,13 @@ void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct)
         ledStatusStruct->ledState[ledNum] = !ledStatusStruct->ledState[ledNum]; // Toggle pressed led on.
         ledStatusStruct->brightness = 500;
 
-        // Set all on state leds to 50% brightness.
+        // Set all on state LEDs to 50% brightness.
         for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++)
         {
             if (ledStatusStruct->ledState[i - STARTING_LED] == true)
             {
-                uint slice_num = pwm_gpio_to_slice_num(i);
-                uint chan = pwm_gpio_to_channel(i);
+                slice_num = pwm_gpio_to_slice_num(i);
+                chan = pwm_gpio_to_channel(i);
                 pwm_set_chan_level(slice_num, chan, ledStatusStruct->brightness);
             }
         }
@@ -241,13 +242,13 @@ void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct)
     {
         ledStatusStruct->brightness = 500;
 
-        // Set all on state leds to 50% brightness.
+        // Set all on state LEDs to 50% brightness.
         for (int i = STARTING_LED; i < STARTING_LED + N_LED; i++)
         {
             if (ledStatusStruct->ledState[i - STARTING_LED] == true)
             {
-                uint slice_num = pwm_gpio_to_slice_num(i);
-                uint chan = pwm_gpio_to_channel(i);
+                slice_num = pwm_gpio_to_slice_num(i);
+                chan = pwm_gpio_to_channel(i);
                 pwm_set_chan_level(slice_num, chan, ledStatusStruct->brightness);
             }
         }
@@ -296,8 +297,6 @@ void buttonReleased(int gpioPin)
             debounceCounter = 0;
         }
     }
-
-    return;
 }
 
 void changeBrightness(struct ledStatus *ledStatusStruct)
@@ -435,7 +434,7 @@ void readBrightnessFromEeprom(struct ledStatus *ledStatusStruct)
 
     uint16_t brightnessDataByte;
 
-    // Filling buffer with brigthness address
+    // Filling buffer with brightness address
     uint8_t buffer[2];
     buffer[0] = (uint8_t)(brightnessAddress >> 8);
     buffer[1] = (uint8_t)(brightnessAddress & 0xFF);
