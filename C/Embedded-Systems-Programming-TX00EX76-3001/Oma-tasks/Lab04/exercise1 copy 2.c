@@ -351,9 +351,9 @@ bool readLedStateFromEeprom(struct ledStatus *ledStatusStruct)
     i2c_read_blocking(i2c_default, EEPROM_ADDR, invertedStatusData, 5, false);
 
     // Invert the inverted LED state data after reading.
-    invertedStatusData[2] = ~invertedStatusData[2];
-    invertedStatusData[3] = ~invertedStatusData[3];
-    invertedStatusData[4] = ~invertedStatusData[4];
+    invertedStatusData[2] = !invertedStatusData[2];
+    invertedStatusData[3] = !invertedStatusData[3];
+    invertedStatusData[4] = !invertedStatusData[4];
 
     // Compare the values.
     for (int i = 2; i < 5; ++i)
