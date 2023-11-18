@@ -402,9 +402,9 @@ void defaultLedStatus(struct ledStatus *ledStatusStruct)
 void writeLedStatusToEeprom(const struct ledStatus *ledStatusStruct) {
     uint8_t data = 212;
     uint8_t readdata = 0;
-    i2c_write_blocking(i2c_default, EEPROM_ADDR, &data, 1, false);
+    i2c_write_blocking(i2c_default, 1, &data, 1, false);
     sleep_ms(EEPROM_WRITE_DELAY_MS);
-    i2c_read_blocking(i2c_default, EEPROM_ADDR, &readdata, 1, false);
+    i2c_read_blocking(i2c_default, 1, &readdata, 1, false);
     printf("data: %d\n", data);
     printf("readdata: %d\n", readdata);
 }
