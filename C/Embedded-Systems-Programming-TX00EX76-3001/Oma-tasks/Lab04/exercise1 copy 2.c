@@ -361,7 +361,7 @@ bool readLedStateFromEeprom(struct ledStatus *ledStatusStruct)
         if (normalStatusData[i] != invertedStatusData[i])
         {
             printf("LED state mismatch\n");
-            printf("normalStatusData: %d, %d, %d\n", normalStatusData[2], normalStatusData[3], normalStatusData[4]);
+            printf("normalStatusData: %d, %d, %d\n", (bool)normalStatusData[2], (bool)normalStatusData[3], (bool)normalStatusData[4]);
             printf("invertedStatusData: %d, %d, %d\n", invertedStatusData[2], invertedStatusData[3], invertedStatusData[4]);
             return false; // LED state mismatch
         }
