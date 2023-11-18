@@ -50,6 +50,7 @@ void writeLedStateToEeprom(const struct ledStatus *ledStatusStruct);
 void writeBrightnessToEeprom(const struct ledStatus *ledStatusStruct);
 bool readLedStateFromEeprom(struct ledStatus *ledStatusStruct);
 void defaultLedStatus(struct ledStatus *ledStatusStruct);
+void writeLedStatusToEeprom(const struct ledStatus *ledStatusStruct);
 
 static queue_t irqEvents;
 
@@ -138,7 +139,8 @@ int main()
         if (lastValue == BUTTON1_PIN || lastValue == BUTTON2_PIN || lastValue == BUTTON3_PIN)
         {
             toggleLED(lastValue, &ledStatusStruct);
-            writeLedStateToEeprom(&ledStatusStruct);
+            //writeLedStateToEeprom(&ledStatusStruct);
+            writeLedStatusToEeprom(&ledStatusStruct);
         }
 
         // RotA increaste brightness.
@@ -395,4 +397,14 @@ void defaultLedStatus(struct ledStatus *ledStatusStruct)
     ledStatusStruct->ledState[1] = true;
     ledStatusStruct->ledState[2] = false;
     ledStatusStruct->brightness = 500;
+}
+
+void writeLedStatusToEeprom(const struct ledStatus *ledStatusStruct) {
+    uint8_t data = 212;
+    uint8_t readdata = 0;
+    i2c_write_blocking(i2c_default, EEPROM_ADDR, &data, 1, false);
+    sleep_ms(EEPROM_WRITE_DELAY_MS);
+    i2c_read_blocking(i2c_default, EEPROM_ADDR, &readdata, 1, false);
+    printf("data: %d\n", data);
+    printf("readdata: %d\n", readdata);
 }
