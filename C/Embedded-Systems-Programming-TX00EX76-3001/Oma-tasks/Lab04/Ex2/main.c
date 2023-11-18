@@ -23,9 +23,10 @@
 #define LED_BRIGHT_STEP 10
 
 #define EEPROM_ADDR 0x50 // I2C address of the EEPROM
-#define BRIGHTNESS_ADDR 50
-#define EEPROM_WRITE_DELAY_MS 5
+#define BRIGHTNESS_ADDR 30000
+#define EEPROM_WRITE_DELAY_MS 5 
 #define LED_STATE_ADDR 32768 // Address in the EEPROM to store the LED state
+#define INVERSE_LED_ADDR 31000
 #define BUFFER_SIZE 512
 
 typedef struct ledStatus
@@ -195,19 +196,22 @@ static void gpio_callback(uint gpio, uint32_t event_mask)
 void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct)
 {
     printf("ToggleLED\n");
-    int ledNum = (int)gpioPin - BUTTON1_PIN; // Results in 0, 1 or 2.
 
-    // reversing 1 and 3 to account for mismatched LED to button mapping.
-    if (ledNum == 0)
+    int ledNum = 0;
+    if ((int)gpioPin == BUTTON1_PIN)
     {
         ledNum = 2;
     }
-    else if (ledNum == 2)
+    else if ((int)gpioPin == BUTTON2_PIN)
+    {
+        ledNum = 1;
+    }
+    else if ((int)gpioPin == BUTTON3_PIN)
     {
         ledNum = 0;
     }
-
-    int ledPin = (int)gpioPin + 13; // 13 is the offset between the button and led pins.
+    
+    int ledPin = ledNum + STARTING_LED; // 20 is the offset
     gpio_set_function(ledPin, GPIO_FUNC_PWM);
     uint slice_num = pwm_gpio_to_slice_num(ledPin);
     uint chan = pwm_gpio_to_channel(ledPin);
@@ -269,6 +273,12 @@ void incBrightness(struct ledStatus *ledStatusStruct)
         ledStatusStruct->brightness += LED_BRIGHT_STEP;
         printf("ledStatusStruct->brightness: %d\n", ledStatusStruct->brightness);
     }
+
+    // Fail check
+    if (ledStatusStruct->brightness < LED_BRIGHT_MIN || ledStatusStruct->brightness > LED_BRIGHT_MAX)
+    {
+        ledStatusStruct->brightness = (LED_BRIGHT_MIN + LED_BRIGHT_MAX) / 2;
+    }
     changeBrightness(ledStatusStruct);
 }
 
@@ -278,6 +288,12 @@ void decBrightness(struct ledStatus *ledStatusStruct)
     {
         ledStatusStruct->brightness -= LED_BRIGHT_STEP;
         printf("ledStatusStruct->brightness: %d\n", ledStatusStruct->brightness);
+    }
+
+    // Fail check
+    if (ledStatusStruct->brightness < LED_BRIGHT_MIN || ledStatusStruct->brightness > LED_BRIGHT_MAX)
+    {
+        ledStatusStruct->brightness = (LED_BRIGHT_MIN + LED_BRIGHT_MAX) / 2;
     }
     changeBrightness(ledStatusStruct);
 }
@@ -328,7 +344,7 @@ void writeLedStateToEeprom(const struct ledStatus *ledStatusStruct)
     printf("Led 1: %d\n Led 2: %d\n Led 3: %d\n", ledStatusStruct->ledState[0], ledStatusStruct->ledState[1], ledStatusStruct->ledState[2]);
 
     uint16_t ledStatusAddress = LED_STATE_ADDR - 3; // 3 bytes for the brightness
-    uint16_t inverseLedStatusAddress = 500;
+    uint16_t inverseLedStatusAddress = INVERSE_LED_ADDR;
 
     uint8_t ledStatusDataByte = (ledStatusStruct->ledState[0] << 2) | (ledStatusStruct->ledState[1] << 1) | ledStatusStruct->ledState[2];
     uint8_t inverseLedStatusDataByte = (!ledStatusStruct->ledState[0] << 2) | (!ledStatusStruct->ledState[1] << 1) | !ledStatusStruct->ledState[2];
@@ -356,7 +372,7 @@ bool readLedStateFromEeprom(struct ledStatus *ledStatusStruct)
 {
     printf("\nreadLedStateFromEeprom\n");
     uint16_t ledStatusAddress = LED_STATE_ADDR - 3; // 3 bytes for the brightness
-    uint16_t inverseLedStatusAddress = 500;
+    uint16_t inverseLedStatusAddress = INVERSE_LED_ADDR;
 
     uint8_t ledStatusDataByte;
     uint8_t inverseLedStatusDataByte;
@@ -415,7 +431,8 @@ void writeBrightnessToEeprom(const struct ledStatus *ledStatusStruct)
     printf("\nwriteBrightnessToEeprom\n");
     uint16_t brightnessAddress = BRIGHTNESS_ADDR;
 
-    uint16_t brightnessDataByte = ledStatusStruct->brightness;
+    uint16_t brightnessDataByte = (uint16_t)ledStatusStruct->brightness;
+    printf("brightnessDataByte: %d\n", brightnessDataByte);
 
     uint8_t buffer[4];
     buffer[0] = (uint8_t)(brightnessAddress >> 8);
@@ -423,7 +440,9 @@ void writeBrightnessToEeprom(const struct ledStatus *ledStatusStruct)
     buffer[2] = (uint8_t)(brightnessDataByte >> 8);
     buffer[3] = (uint8_t)(brightnessDataByte & 0xFF);
 
+    printf("buffer: %d %d %d %d\n", buffer[0], buffer[1], buffer[2], buffer[3]);
     i2c_write_blocking(i2c_default, EEPROM_ADDR, buffer, 4, false);
+    printf("write done\n");
     sleep_ms(EEPROM_WRITE_DELAY_MS);
 }
 
@@ -442,8 +461,16 @@ void readBrightnessFromEeprom(struct ledStatus *ledStatusStruct)
     i2c_write_blocking(i2c_default, EEPROM_ADDR, buffer, 2, true);
     sleep_ms(EEPROM_WRITE_DELAY_MS);
     i2c_read_blocking(i2c_default, EEPROM_ADDR, buffer, 2, false); // Fills buffer with brightness data
+    printf("buffer: %d %d\n", buffer[0], buffer[1]);
 
     brightnessDataByte = (buffer[0] << 8) | buffer[1];
+    printf("brightnessDataByte: %d\n", (int)brightnessDataByte);
 
-    ledStatusStruct->brightness = brightnessDataByte;
+    // Fail check
+    if ((int)brightnessDataByte < LED_BRIGHT_MIN || (int)brightnessDataByte > LED_BRIGHT_MAX)
+    {
+        brightnessDataByte = (LED_BRIGHT_MIN + LED_BRIGHT_MAX) / 2;
+    }
+    
+    ledStatusStruct->brightness = (int)brightnessDataByte;
 }
