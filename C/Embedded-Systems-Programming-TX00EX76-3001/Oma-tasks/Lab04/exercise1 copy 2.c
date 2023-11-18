@@ -309,7 +309,7 @@ void writeLedStateToEeprom(const struct ledStatus *ledStatusStruct)
     sleep_ms(EEPROM_WRITE_DELAY_MS);
 
     // Write inverse led state to eeprom.
-    uint8_t inverseStatusAddr[2] = {(ledStatusAddress - 1) >> 8, (ledStatusAddress - 1) & 0xFF}; // High and low bytes of the EEPROM address for inverse LED states
+    uint8_t inverseStatusAddr[2] = {(ledStatusAddress - 20) >> 8, (ledStatusAddress - 20) & 0xFF}; // High and low bytes of the EEPROM address for inverse LED states
     uint8_t inverseStatusData[5] = {inverseStatusAddr[0], inverseStatusAddr[1], !ledStatusStruct->ledState[0], !ledStatusStruct->ledState[1], !ledStatusStruct->ledState[2]};
     i2c_write_blocking(i2c_default, EEPROM_ADDR, inverseStatusData, 5, false);
     sleep_ms(EEPROM_WRITE_DELAY_MS);
@@ -347,7 +347,7 @@ bool readLedStateFromEeprom(struct ledStatus *ledStatusStruct)
     i2c_read_blocking(i2c_default, EEPROM_ADDR, statusData, 5, false);
 
     // Read inverted LED state data from EEPROM.
-    uint8_t invertedStatusAddr[2] = {(ledStatusAddress - 1) >> 8, (ledStatusAddress - 1) & 0xFF};
+    uint8_t invertedStatusAddr[2] = {(ledStatusAddress - 20) >> 8, (ledStatusAddress - 20) & 0xFF};
     i2c_write_blocking(i2c_default, EEPROM_ADDR, invertedStatusAddr, 2, true);
     i2c_read_blocking(i2c_default, EEPROM_ADDR, invertedStatusData, 5, false);
 
