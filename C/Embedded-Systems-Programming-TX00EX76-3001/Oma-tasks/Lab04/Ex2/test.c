@@ -83,7 +83,7 @@ int main()
 
     return 0;
 }
-*/
+
 
 int main()
 {
@@ -91,6 +91,20 @@ int main()
     
     return 0;
 }
+*/
+
+int main()
+{
+    uint8_t buffer[64] = {76, 101, 100, 32, 50, 32, 116, 111, 103, 103, 108, 101, 100, 32, 116, 111, 32, 115, 116, 97, 116, 101, 32, 48, 44, 32, 115, 101, 99, 111, 110, 100, 115, 32, 115, 105, 110, 99, 101, 32, 98, 111, 111, 116, 58, 32, 51, 53, 54, 0, 6, 1};
+    int stringLen = 54;
+
+    int checksum = getChecksum(buffer, &stringLen);
+    printf("Checksum: %d\n", checksum);
+    
+
+    return 0;
+}
+
 uint16_t crc16(const uint8_t *data, size_t length)
 {
     uint8_t x;
@@ -131,14 +145,17 @@ int getChecksum(uint8_t *base8String, int *stringLen)
 {
     // Locate terminating zero
     int zeroIndex = 0;
+    printf("String: ");
     for (int i = 0; i < *stringLen; i++)
     {
+        printf("%d ", base8String[i]);
         if (base8String[i] == 0 && i == 0)
         {
             return -1; // String too short to be valid
         }
         else if (base8String[i] == 0)
         {
+            printf("\nZero index: %d\n", i);
             zeroIndex = i;
             break;
         }
@@ -147,12 +164,21 @@ int getChecksum(uint8_t *base8String, int *stringLen)
             return -1; // String too long to be valid
         }
     }
+    printf("\n");
 
     // Get rid of the terminating zero
     base8String[zeroIndex] = base8String[zeroIndex + 1];
     base8String[zeroIndex + 1] = base8String[zeroIndex + 2];
 
     *stringLen = zeroIndex + 2;
+
+    printf("String length: %d\n", *stringLen);
+    printf("String: ");
+    for (int i = 0; i < *stringLen; i++)
+    {
+        printf("%c", base8String[i]);
+    }
+    printf("\n");
 
     return  crc16(base8String, *stringLen);
 }
@@ -188,8 +214,8 @@ void zeroAllLogs(){
         printf("Writing to address %d\n", logAddr);
         buffer[0] = logAddr >> 8;
         buffer[1] = logAddr & 0xFF;
-        i2c_write_blocking(i2c_default, EEPROM_ADDR, buffer, 3, true);
-        sleep_ms(EEPROM_WRITE_DELAY_MS);
+        //i2c_write_blocking(i2c_default, EEPROM_ADDR, buffer, 3, true);
+        //sleep_ms(EEPROM_WRITE_DELAY_MS);
         logAddr += LOG_SIZE;
         count++;
     }

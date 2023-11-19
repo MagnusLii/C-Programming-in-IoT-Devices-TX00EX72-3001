@@ -26,7 +26,7 @@
 #define EEPROM_ADDR 0x50 // I2C address of the EEPROM
 #define EEPROM_WRITE_DELAY_MS 5
 #define BRIGHTNESS_ADDR 30000
-#define LED_STATE_ADDR 32768 // Address in the EEPROM to store the LED state
+#define LED_STATE_ADDR 32767 // Address in the EEPROM to store the LED state
 #define INVERSE_LED_ADDR 31000
 #define BUFFER_SIZE 512
 #define HEX_MID_VALUE 32768
@@ -59,6 +59,7 @@ void handleCommands();
 void printLog(const uint8_t *logBuffer, const int logBufferLen, const int logEntryToRead);
 void appendAddrToString(const uint8_t *string, int *stringLen, uint8_t *finalArray, const int address);
 void enterLogToEeprom(const char *string, const int stringLen);
+void handleLog(const uint8_t *uint8Log, char *logString);
 
 static queue_t irqEvents;
 
@@ -174,6 +175,14 @@ int main()
             toggleLED(lastValue, &ledStatusStruct);
             writeLedStateToEeprom(&ledStatusStruct);
             sprintf(logstring, "Led %d toggled to state %d, seconds since boot: %d\n", lastValue - BUTTON1_PIN + 1, ledStatusStruct.ledState[lastValue - BUTTON1_PIN], (int)(actionTime - startTime) / 1000000);
+            printf("%s", logstring);
+            for (int i = 0; i < strlen(logstring); i++)
+            {
+                if (logstring[i] == '\n')
+                {
+                    logstring[i] = '\0';
+                }
+            }
             enterLogToEeprom(logstring, strlen(logstring));
         }
 
@@ -511,6 +520,17 @@ void readBrightnessFromEeprom(struct ledStatus *ledStatusStruct)
 // Ex2 stuff
 uint16_t crc16(const uint8_t *data, size_t length)
 {
+    printf("Function: crc16\n");
+
+    printf("length: %d\n", length);
+    printf("data: ");
+    for (int i = 0; i < length; i++)
+    {
+        printf("%d ", data[i]);
+    }
+    printf("\n");
+
+
     uint8_t x;
     uint16_t crc = 0xFFFF;
 
@@ -520,21 +540,31 @@ uint16_t crc16(const uint8_t *data, size_t length)
         x ^= x >> 4;
         crc = (crc << 8) ^ ((uint16_t)(x << 12)) ^ ((uint16_t)(x << 5)) ^ ((uint16_t)x);
     }
+
+    printf("crc: %d\n", crc);
     return crc;
 }
 
 // Creates a string with base 8 representation of the given string
 void convertStringToBase8(const char *string, const int stringLen, uint8_t *base8String)
 {
+    printf("Function: convertStringToBase8\n");
+    printf("string: %s\n", string);
+    char testString[64];
+    printf("stringLen: %d\n", stringLen);
+    printf("base8String: ");
     for (int i = 0; i < stringLen; i++)
     {
         base8String[i] = (uint8_t)string[i];
+        printf("%d ", base8String[i]);
     }
+    printf("\n");
 }
 
 // Appends null terminator and CRC to the given base 8 string and increments stringLen to match the new length.
 void appendCrcToBase8String(uint8_t *base8String, int *stringLen)
 {
+    printf("Function: appendCrcToBase8String\n");
     base8String[*stringLen] = 0;
     uint16_t crc = crc16(base8String, *stringLen);
 
@@ -542,24 +572,39 @@ void appendCrcToBase8String(uint8_t *base8String, int *stringLen)
     base8String[*stringLen + 2] = crc & 0xFF; // LSB
 
     *stringLen += 3;
+
+    printf("CRC appended base8String: ");
+    for (int i = 0; i < *stringLen; i++)
+    {
+        printf("%d ", base8String[i]);
+    }
+    printf("\n");
 }
 
 // Calculates the checksum of the given base 8 string, validates its length and returns the checksum.
 int getChecksum(uint8_t *base8String, int *stringLen)
 {
+    printf("Function: getChecksum\n");
     // Locate terminating zero
     int zeroIndex = 0;
+    
+    printf("Zero detector: ");
     for (int i = 0; i < *stringLen; i++)
     {
+        printf("%d = 0, ", base8String[i]);
         if (base8String[i] == 0)
         {
             zeroIndex = i;
             break;
         }
     }
+    printf("\n");
+
+    printf("zeroIndex: %d\n", zeroIndex);
 
     if (zeroIndex < MIN_LOG_LEN || zeroIndex > MAX_LOG_LEN)
     {
+        printf("Strong too short\n");
         return -1; // String too long or too short to be valid
     }
 
@@ -569,12 +614,25 @@ int getChecksum(uint8_t *base8String, int *stringLen)
 
     *stringLen = zeroIndex + 2;
 
-    return crc16(base8String, *stringLen);
+    printf("zeroIndex: %d\n", zeroIndex);
+
+    printf("base8String: ");
+    for (int i = 0; i < *stringLen; i++)
+    {
+        printf("%d ", base8String[i]);
+    }
+    printf("\n");
+
+    int crc = crc16(base8String, *stringLen);
+    printf("crc: %d\n", crc);
+
+    return crc;
 }
 
 // Reads specified log entry from EEPROM and saves it to the given array
 int readLogFromEeprom(const int logEntryToRead, uint8_t *logBuffer, const int logBufferLen)
 {
+    printf("Function: readLogFromEeprom\n");
     int logStartAddr = LOG_START_ADDR + (logEntryToRead * LOG_SIZE);
 
     if (logStartAddr > LOG_END_ADDR || logStartAddr < LOG_START_ADDR || logBufferLen != LOG_SIZE)
@@ -592,11 +650,27 @@ int readLogFromEeprom(const int logEntryToRead, uint8_t *logBuffer, const int lo
     sleep_ms(EEPROM_WRITE_DELAY_MS);
     i2c_read_blocking(i2c_default, EEPROM_ADDR, logBuffer, LOG_SIZE, false);
     sleep_ms(EEPROM_WRITE_DELAY_MS);
+
+    printf("logBuffer: ");
+    for (int i = 0; i < logBufferLen; i++)
+    {
+        printf("%d ", logBuffer[i]);
+    }
+    printf("\n");
+
+    printf("logBuffer char: ");
+    for (int i = 0; i < logBufferLen; i++)
+    {
+        printf("%c", (char)logBuffer[i]);
+    }
+    printf("\n");
+
     return 0;
 }
 
 void zeroAllLogs()
 {
+    printf("Function: zeroAllLogs\n");
     int count = 0;
     uint16_t logAddr = 0;
 
@@ -615,6 +689,7 @@ void zeroAllLogs()
 
 void handleCommands()
 {
+    printf("Function: handleCommands\n");
     char uartread[5];
     uart_read_blocking(uart0, uartread, 5);
     int tempLen = LOG_SIZE;
@@ -623,13 +698,13 @@ void handleCommands()
     if (strncmp(uartread, "read", 4) == 0)
     {
         uint8_t logBuffer[LOG_SIZE];
+        char LogString[LOG_SIZE + 1];
         for (int i = 0; i < MAX_LOGS; i++)
         {
             readLogFromEeprom(i, logBuffer, LOG_SIZE);
             if (getChecksum(logBuffer, &tempLen) == 0)
             {
-                printf("Log %d: %s", i, logBuffer);
-                // printLog(logBuffer, LOG_SIZE, i);
+                printLog(logBuffer, tempLen - 2, i);
             }
         }
     }
@@ -650,6 +725,7 @@ void handleCommands()
 // Incomplete.
 void printLog(const uint8_t *logBuffer, const int logBufferLen, const int logEntryToRead)
 {
+    printf("Function: printLog\n");
     printf("Log %d: ", logEntryToRead);
     for (int i = 0; i < logBufferLen; i++)
     {
@@ -660,33 +736,62 @@ void printLog(const uint8_t *logBuffer, const int logBufferLen, const int logEnt
 
 void appendAddrToString(const uint8_t *string, int *stringLen, uint8_t *finalArray, const int address)
 {
+    printf("Function: appendAddrToString\n");
+    printf("string: ");
+    for (int i = 0; i < *stringLen; i++)
+    {
+        printf("%d ", string[i]);
+    }
+    printf("\n");
+    printf("stringLen: %d\n", *stringLen);
+    printf("address: %d\n", address);
+
     uint16_t address16 = address;
+    printf("address16: %d\n", address16);
     uint8_t finalBuffer[2];
-    finalBuffer[0] = address16 >> 8;
-    finalBuffer[1] = address16 & 0xFF;
+
 
     memcpy(finalArray + 2, string, *stringLen);
     *stringLen += 2;
+
+    finalBuffer[0] = address16 >> 8;
+    finalBuffer[1] = address16 & 0xFF;
+    printf("finalBuffer: %d %d\n", finalBuffer[0], finalBuffer[1]);
+    finalArray[0] = finalBuffer[0];
+    finalArray[1] = finalBuffer[1];
+
+    printf("finalArray: ");
+    for (int i = 0; i < *stringLen; i++)
+    {
+        printf("%d ", finalArray[i]);
+    }
+    printf("\n");
 }
 
 void enterLogToEeprom(const char *string, const int stringLen)
 {
+    printf("Function: enterLogToEeprom\n");
     char logString[stringLen + 1];
     strncpy(logString, string, stringLen);
-    logString[stringLen + 1] = '\0';
+    logString[stringLen] = '\0';
     printf("logString: %s\n", logString);
 
     int logStringLen = strlen(logString);
+    printf("logStringLen: %d\n", logStringLen);
     uint8_t base8LogString[LOG_SIZE];
     uint8_t base8LogStringFinal[LOG_SIZE + 2]; // 2 bytes for the address
 
+    printf("\n-------------------------------------------------------------\n");
+    printf("finding empty log\n");
     // Find the first empty log
     int logIndex = 0;
+    int charsToRead = LOG_SIZE;
     do
     {
+        charsToRead = LOG_SIZE;
         readLogFromEeprom(logIndex, base8LogString, LOG_SIZE);
         logIndex++;
-    } while (getChecksum(base8LogString, &logStringLen) == 0 && logIndex <= MAX_LOGS);
+    } while (getChecksum(base8LogString, &charsToRead) == 0 && logIndex <= MAX_LOGS);
     logIndex--;
     printf("logIndex: %d\n", logIndex);
 
@@ -698,7 +803,10 @@ void enterLogToEeprom(const char *string, const int stringLen)
         logIndex = 0;
     }
 
+    printf("\n--------------------------------------------------------------\n");
+    printf("creating new log\n");
     // Create base8 log string.
+    logStringLen = strlen(logString); // Reset logStringLen
     convertStringToBase8(logString, logStringLen, base8LogString);
     for (int i = 0; i < logStringLen; i++)
     {
@@ -718,7 +826,55 @@ void enterLogToEeprom(const char *string, const int stringLen)
     }
     printf("\n");
 
+    printf("\n--------------------------------------------------------------\n");
+    printf("writing log to eeprom\n");
+
+    printf("logStringLen: %d\n", logStringLen);
+    printf("base8LogStringFinal: ");
+    for (int i = 0; i < logStringLen; i++)
+    {
+        printf("%d ", base8LogStringFinal[i]);
+    }
+    printf("\n");
     // Write log to EEPROM
-    i2c_write_blocking(i2c_default, EEPROM_ADDR, base8LogStringFinal, LOG_SIZE + 2, false);
+    i2c_write_blocking(i2c_default, EEPROM_ADDR, base8LogStringFinal, logStringLen, false);
     sleep_ms(EEPROM_WRITE_DELAY_MS);
+
+
+
+    printf("Write done\n");
+    printf("\n--------------------------------------------------------------\n");
+}
+
+void handleLog(const uint8_t *uint8Log, char *logString){
+    printf("Function: handleLog\n");
+
+    int zeroIndex = 0;
+    printf("Zero detector: ");
+    for (int i = 0; i < LOG_SIZE; i++)
+    {
+        printf("%d = 0, ", uint8Log[i]);
+        if (uint8Log[i] == 0)
+        {
+            zeroIndex = i;
+            break;
+        }
+    }
+    printf("\n");
+
+    printf("zeroIndex: %d\n", zeroIndex);
+
+    if (zeroIndex < MIN_LOG_LEN || zeroIndex > MAX_LOG_LEN)
+    {
+        printf("Strong too short\n");
+        return; // String too long or too short to be valid
+    }
+
+    for (int i = 0; i < zeroIndex; i++)
+    {
+        logString[i] = (char)uint8Log[i];
+    }
+    logString[zeroIndex] = '\0';
+
+    printf("logString: %s\n", logString);
 }
