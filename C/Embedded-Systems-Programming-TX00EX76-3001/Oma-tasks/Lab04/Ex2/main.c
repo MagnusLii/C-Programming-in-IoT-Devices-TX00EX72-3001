@@ -5,6 +5,7 @@
 #include "pico/util/queue.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 #define ROT_A 10
 #define ROT_B 11
@@ -23,11 +24,19 @@
 #define LED_BRIGHT_STEP 10
 
 #define EEPROM_ADDR 0x50 // I2C address of the EEPROM
+#define EEPROM_WRITE_DELAY_MS 5
 #define BRIGHTNESS_ADDR 30000
-#define EEPROM_WRITE_DELAY_MS 5 
 #define LED_STATE_ADDR 32768 // Address in the EEPROM to store the LED state
 #define INVERSE_LED_ADDR 31000
 #define BUFFER_SIZE 512
+#define HEX_MID_VALUE 32768
+
+#define LOG_START_ADDR 0
+#define LOG_END_ADDR 2048
+#define LOG_SIZE 64
+#define MAX_LOGS 32
+#define MAX_LOG_LEN 61
+#define MIN_LOG_LEN 1
 
 typedef struct ledStatus
 {
@@ -46,6 +55,10 @@ void writeBrightnessToEeprom(const struct ledStatus *ledStatusStruct);
 bool readLedStateFromEeprom(struct ledStatus *ledStatusStruct);
 void defaultLedStatus(struct ledStatus *ledStatusStruct);
 void readBrightnessFromEeprom(struct ledStatus *ledStatusStruct);
+void handleCommands();
+void printLog(const uint8_t *logBuffer, const int logBufferLen, const int logEntryToRead);
+void appendAddrToString(const uint8_t *string, int *stringLen, uint8_t *finalArray, const int address);
+void enterLogToEeprom(const char *string, const int stringLen);
 
 static queue_t irqEvents;
 
@@ -111,7 +124,7 @@ int main()
         printf("Led %d: %d\n", i + 1, ledStatusStruct.ledState[i]);
     }
     actionTime = time_us_64();
-    fprintf(stdout, "Time since boot: %f\n", (double)(actionTime - startTime) / 1000000);
+    fprintf(stdout, "Seconds since boot: %d\n", (int)((double)(actionTime - startTime) / 1000000));
 
     gpio_set_irq_enabled_with_callback(ROT_A, GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
     gpio_set_irq_enabled_with_callback(ROT_SW, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
@@ -123,9 +136,20 @@ int main()
 
     int value = 0;
     int lastValue = 0;
+    char logstring[MAX_LOG_LEN];
+
+    // Enter "Boot" to log.
+    enterLogToEeprom("Boot", 4);
 
     while (true)
     {
+        // handling commands from serial.
+        if (uart_is_readable(uart0))
+        {
+            printf("Handling commands\n");
+            handleCommands();
+        }
+
         while (queue_try_remove(&irqEvents, &value))
         {
             // breakout in case queue contains consecutive interrupts.
@@ -149,7 +173,8 @@ int main()
             actionTime = time_us_64();
             toggleLED(lastValue, &ledStatusStruct);
             writeLedStateToEeprom(&ledStatusStruct);
-            fprintf(stdout, "Led %d toggled to state %d, seconds since boot: %f\n", lastValue - BUTTON1_PIN + 1, ledStatusStruct.ledState[lastValue - BUTTON1_PIN], (double)(actionTime - startTime) / 1000000);
+            sprintf(logstring, "Led %d toggled to state %d, seconds since boot: %d\n", lastValue - BUTTON1_PIN + 1, ledStatusStruct.ledState[lastValue - BUTTON1_PIN], (int)(actionTime - startTime) / 1000000);
+            enterLogToEeprom(logstring, strlen(logstring));
         }
 
         // RotA increase brightness.
@@ -210,7 +235,7 @@ void toggleLED(uint gpioPin, struct ledStatus *ledStatusStruct)
     {
         ledNum = 0;
     }
-    
+
     int ledPin = ledNum + STARTING_LED; // 20 is the offset
     gpio_set_function(ledPin, GPIO_FUNC_PWM);
     uint slice_num = pwm_gpio_to_slice_num(ledPin);
@@ -275,9 +300,13 @@ void incBrightness(struct ledStatus *ledStatusStruct)
     }
 
     // Fail check
-    if (ledStatusStruct->brightness < LED_BRIGHT_MIN || ledStatusStruct->brightness > LED_BRIGHT_MAX)
+    if (ledStatusStruct->brightness > HEX_MID_VALUE && ledStatusStruct->brightness > LED_BRIGHT_MAX)
     {
-        ledStatusStruct->brightness = (LED_BRIGHT_MIN + LED_BRIGHT_MAX) / 2;
+        ledStatusStruct->brightness = LED_BRIGHT_MIN;
+    }
+    if (ledStatusStruct->brightness < HEX_MID_VALUE && ledStatusStruct->brightness > LED_BRIGHT_MAX)
+    {
+        ledStatusStruct->brightness = LED_BRIGHT_MAX;
     }
     changeBrightness(ledStatusStruct);
 }
@@ -291,9 +320,13 @@ void decBrightness(struct ledStatus *ledStatusStruct)
     }
 
     // Fail check
-    if (ledStatusStruct->brightness < LED_BRIGHT_MIN || ledStatusStruct->brightness > LED_BRIGHT_MAX)
+    if (ledStatusStruct->brightness > HEX_MID_VALUE && ledStatusStruct->brightness > LED_BRIGHT_MAX)
     {
-        ledStatusStruct->brightness = (LED_BRIGHT_MIN + LED_BRIGHT_MAX) / 2;
+        ledStatusStruct->brightness = LED_BRIGHT_MIN;
+    }
+    if (ledStatusStruct->brightness < HEX_MID_VALUE && ledStatusStruct->brightness > LED_BRIGHT_MAX)
+    {
+        ledStatusStruct->brightness = LED_BRIGHT_MAX;
     }
     changeBrightness(ledStatusStruct);
 }
@@ -343,7 +376,7 @@ void writeLedStateToEeprom(const struct ledStatus *ledStatusStruct)
     printf("\nwriteLedStateToEeprom\n");
     printf("Led 1: %d\n Led 2: %d\n Led 3: %d\n", ledStatusStruct->ledState[0], ledStatusStruct->ledState[1], ledStatusStruct->ledState[2]);
 
-    uint16_t ledStatusAddress = LED_STATE_ADDR - 3; // 3 bytes for the brightness
+    uint16_t ledStatusAddress = LED_STATE_ADDR; // 3 bytes for the brightness
     uint16_t inverseLedStatusAddress = INVERSE_LED_ADDR;
 
     uint8_t ledStatusDataByte = (ledStatusStruct->ledState[0] << 2) | (ledStatusStruct->ledState[1] << 1) | ledStatusStruct->ledState[2];
@@ -371,7 +404,7 @@ void writeLedStateToEeprom(const struct ledStatus *ledStatusStruct)
 bool readLedStateFromEeprom(struct ledStatus *ledStatusStruct)
 {
     printf("\nreadLedStateFromEeprom\n");
-    uint16_t ledStatusAddress = LED_STATE_ADDR - 3; // 3 bytes for the brightness
+    uint16_t ledStatusAddress = LED_STATE_ADDR; // 3 bytes for the brightness
     uint16_t inverseLedStatusAddress = INVERSE_LED_ADDR;
 
     uint8_t ledStatusDataByte;
@@ -471,6 +504,221 @@ void readBrightnessFromEeprom(struct ledStatus *ledStatusStruct)
     {
         brightnessDataByte = (LED_BRIGHT_MIN + LED_BRIGHT_MAX) / 2;
     }
-    
+
     ledStatusStruct->brightness = (int)brightnessDataByte;
+}
+
+// Ex2 stuff
+uint16_t crc16(const uint8_t *data, size_t length)
+{
+    uint8_t x;
+    uint16_t crc = 0xFFFF;
+
+    while (length--)
+    {
+        x = crc >> 8 ^ *data++;
+        x ^= x >> 4;
+        crc = (crc << 8) ^ ((uint16_t)(x << 12)) ^ ((uint16_t)(x << 5)) ^ ((uint16_t)x);
+    }
+    return crc;
+}
+
+// Creates a string with base 8 representation of the given string
+void convertStringToBase8(const char *string, const int stringLen, uint8_t *base8String)
+{
+    for (int i = 0; i < stringLen; i++)
+    {
+        base8String[i] = (uint8_t)string[i];
+    }
+}
+
+// Appends null terminator and CRC to the given base 8 string and increments stringLen to match the new length.
+void appendCrcToBase8String(uint8_t *base8String, int *stringLen)
+{
+    base8String[*stringLen] = 0;
+    uint16_t crc = crc16(base8String, *stringLen);
+
+    base8String[*stringLen + 1] = crc >> 8;   // MSB
+    base8String[*stringLen + 2] = crc & 0xFF; // LSB
+
+    *stringLen += 3;
+}
+
+// Calculates the checksum of the given base 8 string, validates its length and returns the checksum.
+int getChecksum(uint8_t *base8String, int *stringLen)
+{
+    // Locate terminating zero
+    int zeroIndex = 0;
+    for (int i = 0; i < *stringLen; i++)
+    {
+        if (base8String[i] == 0)
+        {
+            zeroIndex = i;
+            break;
+        }
+    }
+
+    if (zeroIndex < MIN_LOG_LEN || zeroIndex > MAX_LOG_LEN)
+    {
+        return -1; // String too long or too short to be valid
+    }
+
+    // Get rid of the terminating zero
+    base8String[zeroIndex] = base8String[zeroIndex + 1];
+    base8String[zeroIndex + 1] = base8String[zeroIndex + 2];
+
+    *stringLen = zeroIndex + 2;
+
+    return crc16(base8String, *stringLen);
+}
+
+// Reads specified log entry from EEPROM and saves it to the given array
+int readLogFromEeprom(const int logEntryToRead, uint8_t *logBuffer, const int logBufferLen)
+{
+    int logStartAddr = LOG_START_ADDR + (logEntryToRead * LOG_SIZE);
+
+    if (logStartAddr > LOG_END_ADDR || logStartAddr < LOG_START_ADDR || logBufferLen != LOG_SIZE)
+    {
+        return -1;
+    }
+
+    // Log start address buffer
+    uint8_t logStartAddrBuffer[2];
+    logStartAddrBuffer[0] = logStartAddr >> 8;
+    logStartAddrBuffer[1] = logStartAddr & 0xFF;
+
+    // Read log from EEPROM
+    i2c_write_blocking(i2c_default, EEPROM_ADDR, logStartAddrBuffer, 2, true);
+    sleep_ms(EEPROM_WRITE_DELAY_MS);
+    i2c_read_blocking(i2c_default, EEPROM_ADDR, logBuffer, LOG_SIZE, false);
+    sleep_ms(EEPROM_WRITE_DELAY_MS);
+    return 0;
+}
+
+void zeroAllLogs()
+{
+    int count = 0;
+    uint16_t logAddr = 0;
+
+    uint8_t buffer[3] = {0, 0, 0};
+    while (count <= 32)
+    {
+        printf("Writing to address %d\n", logAddr);
+        buffer[0] = logAddr >> 8;
+        buffer[1] = logAddr & 0xFF;
+        i2c_write_blocking(i2c_default, EEPROM_ADDR, buffer, 3, true);
+        sleep_ms(EEPROM_WRITE_DELAY_MS);
+        logAddr += LOG_SIZE;
+        count++;
+    }
+}
+
+void handleCommands()
+{
+    char uartread[5];
+    uart_read_blocking(uart0, uartread, 5);
+    int tempLen = LOG_SIZE;
+
+    // If command is "read"
+    if (strncmp(uartread, "read", 4) == 0)
+    {
+        uint8_t logBuffer[LOG_SIZE];
+        for (int i = 0; i < MAX_LOGS; i++)
+        {
+            readLogFromEeprom(i, logBuffer, LOG_SIZE);
+            if (getChecksum(logBuffer, &tempLen) == 0)
+            {
+                printf("Log %d: %s", i, logBuffer);
+                // printLog(logBuffer, LOG_SIZE, i);
+            }
+        }
+    }
+
+    // If command is "erase"
+    else if (strncmp(uartread, "erase", 5) == 0)
+    {
+        zeroAllLogs();
+    }
+
+    // Empty the UART buffer to avoid locking the program.
+    while (uart_is_readable(uart0))
+    {
+        uart_getc(uart0);
+    }
+}
+
+// Incomplete.
+void printLog(const uint8_t *logBuffer, const int logBufferLen, const int logEntryToRead)
+{
+    printf("Log %d: ", logEntryToRead);
+    for (int i = 0; i < logBufferLen; i++)
+    {
+        printf("%c", (char)logBuffer[i]);
+    }
+    printf("\n");
+}
+
+void appendAddrToString(const uint8_t *string, int *stringLen, uint8_t *finalArray, const int address)
+{
+    uint16_t address16 = address;
+    uint8_t finalBuffer[2];
+    finalBuffer[0] = address16 >> 8;
+    finalBuffer[1] = address16 & 0xFF;
+
+    memcpy(finalArray + 2, string, *stringLen);
+    *stringLen += 2;
+}
+
+void enterLogToEeprom(const char *string, const int stringLen)
+{
+    char logString[stringLen + 1];
+    strncpy(logString, string, stringLen);
+    logString[stringLen + 1] = '\0';
+    printf("logString: %s\n", logString);
+
+    int logStringLen = strlen(logString);
+    uint8_t base8LogString[LOG_SIZE];
+    uint8_t base8LogStringFinal[LOG_SIZE + 2]; // 2 bytes for the address
+
+    // Find the first empty log
+    int logIndex = 0;
+    do
+    {
+        readLogFromEeprom(logIndex, base8LogString, LOG_SIZE);
+        logIndex++;
+    } while (getChecksum(base8LogString, &logStringLen) == 0 && logIndex <= MAX_LOGS);
+    logIndex--;
+    printf("logIndex: %d\n", logIndex);
+
+    // If all logs are full, erase them all
+    if (logIndex == MAX_LOGS)
+    {
+        printf("All logs are full, erasing all logs\n");
+        zeroAllLogs();
+        logIndex = 0;
+    }
+
+    // Create base8 log string.
+    convertStringToBase8(logString, logStringLen, base8LogString);
+    for (int i = 0; i < logStringLen; i++)
+    {
+        printf("%d ", base8LogString[i]);
+    }
+    printf("\n");
+    appendCrcToBase8String(base8LogString, &logStringLen);
+    for (int i = 0; i < logStringLen; i++)
+    {
+        printf("%d ", base8LogString[i]);
+    }
+    printf("\n");
+    appendAddrToString(base8LogString, &logStringLen, base8LogStringFinal, logIndex * LOG_SIZE);
+    for (int i = 0; i < logStringLen; i++)
+    {
+        printf("%d ", base8LogStringFinal[i]);
+    }
+    printf("\n");
+
+    // Write log to EEPROM
+    i2c_write_blocking(i2c_default, EEPROM_ADDR, base8LogStringFinal, LOG_SIZE + 2, false);
+    sleep_ms(EEPROM_WRITE_DELAY_MS);
 }
