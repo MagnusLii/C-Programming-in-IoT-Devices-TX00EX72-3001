@@ -638,6 +638,7 @@ void handleCommands()
             if (getChecksum(logBuffer, &tempLen) == 0)
             {
                 printLog(logBuffer, tempLen - 2, i + 1);
+                tempLen = LOG_SIZE;
             }
         }
         printf("All logs printed\n");
