@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_mqtt import Mqtt
+import json
 
 app = Flask(__name__)
 app.config["MQTT_BROKER_URL"] = "192.168.1.118"  # Replace with broker IP
@@ -30,9 +31,9 @@ def handle_connect(client, userdata, flags, rc):
 def handle_message(client, userdata, message):
     received_message = message.payload.decode("utf-8")
     print("Received message:", received_message)
+    
     # Process the received message here
-    if received_message == "Hello":
-        mqtt.publish(topic, "Hi there!")  # Publish a response message
+    mqtt.publish(topic, f'MQTT message received:"{received_message}".')  # Publish a response message
 
 
 @app.route("/")
