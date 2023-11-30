@@ -82,6 +82,7 @@ int main()
 
                 if (isCalibrated == false)
                 {
+                    printf("Calibration status: %s\n", isCalibrated ? "true" : "false");
                     printf("Status not available!\n");
                     break;
                 }
