@@ -83,7 +83,7 @@ int main()
                 if (isCalibrated == false)
                 {
                     printf("Calibration status: %s\n", isCalibrated ? "true" : "false");
-                    printf("Status not available!\n");
+                    printf("Step count not available!\n");
                     break;
                 }
                 else
@@ -181,8 +181,10 @@ void initializePins()
     gpio_set_dir(MOTOR_PIN_IN4, GPIO_OUT);
 }
 
+// Moves the motor one step clockwise.
 void goForwards(int *currentStep)
 {
+        ++*currentStep;
     if (*currentStep > 7)
     {
         *currentStep = 0;
@@ -191,13 +193,15 @@ void goForwards(int *currentStep)
     gpio_put(MOTOR_PIN_IN2, stepSequence[*currentStep][1]);
     gpio_put(MOTOR_PIN_IN3, stepSequence[*currentStep][2]);
     gpio_put(MOTOR_PIN_IN4, stepSequence[*currentStep][3]);
-    ++*currentStep;
+
 
     sleep_ms(STEP_DELAY);
 }
 
+// Moves the motor one step counterclockwise.
 void goBackwards(int *currentStep)
 {
+    --*currentStep;
     if (*currentStep < 0)
     {
         *currentStep = 7;
@@ -206,15 +210,16 @@ void goBackwards(int *currentStep)
     gpio_put(MOTOR_PIN_IN2, stepSequence[*currentStep][1]);
     gpio_put(MOTOR_PIN_IN3, stepSequence[*currentStep][2]);
     gpio_put(MOTOR_PIN_IN4, stepSequence[*currentStep][3]);
-    --*currentStep;
 
     sleep_ms(STEP_DELAY);
 }
 
+// Moves the motor "stepsToTake" / "n" steps clockwise.
 void goForwardsN(int *currentStep, const int stepsToTake)
 {
     for (int i = 0; i < stepsToTake; i++)
     {
+        ++*currentStep;
         if (*currentStep > 7)
         {
             *currentStep = 0;
@@ -223,16 +228,17 @@ void goForwardsN(int *currentStep, const int stepsToTake)
         gpio_put(MOTOR_PIN_IN2, stepSequence[*currentStep][1]);
         gpio_put(MOTOR_PIN_IN3, stepSequence[*currentStep][2]);
         gpio_put(MOTOR_PIN_IN4, stepSequence[*currentStep][3]);
-        ++*currentStep;
 
         sleep_ms(STEP_DELAY);
     }
 }
 
+// Moves the motor "stepsToTake" / "n" steps counterclockwise.
 void goBackwardsN(int *currentStep, const int stepsToTake)
 {
     for (int i = 0; i < stepsToTake; i++)
     {
+        --*currentStep;
         if (*currentStep < 0)
         {
             *currentStep = 7;
@@ -241,12 +247,12 @@ void goBackwardsN(int *currentStep, const int stepsToTake)
         gpio_put(MOTOR_PIN_IN2, stepSequence[*currentStep][1]);
         gpio_put(MOTOR_PIN_IN3, stepSequence[*currentStep][2]);
         gpio_put(MOTOR_PIN_IN4, stepSequence[*currentStep][3]);
-        --*currentStep;
 
         sleep_ms(STEP_DELAY);
     }
 }
 
+// Calibrates the motor and returns the number of averaged steps per cicle.
 int calibrate(int *currentStep, bool *calibrationTracker)
 {
     int stepCounterArray[3] = {0, 0, 0};
@@ -305,6 +311,7 @@ int calibrate(int *currentStep, bool *calibrationTracker)
     return averageStepCount;
 }
 
+// Divides the average step count into "N" / "parts" parts.
 void divideIntoNParts(int dividedStepCount[], const int averageStepCount, const int parts)
 {
     int division = averageStepCount / parts;
@@ -318,6 +325,7 @@ void divideIntoNParts(int dividedStepCount[], const int averageStepCount, const 
     dividedStepCount[parts - 1] = division + remainder;
 }
 
+// Handles the commands received from the UART.
 void handleCommands(int *commandToExecute, bool *commandReceivedStatus, int *n)
 {
     sleep_ms(100); // Wait for the command to be fully received
@@ -367,6 +375,7 @@ void handleCommands(int *commandToExecute, bool *commandReceivedStatus, int *n)
     }
 }
 
+// Parses the first number found in a string and stores it in the "number" variable.
 bool parseNumberFromString(char *string, int *number, const int stringLength)
 {
     // Find first digit.
