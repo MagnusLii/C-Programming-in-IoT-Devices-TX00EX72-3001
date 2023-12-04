@@ -3,37 +3,49 @@ from flask_mqtt import Mqtt
 import json
 
 app = Flask(__name__)
-app.config["MQTT_BROKER_URL"] = "192.168.1.118"  # Replace with broker IP
+app.config["MQTT_BROKER_URL"] = "localhost" # Replace with broker IP
 #app.config['MQTT_USERNAME'] = ""  # Will be set once we start using authentication
 #app.config['MQTT_PASSWORD'] = ""
 app.config["MQTT_BROKER_PORT"] = 1883
 app.config["MQTT_KEEPALIVE"] = 60
 app.config["MQTT_TLS_ENABLED"] = False
-topic = "/test/topic"  # Replace with topic you want to subscribe to
+
+# Topics
+registration_topic = "/registration"
+vote_topic = "/vote"
+vote_setup_topic = "/setupVote/setup"
+vote_resync_topic = "/setupVote/resync"
+all_topics = [registration_topic, vote_topic, vote_setup_topic, vote_resync_topic]
+
 mqtt = Mqtt(app)
 
+# Subscribe to all topics in 'all_topics' list.
 @mqtt.on_connect()
 def handle_connect(client, userdata, flags, rc):
    if rc == 0:
        print('Connected successfully')
-       mqtt.subscribe(topic) # subscribe topic
+       for topic in all_topics:
+           mqtt.subscribe(all_topics)  # subscribe to each topic
+           print(f'Subscribed to {topic}')
    else:
-       print('Bad connection. Code:', rc)
+       print(f'Connection failed. Code: {rc}')
 
-
-@mqtt.on_connect()
-def handle_connect(client, userdata, flags, rc):
-    mqtt.subscribe(topic)  # Subscribe to the topic
-    print("Connected to MQTT broker")
-
-
+# Sort incoming messages
 @mqtt.on_message()
 def handle_message(client, userdata, message):
     received_message = message.payload.decode("utf-8")
-    print("Received message:", received_message)
-    
-    # Process the received message here
-    mqtt.publish(topic, f'MQTT message received:"{received_message}".')  # Publish a response message
+    print(f'Received message: {received_message}, on topic: {message.topic}')
+
+    if message.topic == registration_topic:
+        print(f'Received registration message: {received_message}')
+    elif message.topic == vote_topic:
+        print(f'Received vote message: {received_message}')
+    elif message.topic == vote_setup_topic:
+        print(f'Received vote setup message: {received_message}')
+    elif message.topic == vote_resync_topic:
+        print(f'Received vote resync message: {received_message}')
+    else:
+        print(f'Received message on unknown topic: {received_message}')
 
 
 @app.route("/")
