@@ -15,10 +15,17 @@ The server requires all of the following installed on the machine running the se
 The server includes a light version of the ESP registration process and a template for custom tests using the **/test/server/receive_message** and **/test/est/send_message topics**.
 
 ## Registration process flowchart.
+##### ESP initiates registration process
 ```mermaid
 graph LR
-A[ESP] -- ESP registration message --> B(/registration/Server/ESP-Mac-address)
-A --> C(/registration/esp/UniqueID)
+A[ESP] -- ESP registration message --> B(Topic: /registration/Server/ESP-Mac-address)
 B --> D[SERVER]
-C -- VotingID response --> D
 ```
+##### Server responds to registration
+```mermaid
+graph LR
+A[SERVER] -- VotingID response ---> C(Topic: /registration/esp/UniqueID)
+C ---> D[ESP]
+```
+## Setup
+Install mosquitto from https://mosquitto.org/download/ by following the official instructions. Once mosquitto is up and running on the machine simply run the code for the flask server on the machine. You can confirm if the flask server is setup by opening http://127.0.0.1:5000.
