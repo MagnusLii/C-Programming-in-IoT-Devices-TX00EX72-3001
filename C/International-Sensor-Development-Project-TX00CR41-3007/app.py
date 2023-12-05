@@ -1,63 +1,75 @@
-from flask import Flask, request, jsonify
+from flask import Flask
 from flask_mqtt import Mqtt
 import json
+import random
 
 app = Flask(__name__)
-app.config["MQTT_BROKER_URL"] = "localhost" # Replace with broker IP if not running locally.
+app.config["MQTT_BROKER_URL"] = "localhost"  # Replace with broker IP if not running locally.
 app.config["MQTT_BROKER_PORT"] = 1883
 app.config["MQTT_KEEPALIVE"] = 10
 app.config["MQTT_TLS_ENABLED"] = False
 
 
 # Topics
-registration_topic = "/registration"
-test_topic = "/test"
-all_topics = [registration_topic, test_topic] # List of all topics to subscribe to.
+registration_topic = '/registration/Server/#'
+registration_topic_partial = '/registration/Server'
+registration_response_topic = '/registration/esp/'  # + mac address
 
-# Defines
-sender = "Server"
+test_receive_topic = '/test/receive_message'
+test_send_topic = '/test/send_message'
+all_topics = [registration_topic, test_receive_topic]  # List of all topics to subscribe to.
 
 mqtt = Mqtt(app)
+esp_list = []  # List of all ESPs that have been registered.
+
+class Esp:
+
+    registredESPs = 0
+
+    def __init__(self, mac_address, registeredUser='NULL',):
+        self.mac_address = mac_address
+        self.registeredUser = registeredUser
+
+        self.uniqueID = random.randint(1, 10)  # Needs to be changed later.
+        self.voteStatus = 'pass'  # default value is pass.
+
+        self.registration_confirmation_topic = registration_response_topic + self.mac_address
+
+
+        Esp.registredESPs += 1
+
 
 # Subscribe to all topics in 'all_topics' list when server is started.
 @mqtt.on_connect()
 def handle_connect(client, userdata, flags, rc):
    if rc == 0:
-       print('Connected successfully')
        for topic in all_topics:
            mqtt.subscribe(topic, qos=1)  # subscribe to each topic
-           print(f'Subscribed to {topic}')
    else:
        print(f'Connection failed. Code: {rc}')
 
+
 # Sort incoming messages.
-# As we'll have randomly generated topics later on, we'll have handle_message() to sort the messages and send them to functions that handle messages from specific topics.
 @mqtt.on_message()
 def handle_message(client, userdata, message):
     received_message = message.payload.decode("utf-8")
 
-    print(f'\n\nReceived message on topic {message.topic}: {received_message}')
+    #print(f'\n\nReceived message on topic {message.topic}: {received_message}')  # Uncomment for debugging to read plain received message.
 
     # Decode JSON
     decoded_message = decode_json(received_message)
 
-
     # Veriify that the message is a JSON object.
-    if not test_json(decoded_message):
-        print(f'JSON test failed. Message: {received_message}')
-        return
-    
-    # Ignore messages sent by the Server.
-    if decoded_message.get('Sender') == 'Server':
-        print('Message sent by Server, ignoring.')
+    if decoded_message == -1:
+        print('Message is not a JSON object.')
         return
 
     # Example message handling for the registration topic.
-    if message.topic == registration_topic:
+    if message.topic.startswith(registration_topic_partial):
         registration_message_handler(decoded_message)
 
     # Simple test topic.
-    elif message.topic == test_topic:
+    elif message.topic == test_receive_topic:
         test_message_handler(decoded_message)
 
 
@@ -78,16 +90,7 @@ def decode_json(json_string):
         return decoded_message
     except json.decoder.JSONDecodeError as error:
         print(f'JSON test failed. Error: {error}')
-        #return f'Error: Invalid JSON format - {error}'
-        return
-
-
-# Test for if the decoded message is a JSON object, intended for use with the decode_json() function.
-def test_json(decoded_message):
-    if isinstance(decoded_message, str) and decoded_message.startswith('Error: Invalid JSON format'):
-        return False
-    else:
-        return True
+        return -1
 
 
 # Check if all keywords are present in the JSON keys.
@@ -103,15 +106,37 @@ def check_keywords_in_json(decoded_json, keyword_list):
     return True
 
 
+def try_publish(topic, message):
+    try:
+        mqtt.publish(topic, message, qos=1)
+    except:
+        print(f'Failed to publish to topic: {topic}')
+
+
 # Handle messages in the registration topic.
 def registration_message_handler(decoded_message):
 
-    if check_keywords_in_json(decoded_message, ["UniqueID"]):
-        uniqueID = "123ASD456" # Set whatever ID here for test purposes.
-        return_message = f'{{"UniqueID": "{uniqueID}", "Sender": "{sender}"}}'
-        mqtt.publish(registration_topic, return_message, qos=1)
+    if check_keywords_in_json(decoded_message, ["Mac"]):
+
+        # Check if the ESP is already registered.
+        for esp in esp_list:
+            if esp.mac_address == decoded_message["Mac"]:
+                print(f'ESP with MAC address {decoded_message["Mac"]} is already registered.')
+
+                # Return ESPs uniqueID.
+                try_publish(esp.registration_confirmation_topic, f'{{"VotingID":"{esp.uniqueID}"}}')
+                return
+
+        # Register ESP.
+        esp = Esp(decoded_message["Mac"])
+        esp_list.append(esp)
+        print(f'ESP with MAC address {decoded_message["Mac"]} has been registered.')
+
+        print(f'Publishing to topic: {registration_response_topic + decoded_message["Mac"]}')
+        try_publish(esp.registration_confirmation_topic, f'{{"VotingID":"{esp.uniqueID}"}}')
+
     else:
-        print('Something went wrong.')
+        print('Message did not include "Mac" key.')
     return
 
 
@@ -121,10 +146,10 @@ def test_message_handler(decoded_message):
         print(f"Key: {key}, Value: {value}")
     
     '''
-    If you wish to send a message back to the topic.
+    If you wish to send a message back.
 
-    message = "Your message here" # Message needs Sender key if in JSON format.
-    mqtt.publish(test_topic, f"{message}", qos=1)
+    message = "Your message here" # Message to send.
+    mqtt.publish(test_send_topic, f"{message}", qos=1)
     '''
     return
 
