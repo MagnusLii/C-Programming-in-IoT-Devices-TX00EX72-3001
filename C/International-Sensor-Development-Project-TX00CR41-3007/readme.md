@@ -19,6 +19,6 @@ The server includes a light version of the ESP registration process and a templa
 graph LR
 A[ESP] -- ESP registration message --> B(/registration/Server/ESP-Mac-address)
 A --> C(/registration/esp/UniqueID)
-B <-- D[SERVER]
-C <-- VotingID response -- D
+B --> D[SERVER]
+C -- VotingID response --> D
 ```
