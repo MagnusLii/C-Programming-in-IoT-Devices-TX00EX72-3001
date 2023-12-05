@@ -77,7 +77,7 @@ def handle_message(client, userdata, message):
     else:
         print(f'Received message on not handeled topic: {received_message}')
 
-
+# Index page, currently only used to verify that the server is running.
 @app.route("/")
 def index():
     return 'Flask MQTT Server is running!'
