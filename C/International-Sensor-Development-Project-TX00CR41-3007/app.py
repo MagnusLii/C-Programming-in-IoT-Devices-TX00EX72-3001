@@ -9,14 +9,13 @@ app.config["MQTT_BROKER_PORT"] = 1883
 app.config["MQTT_KEEPALIVE"] = 10
 app.config["MQTT_TLS_ENABLED"] = False
 
-
 # Topics
 registration_topic = '/registration/Server/#'
 registration_topic_partial = '/registration/Server'
 registration_response_topic = '/registration/esp/'  # + mac address
 
-test_receive_topic = '/test/receive_message'
-test_send_topic = '/test/send_message'
+test_receive_topic = '/test/server/receive_message'
+test_send_topic = '/test/est/send_message'
 all_topics = [registration_topic, test_receive_topic]  # List of all topics to subscribe to.
 
 mqtt = Mqtt(app)
@@ -76,6 +75,7 @@ def handle_message(client, userdata, message):
     # Message on unknown topic.        
     else:
         print(f'Received message on not handeled topic: {received_message}')
+
 
 # Index page, currently only used to verify that the server is running.
 @app.route("/")
@@ -152,6 +152,7 @@ def test_message_handler(decoded_message):
     mqtt.publish(test_send_topic, f"{message}", qos=1)
     '''
     return
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, use_reloader=False)
