@@ -63,7 +63,7 @@ def handle_message(client, userdata, message):
 
     # Message on unknown topic.        
     else:
-        print(f'Received message on unknown topic: {received_message}')
+        print(f'Received message on not handeled topic: {received_message}')
 
 
 @app.route("/")
