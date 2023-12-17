@@ -7,36 +7,8 @@ mqttKeepAliveSec = 10
 mqttBrokerIP = 'localhost'  # Replace with broker IP if not running locally.
 mqttQoSLevel = 1
 
-# Topics
-# Registration topics
-registrationIncomingTopic = '/registration/Server/#' # + mac address, ESPs will start registration with this topic.
-registrationResponeTopic = '/registration/esp/'  # + mac address, server will respond to ESPs with this topic.
-# VoteSetup topics
-voteSetupTopic = '/setupVote/Setup'  # Vote information is posted here.
-voteResyncTopic = '/setupVote/Resync'  # ESPs will request resync with this topic.
-# Vote topics
-voteIncomingTopic = '/vote/'  # + votingID, ESPs will send votes to this topic.
-
-# List of all topics to subscribe on server boot.
-initialSubscribeTopics = [registrationIncomingTopic, voteResyncTopic]  # List of all topics to subscribe to.
-
 mqtt = Mqtt()
 
-class Esp:
-
-    registredESPs = 0
-
-    def __init__(self, mac_address, registeredUser='NULL',):
-        self.mac_address = mac_address
-        self.registeredUser = registeredUser
-
-        self.uniqueID = random.randint(1, 10)  # Needs to be changed later.
-        self.voteStatus = 'pass'  # default value is pass.
-
-        self.registration_confirmation_topic = registrationResponeTopic + self.mac_address
-
-
-        Esp.registredESPs += 1
 
 def decodeStringToJSON(json_string):
     try:
