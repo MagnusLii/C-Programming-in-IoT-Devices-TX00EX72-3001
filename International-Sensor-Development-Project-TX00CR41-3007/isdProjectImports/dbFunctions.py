@@ -1,15 +1,9 @@
-from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import credentials
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{credentials.dbUsername}:{credentials.dbPassword}@{credentials.dbHostname}:{credentials.dbPort}/{credentials.dbName}'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy()
 
-db = SQLAlchemy(app)
-
-# Database models
 class ESPDevice(db.Model):
     DeviceID = db.Column(db.String(17), primary_key=True)
     RegistrationTime = db.Column(db.TIMESTAMP, default=datetime.utcnow)
@@ -33,15 +27,7 @@ class Vote(db.Model):
     UserID = db.Column(db.Integer, db.ForeignKey('user.UserID'), nullable=False)
     VoteType = db.Column(db.Text, nullable=False)
     TopicID = db.Column(db.Integer, db.ForeignKey('topic.TopicID'), nullable=False)
-    VoteTime = db.Column(db.TIMESTAMP, default=datetime.utcnow)
+    VoteTime = db.Column(db.TIMESTAMP, default=datetime.utcnow())
 
-
-# Database functions
 def create_tables():
     db.create_all()
-
-
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
