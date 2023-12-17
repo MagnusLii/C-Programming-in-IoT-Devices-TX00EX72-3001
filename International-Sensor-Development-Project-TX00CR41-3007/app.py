@@ -30,6 +30,23 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 def index():
     return 'Flask MQTT Server is running!'
 
+# Subscribe to all topics in 'initialSubscribeTopics' list when server is started.
+@mqttFunctions.mqtt.on_connect()
+def handle_connect(client, userdata, flags, rc):
+   if rc == 0:
+       for topic in initialSubscribeTopics:
+           mqtt.subscribe(topic, qos=1)  # subscribe to each topic
+   else:
+       print(f'Connection failed. Code: {rc}')
+
+
+@mqttFunctions.mqtt.on_message()
+def handle_message(client, userdata, message):
+    received_message = message.payload.decode("utf-8")
+    received_topic = message.topic
+    print(f'Received message: {received_message} on topic: {received_topic}')
+    return
+
 
 if __name__ == '__main__':
 
