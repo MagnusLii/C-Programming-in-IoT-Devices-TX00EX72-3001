@@ -89,4 +89,7 @@ def handle_connect(client, userdata, flags, rc):
 
 @mqtt.on_message()
 def handle_message(client, userdata, message):
+    received_message = message.payload.decode("utf-8")
+    received_topic = message.topic
+    print(f'Received message: {received_message} on topic: {received_topic}')
     return

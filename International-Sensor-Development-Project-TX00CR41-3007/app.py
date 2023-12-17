@@ -26,14 +26,15 @@ app.config['MQTT_TLS_ENABLED'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{credentials.dbUsername}:{credentials.dbPassword}@{credentials.dbHostname}:{credentials.dbPort}/{credentials.dbName}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Initialize imported app extensions.
-dbFunctions.db.init_app(app)
-mqttFunctions.mqtt.init_app(app)
-
 @app.route('/')
 def index():
     return 'Flask MQTT Server is running!'
 
 
 if __name__ == '__main__':
+
+    # Initialize imported app extensions.
+    dbFunctions.db.init_app(app)
+    mqttFunctions.mqtt.init_app(app)
+
     app.run(host='0.0.0.0', port=5000, use_reloader=False)
