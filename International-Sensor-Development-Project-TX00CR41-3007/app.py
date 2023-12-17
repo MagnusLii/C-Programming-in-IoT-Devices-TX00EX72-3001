@@ -42,7 +42,7 @@ class Esp:
 
         Esp.registredESPs += 1
 
-class Voteinformation:
+class VoteInformation:
 
     # Vote object is initialized with NULL values.
     def __init__(self):
@@ -97,6 +97,8 @@ def handle_message(client, userdata, message):
 
 
 if __name__ == '__main__':
+
+    globalVoteInformation = VoteInformation()  # Global vote information object.
 
     # Initialize imported app extensions.
     dbFunctions.db.init_app(app)
