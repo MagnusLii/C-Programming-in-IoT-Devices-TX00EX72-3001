@@ -34,8 +34,8 @@ def index():
 @mqttFunctions.mqtt.on_connect()
 def handle_connect(client, userdata, flags, rc):
    if rc == 0:
-       for topic in initialSubscribeTopics:
-           mqtt.subscribe(topic, qos=1)  # subscribe to each topic
+       for topic in mqttFunctions.initialSubscribeTopics:
+           mqttFunctions.mqtt.subscribe(topic, qos=1)  # subscribe to each topic
    else:
        print(f'Connection failed. Code: {rc}')
 
