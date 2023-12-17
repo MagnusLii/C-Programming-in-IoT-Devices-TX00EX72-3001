@@ -1,7 +1,6 @@
 from flask_mqtt import Mqtt
 import json
 import random
-from app import registrationResponeTopic 
 
 mqttBrokerPort = 1883
 mqttKeepAliveSec = 10
