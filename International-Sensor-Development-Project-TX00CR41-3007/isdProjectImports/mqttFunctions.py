@@ -2,6 +2,21 @@ from flask import Flask
 from flask_mqtt import Mqtt
 import json
 
+mqttBrokerPort = 1883
+mqttKeepAliveSec = 10
+mqttBrokerIP = 'localhost'  # Replace with broker IP if not running locally.
+mqttQoSLevel = 1
+
+# Flask app setup.
+app = Flask(__name__)
+app.config['MQTT_BROKER_URL'] = mqttBrokerIP
+app.config['MQTT_BROKER_PORT'] = mqttBrokerPort
+app.config['MQTT_KEEPALIVE'] = mqttKeepAliveSec
+app.config['MQTT_TLS_ENABLED'] = False
+
+mqtt = Mqtt(app)
+espList = []  # List of all ESPs that have been registered.
+
 
 def decodeStringToJSON(json_string):
     try:
