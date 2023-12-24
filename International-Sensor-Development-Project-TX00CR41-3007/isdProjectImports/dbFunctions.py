@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from flask import jsonify
 
 db = SQLAlchemy()
 
@@ -30,3 +31,29 @@ class Vote(db.Model):
 
 def create_tables():
     db.create_all()
+
+
+# Returns a JSON object containing all the topics (aka votes held) in the database.
+def get_all_topics():
+    try:
+        topics = Topic.query.all()
+
+        # Convert the topics data to a list of dictionaries
+        topics_list = []
+        for topic in topics:
+            topics_list.append({
+                'TopicID': topic.TopicID,
+                'Title': topic.Title,
+                'Description': topic.Description,
+                'StartTime': str(topic.StartTime),
+                'EndTime': str(topic.EndTime)
+            })
+
+        # Return the topics data as a JSON object
+        return jsonify({'topics': topics_list}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+def 

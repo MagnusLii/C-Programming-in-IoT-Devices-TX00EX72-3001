@@ -10,6 +10,7 @@ class Esp:
     def __init__(self, macAddress, registeredUser='NULL',):
         self.macAddress = macAddress
         self.registeredUser = registeredUser
+        self.espIsAssignedToUser = False
 
         self.uniqueID = str(uuid.uuid4())  # random unique ID for each ESP based on RFC 4122 standards
         self.voteStatus = 'pass'  # default value is pass/abstain.
@@ -26,7 +27,7 @@ class Esp:
 
     # Handles delivery of unique ID to ESP.
     def returnUniqueIDToEsp(self):
-        response = f'{{"votingID": "{self.uniqueID}"}}'
+        response = f'{{"votingID":"{self.uniqueID}"}}'
         mqttImports.publishJSONtoMQTT(self.registrationConfirmationTopic, response)
         return
 

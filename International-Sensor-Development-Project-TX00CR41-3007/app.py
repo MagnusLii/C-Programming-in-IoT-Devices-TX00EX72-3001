@@ -78,6 +78,12 @@ def getRegisteredESPs():
     return jsonify([esp.Esp.regiseredESPs[i].macAddress for i in range(len(esp.Esp.regiseredESPs))])
 
 
+@app.route('/getTopics', methods=['GET'])
+def getTopics():
+    return dbFunctions.get_all_topics()
+
+
+
 if __name__ == '__main__':
 
     globalVoteInformation = voteHandling.VoteInformation()  # Global vote information object.
