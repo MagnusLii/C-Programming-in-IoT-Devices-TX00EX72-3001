@@ -10,7 +10,7 @@ class ESPDevice(db.Model):
     RegistrationTime = db.Column(db.TIMESTAMP, default=datetime.utcnow)
     LastActiveTime = db.Column(db.TIMESTAMP)
 
-class User(db.Model):
+class Users(db.Model):
     __tablename__ = 'users'
     UserID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     Username = db.Column(db.Text, unique=True)
@@ -25,7 +25,7 @@ class Topic(db.Model):
     StartTime = db.Column(db.TIMESTAMP)
     EndTime = db.Column(db.TIMESTAMP)
 
-class Vote(db.Model):
+class Votes(db.Model):
     __tablename__ = 'votes'
     VoteID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     UserID = db.Column(db.Integer, db.ForeignKey('user.UserID'), nullable=False)
@@ -59,3 +59,27 @@ def get_all_topics():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+def get_votes_and_users_by_topic_id(topic_id):
+    try:
+        # Query votes and users based on TopicID
+        votes_and_users = db.session.query(Votes, Users).\
+            join(Users, Users.UserID == Votes.UserID).\
+            filter(Votes.TopicID == topic_id).all()
+
+        # Create JSON object
+        votes_users_list = []
+        for vote, user in votes_and_users:
+            votes_users_list.append({
+                'VoteID':vote.VoteID,
+                'UserID':user.UserID,
+                'Username':user.Username,
+                'VoteType':vote.VoteType,
+                'VoteTime':str(vote.VoteTime)
+            })
+
+        # Return the data as a JSON object
+        return jsonify({'votes_users_data': votes_users_list}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

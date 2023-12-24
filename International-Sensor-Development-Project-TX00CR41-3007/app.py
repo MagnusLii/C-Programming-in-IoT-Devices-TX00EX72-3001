@@ -73,6 +73,7 @@ def handle_message(client, userdata, message):
     
     return
 
+# API endpoints
 @app.route('/getRegisteredESPs', methods=['GET'])
 def getRegisteredESPs():
     return jsonify([esp.Esp.regiseredESPs[i].macAddress for i in range(len(esp.Esp.regiseredESPs))])
@@ -82,6 +83,10 @@ def getRegisteredESPs():
 def getTopics():
     return dbFunctions.get_all_topics()
 
+
+@app.route('/getVoteResults/<topicID>', methods=['GET'])
+def getVoteResults(topicID):
+    return dbFunctions.get_votes_and_users_by_topic_id(topicID)
 
 
 if __name__ == '__main__':
