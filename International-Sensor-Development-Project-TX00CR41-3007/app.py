@@ -57,6 +57,7 @@ def handle_message(client, userdata, message):
         return # TODO: maybe add something to notify ESPs about failed JSON decode.
 
     # Handle received message based on topic.
+    print(f'starts with /registration/Server/: {receivedTopic.startswith("/registration/Server/")}')
     if receivedTopic.startswith("/registration/Server/") == True:
         for i in range(len(esp.Esp.regiseredESPs)):
             if esp.Esp.regiseredESPs[i].macAddress == decodedMessage['Mac']:
