@@ -55,5 +55,3 @@ def get_all_topics():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
-def 
