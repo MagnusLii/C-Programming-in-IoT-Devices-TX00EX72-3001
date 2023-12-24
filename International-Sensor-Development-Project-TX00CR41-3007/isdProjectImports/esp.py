@@ -24,8 +24,10 @@ class Esp:
         self.voteStatus = voteStatus
         return
 
+    # Handles delivery of unique ID to ESP.
     def returnUniqueIDToEsp(self):
-        mqttImports.publishJSONtoMQTT(self.registrationConfirmationTopic, self.uniqueID)
+        response = f'{{"votingID": "{self.uniqueID}"}}'
+        mqttImports.publishJSONtoMQTT(self.registrationConfirmationTopic, response)
         return
 
     @classmethod

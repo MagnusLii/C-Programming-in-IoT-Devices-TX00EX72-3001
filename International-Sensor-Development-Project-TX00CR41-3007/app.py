@@ -62,18 +62,15 @@ def handle_message(client, userdata, message):
         for i in range(len(esp.Esp.regiseredESPs)):
             if esp.Esp.regiseredESPs[i].macAddress == decodedMessage['Mac']:
                 print(f'{decodedMessage["Mac"]} ESP already registered.')
+                esp.Esp.regiseredESPs[i].returnUniqueIDToEsp() # Resends uniqueID to ESP.
                 return
             
         esp.Esp(decodedMessage['Mac'])
         print(f'{decodedMessage["Mac"]} ESP registered.')
-        esp.Esp.regiseredESPs[-1].returnUniqueIDToEsp()
+        esp.Esp.regiseredESPs[-1].returnUniqueIDToEsp() # Sends uniqueID to ESP.
         return
+
     
-
-
-
-    print()
-    print()
     return
 
 @app.route('/getRegisteredESPs', methods=['GET'])
