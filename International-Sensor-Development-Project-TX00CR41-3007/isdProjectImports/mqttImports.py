@@ -19,7 +19,7 @@ voteResyncTopic = '/setupVote/Resync'  # ESPs will request resync with this topi
 # Vote topics
 voteIncomingTopic = '/vote/#'  # + votingID, ESPs will send votes to this topic.
 
-all_topics = [registrationIncomingTopic, voteResyncTopic, voteIncomingTopic]
+initialSubscribeTopics = [registrationIncomingTopic, voteResyncTopic, voteIncomingTopic]
 
 
 def decodeStringToJSON(json_string):
