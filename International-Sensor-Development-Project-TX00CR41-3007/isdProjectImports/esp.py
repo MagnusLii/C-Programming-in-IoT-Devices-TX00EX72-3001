@@ -14,7 +14,7 @@ class Esp:
         self.uniqueID = str(uuid.uuid4())  # random unique ID for each ESP based on RFC 4122 standards
         self.voteStatus = 'pass'  # default value is pass/abstain.
 
-        self.registration_confirmation_topic = mqttImports.registrationResponeTopic + self.macAddress
+        self.registrationConfirmationTopic = mqttImports.registrationResponeTopic + self.macAddress
 
 
         Esp.numRegistredESPs += 1
@@ -22,7 +22,13 @@ class Esp:
     
     def updateVoteStatus(self, voteStatus):
         self.voteStatus = voteStatus
+        return
+
+    def returnUniqueIDToEsp(self):
+        mqttImports.publishJSONtoMQTT(self.registrationConfirmationTopic, self.uniqueID)
+        return
 
     @classmethod
     def getRegistereEsps(cls):
         return cls.regiseredESPs
+    
