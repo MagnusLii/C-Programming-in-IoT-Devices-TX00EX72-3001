@@ -1,23 +1,28 @@
 from isdProjectImports import mqttImports
 import random
+import uuid
 
 class Esp:
 
-    registredESPs = 0
+    numRegistredESPs = 0
+    regiseredESPs = []
 
     def __init__(self, mac_address, registeredUser='NULL',):
-        self.mac_address = mac_address
+        self.macAddress = mac_address
         self.registeredUser = registeredUser
 
-        self.uniqueID = random.randint(1, 10)  # Needs to be changed later.
-        self.voteStatus = 'pass'  # default value is pass.
+        self.uniqueID = str(uuid.uuid4())  # random unique ID for each ESP based on RFC 4122 standards
+        self.voteStatus = 'pass'  # default value is pass/abstain.
 
         self.registration_confirmation_topic = mqttImports.registrationResponeTopic + self.mac_address
 
 
-        Esp.registredESPs += 1
-
+        Esp.numRegistredESPs += 1
+        Esp.regiseredESPs.append(self)
     
-    def registerEsp(self, jsonMessage):
-        self.registeredUser = jsonMessage['user']
-        print(f'ESP {self.mac_address} registered to user {self.registeredUser}.')
+    def updateVoteStatus(self, voteStatus):
+        self.voteStatus = voteStatus
+
+    @classmethod
+    def getRegistereEsps(cls):
+        return cls.regiseredESPs
