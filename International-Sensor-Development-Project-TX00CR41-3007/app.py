@@ -66,6 +66,7 @@ def handle_message(client, userdata, message):
             
         esp.Esp(decodedMessage['Mac'])
         print(f'{decodedMessage["Mac"]} ESP registered.')
+        esp.Esp.regiseredESPs[-1].returnUniqueIDToEsp()
         return
     
 
