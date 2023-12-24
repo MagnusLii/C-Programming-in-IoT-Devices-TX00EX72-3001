@@ -5,17 +5,20 @@ from flask import jsonify
 db = SQLAlchemy()
 
 class ESPDevice(db.Model):
+    __tablename__ = 'espdevices'
     DeviceID = db.Column(db.String(17), primary_key=True)
     RegistrationTime = db.Column(db.TIMESTAMP, default=datetime.utcnow)
     LastActiveTime = db.Column(db.TIMESTAMP)
 
 class User(db.Model):
+    __tablename__ = 'users'
     UserID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     Username = db.Column(db.Text, unique=True)
     DeviceID = db.Column(db.String(17))
     RegistrationDate = db.Column(db.TIMESTAMP, default=datetime.utcnow)
 
 class Topic(db.Model):
+    __tablename__ = 'topics'
     TopicID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     Title = db.Column(db.Text, nullable=False)
     Description = db.Column(db.Text)
@@ -23,6 +26,7 @@ class Topic(db.Model):
     EndTime = db.Column(db.TIMESTAMP)
 
 class Vote(db.Model):
+    __tablename__ = 'votes'
     VoteID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     UserID = db.Column(db.Integer, db.ForeignKey('user.UserID'), nullable=False)
     VoteType = db.Column(db.Text, nullable=False)
