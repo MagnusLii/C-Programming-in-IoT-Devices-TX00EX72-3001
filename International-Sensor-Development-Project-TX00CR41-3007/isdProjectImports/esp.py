@@ -1,4 +1,4 @@
-import mqttImports
+from isdProjectImports import mqttImports
 import random
 
 class Esp:
