@@ -63,10 +63,10 @@ def handle_message(client, userdata, message):
             if esp.Esp.regiseredESPs[i].macAddress == decodedMessage['Mac']:
                 print(f'{decodedMessage["Mac"]} ESP already registered.')
                 return
-            else:
-                esp.Esp(decodedMessage['Mac'])
-                print(f'{decodedMessage["Mac"]} ESP registered.')
-                pass
+            
+        esp.Esp(decodedMessage['Mac'])
+        print(f'{decodedMessage["Mac"]} ESP registered.')
+        return
     
 
 
