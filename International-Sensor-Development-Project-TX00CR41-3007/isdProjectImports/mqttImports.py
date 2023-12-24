@@ -9,6 +9,18 @@ mqttQoSLevel = 1
 
 mqtt = Mqtt()
 
+# Topics
+# Registration topics
+registrationIncomingTopic = '/registration/Server/#' # + mac address, ESPs will start registration with this topic.
+registrationResponeTopic = '/registration/esp/'  # + mac address, server will respond to ESPs with this topic.
+# VoteSetup topics
+voteSetupTopic = '/setupVote/Setup'  # Vote information is posted here.
+voteResyncTopic = '/setupVote/Resync'  # ESPs will request resync with this topic.
+# Vote topics
+voteIncomingTopic = '/vote/#'  # + votingID, ESPs will send votes to this topic.
+
+all_topics = [registrationIncomingTopic, voteResyncTopic, voteIncomingTopic]
+
 
 def decodeStringToJSON(json_string):
     try:

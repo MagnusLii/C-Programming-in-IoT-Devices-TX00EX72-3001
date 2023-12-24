@@ -5,61 +5,16 @@ import random
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from isdProjectImports import credentials
-from isdProjectImports import mqttFunctions
+from isdProjectImports import mqttImports
 from isdProjectImports import dbFunctions
+from isdProjectImports import voteHandling
+from isdProjectImports import esp
 
 mqttBrokerPort = 1883
 mqttKeepAliveSec = 10
 mqttBrokerIP = 'localhost'  # Replace with broker IP if not running locally.
 mqttQoSLevel = 1
 
-# Topics
-# Registration topics
-registrationIncomingTopic = '/registration/Server/#' # + mac address, ESPs will start registration with this topic.
-registrationResponeTopic = '/registration/esp/'  # + mac address, server will respond to ESPs with this topic.
-# VoteSetup topics
-voteSetupTopic = '/setupVote/Setup'  # Vote information is posted here.
-voteResyncTopic = '/setupVote/Resync'  # ESPs will request resync with this topic.
-# Vote topics
-voteIncomingTopic = '/vote/'  # + votingID, ESPs will send votes to this topic.
-
-# List of all topics to subscribe on server boot.
-initialSubscribeTopics = [registrationIncomingTopic, voteResyncTopic]  # List of all topics to subscribe to.
-
-class Esp:
-
-    registredESPs = 0
-
-    def __init__(self, mac_address, registeredUser='NULL',):
-        self.mac_address = mac_address
-        self.registeredUser = registeredUser
-
-        self.uniqueID = random.randint(1, 10)  # Needs to be changed later.
-        self.voteStatus = 'pass'  # default value is pass.
-
-        self.registration_confirmation_topic = registrationResponeTopic + self.mac_address
-
-
-        Esp.registredESPs += 1
-
-class VoteInformation:
-
-    # Vote object is initialized with NULL values.
-    def __init__(self):
-        self.voteID = None
-        self.topicID = None
-        self.voteTitle = None
-        self.voteType = None
-        self.voteStartTime = None
-        self.voteEndTime = None
-    
-    def updateVoteInformation(self, voteID, voteType, voteTitle, topicID, voteStartTime, voteEndTime):
-        self.voteID = voteID
-        self.topicID = topicID
-        self.voteTitle = voteTitle
-        self.voteType = voteType
-        self.voteStartTime = voteStartTime
-        self.voteEndTime = voteEndTime
 
 # Flask app setup.
 app = Flask(__name__)
@@ -79,16 +34,16 @@ def index():
     return 'Flask MQTT Server is running!'
 
 # Subscribe to all topics in 'initialSubscribeTopics' list when server is started.
-@mqttFunctions.mqtt.on_connect()
+@mqttImports.mqtt.on_connect()
 def handle_connect(client, userdata, flags, rc):
    if rc == 0:
-       for topic in initialSubscribeTopics:
-           mqttFunctions.mqtt.subscribe(topic, qos=1)  # subscribe to each topic
+       for topic in mqttImports.initialSubscribeTopics:
+           mqttImports.mqtt.subscribe(topic, qos=1)  # subscribe to each topic
    else:
        print(f'Connection failed. Code: {rc}')
 
 
-@mqttFunctions.mqtt.on_message()
+@mqttImports.mqtt.on_message()
 def handle_message(client, userdata, message):
     received_message = message.payload.decode("utf-8")
     received_topic = message.topic
@@ -98,10 +53,10 @@ def handle_message(client, userdata, message):
 
 if __name__ == '__main__':
 
-    globalVoteInformation = VoteInformation()  # Global vote information object.
+    globalVoteInformation = voteHandling.VoteInformation()  # Global vote information object.
 
     # Initialize imported app extensions.
     dbFunctions.db.init_app(app)
-    mqttFunctions.mqtt.init_app(app)
+    mqttImports.mqtt.init_app(app)
 
     app.run(host='0.0.0.0', port=5000, use_reloader=False)
