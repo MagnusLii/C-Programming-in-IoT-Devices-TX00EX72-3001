@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, request, jsonify
 from flask_mqtt import Mqtt
 import json
 import random
@@ -87,6 +87,21 @@ def getTopics():
 @app.route('/getVoteResults/<topicID>', methods=['GET'])
 def getVoteResults(topicID):
     return dbFunctions.get_votes_and_users_by_topic_id(topicID)
+
+@app.route('/submit_data', methods=['POST'])
+def submit_data():
+    if request.method == 'POST':
+        # Access the POST data sent to this endpoint
+        data = request.json  # Assuming JSON data is sent in the request
+
+        print(data)
+
+        # Return a response (optional)
+        return jsonify({'message': 'Data received successfully!'}), 200
+
+    else:
+        return jsonify({'error': 'Invalid request method'}), 405  # Method Not Allowed
+
 
 
 if __name__ == '__main__':
