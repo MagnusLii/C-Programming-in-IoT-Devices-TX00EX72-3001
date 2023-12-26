@@ -14,6 +14,7 @@ class RegisteredESPs(db.Model):
     Assigned = db.Column(db.Boolean)
     Registered = db.Column(db.Boolean)
     MacAddress = db.Column(db.String(255))
+    users = db.relationship('users', backref='registeredesps')
 
 class Users(db.Model):
     __tablename__ = 'users'
@@ -21,7 +22,7 @@ class Users(db.Model):
     Username = db.Column(db.Text, unique=True)
     DeviceIndex = db.Column(db.Integer, db.ForeignKey('registeredesps.DeviceIndex'))
     RegistrationDate = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp())
-    registered_esp = db.relationship('RegisteredESPs', backref='users')
+    registered_esp = db.relationship('registeredesps', backref='users')
 
 class Topics(db.Model):
     __tablename__ = 'topics'
