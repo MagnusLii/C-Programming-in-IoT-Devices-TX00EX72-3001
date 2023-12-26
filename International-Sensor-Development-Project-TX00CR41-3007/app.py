@@ -74,22 +74,9 @@ def handle_message(client, userdata, message):
     return
 
 # API endpoints
-
-
-
-@app.route('/registerEsp', methods=['POST'])
-def submit_data():
-    if request.method == 'POST':
-        # Access the POST data sent to this endpoint
-        data = request.json  # Assuming JSON data is sent in the request
-
-        print(data)
-
-        # Return a response (optional)
-        return jsonify({'message': 'Data received successfully!'}), 200
-
-    else:
-        return jsonify({'error': 'Invalid request method'}), 405  # Method Not Allowed
+@app.route('/api/getRegisteredESPs', methods=['GET'])
+def getRegisteredESPs():
+    return dbFunctions.get_registered_esps()
 
 
 
