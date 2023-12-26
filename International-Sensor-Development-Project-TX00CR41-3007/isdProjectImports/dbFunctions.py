@@ -59,7 +59,7 @@ def get_registered_esps():
             "Users": []
         }
 
-        for user in esp.registered_esp:
+        for user in esp.associated_users:
             user_info = {
                 "UserID": user.UserID,
                 "Username": user.Username,
@@ -71,6 +71,3 @@ def get_registered_esps():
         esp_data.append(esp_info)
 
     return jsonify(esp_data)
-
-
-
