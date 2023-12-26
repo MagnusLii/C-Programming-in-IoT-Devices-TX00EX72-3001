@@ -44,9 +44,6 @@ def get_registered_esps():
     registered_esps = (
         RegisteredESPs.query
         .filter(RegisteredESPs.Registered == True)
-        .options(
-            db.relationship(RegisteredESPs.users, back_populates="esp"),
-        )
         .all()
     )
 
@@ -62,7 +59,7 @@ def get_registered_esps():
             "Users": []
         }
 
-        for user in esp.users:
+        for user in esp.registered_esp:
             user_info = {
                 "UserID": user.UserID,
                 "Username": user.Username,
@@ -74,5 +71,6 @@ def get_registered_esps():
         esp_data.append(esp_info)
 
     return jsonify(esp_data)
+
 
 
