@@ -42,8 +42,8 @@ class Votes(db.Model):
 
 def get_registered_esps():
     registered_esps_with_users = (
-        db.session.query(RegisteredESPs)
-        #.join(Users, RegisteredESPs.DeviceIndex == Users.DeviceIndex)
+        db.session.query(RegisteredESPs, Users)
+        .join(Users, RegisteredESPs.DeviceIndex == Users.DeviceIndex)
         .filter(RegisteredESPs.Registered == True)
         .all()
     )
