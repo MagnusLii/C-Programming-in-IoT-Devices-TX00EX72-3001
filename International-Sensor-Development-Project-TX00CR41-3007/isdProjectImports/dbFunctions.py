@@ -40,6 +40,6 @@ class Votes(db.Model):
     VoteTime = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp())
 
 
-def get_registered_users():
+def get_registered_esps():
     registered_users = db.session.query(RegisteredESPs, Users).join(Users, RegisteredESPs.DeviceIndex == Users.DeviceIndex).filter(RegisteredESPs.Registered == True).all()
     return registered_users
