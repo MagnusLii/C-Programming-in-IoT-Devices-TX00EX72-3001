@@ -14,7 +14,6 @@ class RegisteredESPs(db.Model):
     Assigned = db.Column(db.Boolean)
     Registered = db.Column(db.Boolean)
     MacAddress = db.Column(db.String(255))
-    users = db.relationship('users', backref='registeredesps')
 
 class Users(db.Model):
     __tablename__ = 'users'
@@ -22,7 +21,7 @@ class Users(db.Model):
     Username = db.Column(db.Text, unique=True)
     DeviceIndex = db.Column(db.Integer, db.ForeignKey('registeredesps.DeviceIndex'))
     RegistrationDate = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp())
-    registered_esp = db.relationship('registeredesps', backref='users')
+    registered_esp = db.relationship('RegisteredESPs', backref='users')
 
 class Topics(db.Model):
     __tablename__ = 'topics'
@@ -41,32 +40,6 @@ class Votes(db.Model):
     VoteTime = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp())
 
 
-def get_registered_esps():
-    registered_esps = (
-        db.session.query(RegisteredESPs, Users).join(Users, RegisteredESPs.DeviceIndex == Users.DeviceIndex).filter(RegisteredESPs.Assigned == True).all()
-    )
-
-    esp_data = []
-    for esp in registered_esps:
-        esp_info = {
-            "DeviceID": esp.DeviceID,
-            "RegistrationTime": str(esp.RegistrationTime),
-            "LastActiveTime": str(esp.LastActiveTime),
-            "Assigned": esp.Assigned,
-            "Registered": esp.Registered,
-            "MacAddress": esp.MacAddress,
-            "Users": []
-        }
-
-        for user in registered_esps:
-            user_info = {
-                "UserID": user.UserID,
-                "Username": user.Username,
-                "RegistrationDate": str(user.RegistrationDate),
-                "DeviceIndex": user.DeviceIndex
-            }
-            esp_info["Users"].append(user_info)
-
-        esp_data.append(esp_info)
-
-    return jsonify(esp_data)
+def get_registered_users():
+    registered_users = db.session.query(RegisteredESPs, Users).join(Users, RegisteredESPs.DeviceIndex == Users.DeviceIndex).filter(RegisteredESPs.Registered == True).all()
+    return registered_users
