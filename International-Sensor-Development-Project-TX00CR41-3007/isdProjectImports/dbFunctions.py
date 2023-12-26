@@ -1,23 +1,29 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask import jsonify
+from isdProjectImports import esp
 
 db = SQLAlchemy()
 
-class ESPDevice(db.Model):
-    __tablename__ = 'espdevices'
-    DeviceID = db.Column(db.String(255), primary_key=True)
-    RegistrationTime = db.Column(db.TIMESTAMP, default=datetime.utcnow)
+class RegisteredESPs(db.Model):
+    __tablename__ = 'registeredesps'
+    DeviceIndex = db.Column(db.Integer, primary_key=True, unique=True)
+    DeviceID = db.Column(db.String(255), nullable=False)
+    RegistrationTime = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp())
     LastActiveTime = db.Column(db.TIMESTAMP)
+    Assigned = db.Column(db.Boolean)
+    Registered = db.Column(db.Boolean)
+    MacAddress = db.Column(db.String(255))
 
 class Users(db.Model):
     __tablename__ = 'users'
     UserID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     Username = db.Column(db.Text, unique=True)
-    DeviceID = db.Column(db.String(255))
-    RegistrationDate = db.Column(db.TIMESTAMP, default=datetime.utcnow)
+    DeviceIndex = db.Column(db.Integer, db.ForeignKey('registeredesps.DeviceIndex'))
+    RegistrationDate = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp())
+    registered_esp = db.relationship('RegisteredESPs', backref='users')
 
-class Topic(db.Model):
+class Topics(db.Model):
     __tablename__ = 'topics'
     TopicID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     Title = db.Column(db.Text, nullable=False)
@@ -28,58 +34,45 @@ class Topic(db.Model):
 class Votes(db.Model):
     __tablename__ = 'votes'
     VoteID = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    UserID = db.Column(db.Integer, db.ForeignKey('user.UserID'), nullable=False)
+    UserID = db.Column(db.Integer, db.ForeignKey('users.UserID'), nullable=False)
     VoteType = db.Column(db.Text, nullable=False)
-    TopicID = db.Column(db.Integer, db.ForeignKey('topic.TopicID'), nullable=False)
-    VoteTime = db.Column(db.TIMESTAMP, default=datetime.utcnow())
-
-def create_tables():
-    db.create_all()
+    TopicID = db.Column(db.Integer, db.ForeignKey('topics.TopicID', ondelete='CASCADE'), nullable=False)
+    VoteTime = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp())
 
 
-# Returns a JSON object containing all the topics (aka votes held) in the database.
-def get_all_topics():
-    try:
-        topics = Topic.query.all()
+def get_registered_esps():
+    registered_esps = (
+        RegisteredESPs.query
+        .filter(RegisteredESPs.Registered == True)
+        .options(
+            db.relationship(RegisteredESPs.users, back_populates="esp"),
+        )
+        .all()
+    )
 
-        # Convert the topics data to a list of dictionaries
-        topics_list = []
-        for topic in topics:
-            topics_list.append({
-                'TopicID': topic.TopicID,
-                'Title': topic.Title,
-                'Description': topic.Description,
-                'StartTime': str(topic.StartTime),
-                'EndTime': str(topic.EndTime)
-            })
+    esp_data = []
+    for esp in registered_esps:
+        esp_info = {
+            "DeviceID": esp.DeviceID,
+            "RegistrationTime": str(esp.RegistrationTime),
+            "LastActiveTime": str(esp.LastActiveTime),
+            "Assigned": esp.Assigned,
+            "Registered": esp.Registered,
+            "MacAddress": esp.MacAddress,
+            "Users": []
+        }
 
-        # Return the topics data as a JSON object
-        return jsonify({'topics': topics_list}), 200
+        for user in esp.users:
+            user_info = {
+                "UserID": user.UserID,
+                "Username": user.Username,
+                "RegistrationDate": str(user.RegistrationDate),
+                "DeviceIndex": user.DeviceIndex
+            }
+            esp_info["Users"].append(user_info)
 
-    except Exception as error:
-        return jsonify({'error': str(error)}), 500
+        esp_data.append(esp_info)
+
+    return jsonify(esp_data)
 
 
-def get_votes_and_users_by_topic_id(topic_id):
-    try:
-        # Query votes and users based on TopicID
-        votes_and_users = db.session.query(Votes, Users).\
-            join(Users, Users.UserID == Votes.UserID).\
-            filter(Votes.TopicID == topic_id).all()
-
-        # Create JSON object
-        votes_users_list = []
-        for vote, user in votes_and_users:
-            votes_users_list.append({
-                'VoteID':vote.VoteID,
-                'UserID':user.UserID,
-                'Username':user.Username,
-                'VoteType':vote.VoteType,
-                'VoteTime':str(vote.VoteTime)
-            })
-
-        # Return the data as a JSON object
-        return jsonify({'votes_users_data': votes_users_list}), 200
-
-    except Exception as error:
-        return jsonify({'error': str(error)}), 500

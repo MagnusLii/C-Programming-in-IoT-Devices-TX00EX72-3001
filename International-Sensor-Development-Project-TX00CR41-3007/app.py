@@ -59,34 +59,23 @@ def handle_message(client, userdata, message):
     # Handle received message based on topic.
     print(f'starts with /registration/Server/: {receivedTopic.startswith("/registration/Server/")}')
     if receivedTopic.startswith("/registration/Server/") == True:
-        for i in range(len(esp.Esp.regiseredESPs)):
-            if esp.Esp.regiseredESPs[i].macAddress == decodedMessage['Mac']:
+        for i in range(len(esp.Esp.registeredESPs)):
+            if esp.Esp.registeredESPs[i].macAddress == decodedMessage['Mac']:
                 print(f'{decodedMessage["Mac"]} ESP already registered.')
-                esp.Esp.regiseredESPs[i].returnUniqueIDToEsp() # Resends uniqueID to ESP.
+                esp.Esp.registeredESPs[i].returnUniqueIDToEsp() # Resends uniqueID to ESP.
                 return
             
         esp.Esp(decodedMessage['Mac'])
         print(f'{decodedMessage["Mac"]} ESP registered.')
-        esp.Esp.regiseredESPs[-1].returnUniqueIDToEsp() # Sends uniqueID to ESP.
+        esp.Esp.registeredESPs[-1].returnUniqueIDToEsp() # Sends uniqueID to ESP.
         return
 
     
     return
 
 # API endpoints
-@app.route('/getRegisteredESPs', methods=['GET'])
-def getRegisteredESPs():
-    return jsonify([esp.Esp.regiseredESPs[i].macAddress for i in range(len(esp.Esp.regiseredESPs))])
 
 
-@app.route('/getTopics', methods=['GET'])
-def getTopics():
-    return dbFunctions.get_all_topics()
-
-
-@app.route('/getVoteResults/<topicID>', methods=['GET'])
-def getVoteResults(topicID):
-    return dbFunctions.get_votes_and_users_by_topic_id(topicID)
 
 @app.route('/registerEsp', methods=['POST'])
 def submit_data():
