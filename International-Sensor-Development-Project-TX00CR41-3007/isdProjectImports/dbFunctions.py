@@ -44,6 +44,9 @@ def get_registered_esps():
     registered_esps = (
         RegisteredESPs.query
         .filter(RegisteredESPs.Registered == True)
+        .options(
+            db.relationship(RegisteredESPs.users, back_populates="esp"),
+        )
         .all()
     )
 
@@ -59,12 +62,12 @@ def get_registered_esps():
             "Users": []
         }
 
-        for user in registered_esps:
+        for user in esp.users:
             user_info = {
                 "UserID": user.UserID,
                 "Username": user.Username,
                 "RegistrationDate": str(user.RegistrationDate),
-                "DeviceIndex": user.DeviceIndex
+                "DeviceIndex": user.DeviceIndex,
             }
             esp_info["Users"].append(user_info)
 
