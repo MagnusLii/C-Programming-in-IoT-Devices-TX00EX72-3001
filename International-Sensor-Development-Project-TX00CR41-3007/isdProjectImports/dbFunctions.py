@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask import jsonify
 from isdProjectImports import esp
+from collections import defaultdict
 
 db = SQLAlchemy()
 
@@ -48,18 +49,26 @@ def get_registered_esps():
         .all()
     )
     
-    esp_data = []
-    for esp_tuple in registered_esps_with_users:
-        esp, user = esp_tuple
-        esp_info = {
+def get_registered_esps():
+    registered_esps_with_users = (
+        db.session.query(RegisteredESPs, Users)
+        .join(Users, RegisteredESPs.DeviceIndex == Users.DeviceIndex)
+        .filter(RegisteredESPs.Registered == True)
+        .all()
+    )
+
+    esp_data = defaultdict(lambda: {"Users": []})  # Use defaultdict to group users by DeviceIndex
+
+    for esp, user in registered_esps_with_users:
+        esp_data[esp.DeviceIndex].update({
+            "DeviceIndex": esp.DeviceIndex,
             "DeviceID": esp.DeviceID,
             "RegistrationTime": str(esp.RegistrationTime),
             "LastActiveTime": str(esp.LastActiveTime),
             "Assigned": esp.Assigned,
             "Registered": esp.Registered,
             "MacAddress": esp.MacAddress,
-            "Users": []
-        }
+        })
 
         user_info = {
             "UserID": user.UserID,
@@ -67,8 +76,10 @@ def get_registered_esps():
             "RegistrationDate": str(user.RegistrationDate),
             "DeviceIndex": user.DeviceIndex
         }
-        esp_info["Users"].append(user_info)
 
-        esp_data.append(esp_info)
+        esp_data[esp.DeviceIndex]["Users"].append(user_info)
 
-    return jsonify(esp_data)
+    # Convert defaultdict back to a list of ESP data
+    esp_data_list = list(esp_data.values())
+
+    return jsonify(esp_data_list)
