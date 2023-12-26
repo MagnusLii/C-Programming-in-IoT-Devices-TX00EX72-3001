@@ -41,10 +41,16 @@ class Votes(db.Model):
 
 
 def get_registered_esps():
-    registered_esps = db.session.query(RegisteredESPs, Users).join(Users, RegisteredESPs.DeviceIndex == Users.DeviceIndex).filter(RegisteredESPs.Registered == True).all()
+    registered_esps_with_users = (
+        db.session.query(RegisteredESPs, Users)
+        .join(Users, RegisteredESPs.DeviceIndex == Users.DeviceIndex)
+        .filter(RegisteredESPs.Registered == True)
+        .all()
+    )
     
     esp_data = []
-    for esp in registered_esps:
+    for esp_tuple in registered_esps_with_users:
+        esp, user = esp_tuple
         esp_info = {
             "DeviceID": esp.DeviceID,
             "RegistrationTime": str(esp.RegistrationTime),
@@ -55,14 +61,13 @@ def get_registered_esps():
             "Users": []
         }
 
-        for user in esp.associated_users:
-            user_info = {
-                "UserID": user.UserID,
-                "Username": user.Username,
-                "RegistrationDate": str(user.RegistrationDate),
-                "DeviceIndex": user.DeviceIndex
-            }
-            esp_info["Users"].append(user_info)
+        user_info = {
+            "UserID": user.UserID,
+            "Username": user.Username,
+            "RegistrationDate": str(user.RegistrationDate),
+            "DeviceIndex": user.DeviceIndex
+        }
+        esp_info["Users"].append(user_info)
 
         esp_data.append(esp_info)
 
