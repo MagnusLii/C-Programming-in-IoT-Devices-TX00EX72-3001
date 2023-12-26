@@ -41,5 +41,29 @@ class Votes(db.Model):
 
 
 def get_registered_esps():
-    registered_users = db.session.query(RegisteredESPs, Users).join(Users, RegisteredESPs.DeviceIndex == Users.DeviceIndex).filter(RegisteredESPs.Registered == True).all()
-    return registered_users
+    registered_esps = db.session.query(RegisteredESPs, Users).join(Users, RegisteredESPs.DeviceIndex == Users.DeviceIndex).filter(RegisteredESPs.Registered == True).all()
+    
+    esp_data = []
+    for esp in registered_esps:
+        esp_info = {
+            "DeviceID": esp.DeviceID,
+            "RegistrationTime": str(esp.RegistrationTime),
+            "LastActiveTime": str(esp.LastActiveTime),
+            "Assigned": esp.Assigned,
+            "Registered": esp.Registered,
+            "MacAddress": esp.MacAddress,
+            "Users": []
+        }
+
+        for user in esp.associated_users:
+            user_info = {
+                "UserID": user.UserID,
+                "Username": user.Username,
+                "RegistrationDate": str(user.RegistrationDate),
+                "DeviceIndex": user.DeviceIndex
+            }
+            esp_info["Users"].append(user_info)
+
+        esp_data.append(esp_info)
+
+    return jsonify(esp_data)
