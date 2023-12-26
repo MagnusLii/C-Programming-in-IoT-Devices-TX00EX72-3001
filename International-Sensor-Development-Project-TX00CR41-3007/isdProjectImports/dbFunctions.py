@@ -6,7 +6,7 @@ db = SQLAlchemy()
 
 class ESPDevice(db.Model):
     __tablename__ = 'espdevices'
-    DeviceID = db.Column(db.String(17), primary_key=True)
+    DeviceID = db.Column(db.String(255), primary_key=True)
     RegistrationTime = db.Column(db.TIMESTAMP, default=datetime.utcnow)
     LastActiveTime = db.Column(db.TIMESTAMP)
 
@@ -14,7 +14,7 @@ class Users(db.Model):
     __tablename__ = 'users'
     UserID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     Username = db.Column(db.Text, unique=True)
-    DeviceID = db.Column(db.String(17))
+    DeviceID = db.Column(db.String(255))
     RegistrationDate = db.Column(db.TIMESTAMP, default=datetime.utcnow)
 
 class Topic(db.Model):
@@ -56,8 +56,8 @@ def get_all_topics():
         # Return the topics data as a JSON object
         return jsonify({'topics': topics_list}), 200
 
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except Exception as error:
+        return jsonify({'error': str(error)}), 500
 
 
 def get_votes_and_users_by_topic_id(topic_id):
@@ -81,5 +81,5 @@ def get_votes_and_users_by_topic_id(topic_id):
         # Return the data as a JSON object
         return jsonify({'votes_users_data': votes_users_list}), 200
 
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except Exception as error:
+        return jsonify({'error': str(error)}), 500

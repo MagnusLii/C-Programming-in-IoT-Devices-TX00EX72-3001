@@ -88,7 +88,7 @@ def getTopics():
 def getVoteResults(topicID):
     return dbFunctions.get_votes_and_users_by_topic_id(topicID)
 
-@app.route('/submit_data', methods=['POST'])
+@app.route('/registerEsp', methods=['POST'])
 def submit_data():
     if request.method == 'POST':
         # Access the POST data sent to this endpoint
@@ -113,3 +113,5 @@ if __name__ == '__main__':
     mqttImports.mqtt.init_app(app)
 
     app.run(host='0.0.0.0', port=5000, use_reloader=False)
+
+    {"key": "value"}
