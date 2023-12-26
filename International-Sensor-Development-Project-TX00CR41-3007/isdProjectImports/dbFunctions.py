@@ -59,7 +59,7 @@ def get_registered_esps():
             "Users": []
         }
 
-        for user in esp.associated_users:
+        for user in registered_esps:
             user_info = {
                 "UserID": user.UserID,
                 "Username": user.Username,
