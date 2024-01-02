@@ -31,7 +31,6 @@ The function returns a JSON array containing objects representing registered ESP
             },
         ]
     },
-    // More ESP objects if available
 ]```
 
 In case of an exception, the function returns a JSON object with an error message and a status code of 500:
