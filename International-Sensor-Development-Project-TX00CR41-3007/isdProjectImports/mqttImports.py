@@ -21,7 +21,7 @@ voteIncomingTopic = '/vote/#'  # + votingID, ESPs will send votes to this topic.
 
 initialSubscribeTopics = [registrationIncomingTopic, voteResyncTopic, voteIncomingTopic]
 
-
+# Decodes JSON string to Python dictionary.
 def decodeStringToJSON(json_string):
     try:
         decodedMessage = json.loads(json_string)
@@ -32,6 +32,7 @@ def decodeStringToJSON(json_string):
         return -1
 
 
+# Validates that all keywords in keywordList are present in decodedJSON.
 def validateKeywordsInJSON(decodedJSON, keywordList, verifycationLevel):
     jsonKeySet = set(decodedJSON.keys())
 
@@ -51,11 +52,12 @@ def validateKeywordsInJSON(decodedJSON, keywordList, verifycationLevel):
         raise ValueError("Invalid verification level. Please provide either 1 or 2.")
 
 
+# Publishes 'message' to MQTT 'topic'.
 def publishJSONtoMQTT(topic, message):
     try:
         mqtt.publish(topic, message, qos=mqttQoSLevel)
     except:
-        print(f'Failed to publish to topic: {topic}')
+        print(f'Failed to publish message: {str(message)}\nto topic: {topic}')
         return False
     else:
         return True

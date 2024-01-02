@@ -15,6 +15,8 @@ mqttKeepAliveSec = 10
 mqttBrokerIP = 'localhost'  # Replace with broker IP if not running locally.
 mqttQoSLevel = 1
 
+globalVoteInformation = voteHandling.VoteInformation() # Global vote information object.
+globalVoteInformationList = []  # List of global vote information objects.
 
 # Flask app setup.
 app = Flask(__name__)
@@ -74,20 +76,60 @@ def handle_message(client, userdata, message):
     return
 
 # API endpoints
+
+# GET all registered ESPs.
 @app.route('/api/getRegisteredESPs', methods=['GET'])
 def getRegisteredESPs():
     return dbFunctions.get_registered_esps()
 
 
+# GET all Topics (votes).
+@app.route('/api/getTopics', methods=['GET'])
+def getTopics():
+    return dbFunctions.get_topics()
+
+
+# GET Specific Topic (vote).
+@app.route('/api/getTopic/<topicID>', methods=['GET'])
+def getTopic(topicID):
+    return dbFunctions.get_topic(topicID)
+
+
+# Create new Topic (vote).
+@app.route('/api/createTopic', methods=['POST'])
+def createTopic():
+    try:
+        # Setup vote information.
+        data = request.json
+        mqttImports.validateKeywordsInJSON(data, ['title', 'description', 'voteStartTime', 'voteEndTime'], 1)
+        globalVoteInformation.updateVoteInformation(data['title'], data['description'], data['voteStartTime'], data['voteEndTime'])
+
+        # Create new topic in database.
+        if dbFunctions.create_topic(globalVoteInformation) == True:
+            # TODO: figure out voteStartTiming.
+            return jsonify({'message': 'Topic created.'}), 200
+        else:
+            return jsonify({'message': 'Topic creation failed.'}), 400
+
+    except:
+        return jsonify({'message': 'Invalid data.'}), 400 # TODO: change return message to something more descriptive.
+
+
+# Assign user to ESP.
+@app.route('/api/assignUserToESP', methods=['POST'])
+def assignUserToESP():
+    try:
+        data = request.json
+        dbFunctions.assign_user_to_esp(data['userID'], data['espID'])
+    
+        return jsonify({'message': 'User assigned to ESP.'}), 200
+    
+    except:
+        return jsonify({'message': 'Invalid data.'}), 400 # TODO: change return message to something more descriptive.
 
 if __name__ == '__main__':
-
-    globalVoteInformation = voteHandling.VoteInformation()  # Global vote information object.
-
     # Initialize imported app extensions.
     dbFunctions.db.init_app(app)
     mqttImports.mqtt.init_app(app)
 
     app.run(host='0.0.0.0', port=5000, use_reloader=False)
-
-    {"key": "value"}
