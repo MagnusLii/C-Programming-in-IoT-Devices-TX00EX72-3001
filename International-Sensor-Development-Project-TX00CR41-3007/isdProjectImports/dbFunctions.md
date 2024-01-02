@@ -1,6 +1,6 @@
 ## Functions and JSON Responses
 
-## Function: `get_registered_esps()`
+# Function: `get_registered_esps()`
 
 ### Description:
 This function retrieves all registered ESPs along with associated user information from the database.
@@ -42,7 +42,7 @@ In case of an exception, the function returns a JSON object with an error messag
 ```
 
 
-## Function: `get_all_esps()`
+# Function: `get_all_esps()`
 
 ### Description:
 This function retrieves all Electronic Service Providers (ESPs) from the database.
