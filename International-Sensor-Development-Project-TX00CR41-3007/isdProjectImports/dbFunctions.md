@@ -35,7 +35,8 @@ The function returns a JSON array containing objects representing registered ESP
 ]
 ´´´
 In case of an exception, the function returns a JSON object with an error message and a status code of 500:
-´´´{
+´´´json
+{
     "error": "Error message here"
 }
 ´´´
@@ -67,7 +68,8 @@ The function returns a JSON array containing objects representing all ESPs avail
 ]
 ´´´
 In case of an exception, the function returns a JSON object with an error message and a status code of 500:
-´´´{
+´´´json
+{
     "error": "Error message here"
 }
 ´´´
