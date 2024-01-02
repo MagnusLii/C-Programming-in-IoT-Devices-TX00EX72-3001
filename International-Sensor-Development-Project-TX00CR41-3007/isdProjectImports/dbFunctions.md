@@ -351,7 +351,7 @@ In case of an exception, the function returns a tuple containing a boolean value
 ]
 ```
 <br><br>
-## Function: `create_user(username, deviceID)`
+# Function: `create_user(username, deviceID)`
 
 ### Description:
 This function registers a user to an Electronic Service Provider (ESP) by creating a new user in the database.
@@ -378,7 +378,7 @@ In case of an exception, the function returns a tuple containing a boolean value
 ]
 ```
 <br><br>
-## Function: `assign_user_to_esp(userID, espID)`
+# Function: `assign_user_to_esp(userID, espID)`
 
 ### Description:
 This function assigns a user to an Electronic Service Provider (ESP) by linking their device index to the ESP.
