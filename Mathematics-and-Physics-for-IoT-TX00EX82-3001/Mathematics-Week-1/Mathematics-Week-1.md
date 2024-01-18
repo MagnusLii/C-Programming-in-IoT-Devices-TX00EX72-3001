@@ -55,5 +55,5 @@ $a_{10} ​= 8⋅({1 \over 2}​)^9 = {1 \over 64}$<br><br>
 ## 6
 Since $(k + 1)^{th}$ $term > k^{th}$ $term and (k + 1)^{th}$ $term ⋅ k^{th}$ $term < 0$<br>
 this suggests that the result is alternating between positive and negative with each subsequent term.
-This means that r has to be $< 0$.
+This means that r has to be $< 0$.<br>
 So C is true.
