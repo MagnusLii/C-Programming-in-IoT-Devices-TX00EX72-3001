@@ -10,7 +10,6 @@ def generate_sequence(n):
 n_terms = 5
 sequence = generate_sequence(n_terms)
 
-# Plotting the graph
 plt.plot(range(n_terms), sequence, marker='o', linestyle='-', color='b')
 plt.title('Recursive Sequence: $x[k] = \\frac{x[k-1]}{2}$, $x[0]=1$')
 plt.xlabel('k')
