@@ -61,3 +61,4 @@ Both B and D can be true provided the other is false.<br>
 A and E are False.
 
 ## 7
+$a1=1.a9=a1×q8=q8a1​=1.a9​=a1​×q8=q8. a_{5}=a_{1}\times q4^{}{q}}'=4}{4. {an=a1qn−1}{an​=a1​qn−1} a9−a5=q8−q4=q4(a9​−a5​=q8−q4=q4( q4−1)=240q4−1)=240. 94=1694=16 {15×16=240}{15×16=240} q=20r q=-2 s0a8=a1q7=27=128s0​a8​=a1​q7=27=128 or a8=a1q7=(−2)7=−128a8​=a1​q7=(−2)7=−128. So the answer is 128 or -128 $
