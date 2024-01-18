@@ -62,7 +62,7 @@ A and E are False.
 
 ## 7
 $a_1 = 1$<br>
-$a_n = a_1 \times q^{(n-1)}$<br>
+$q = a_n = a_1 \times q^{(n-1)}$<br>
 $a_9 = a_1 \times q_8$<br>
 $a_5 = a_1 \times q_4$<br>
 $a_9 - a_5 = q_8 - q_4$<br>
