@@ -51,3 +51,6 @@ $a_{19} ​= 8+(19−1)⋅(−3) = -46$<br><br>
 $a_n​ = a_1​⋅r^{(n−1)}$ || $a_1 = 8,$ $r = {1 \over 2}$<br><br>
 $a_5​ = 8⋅(​{1 \over 2})^4 = {1 \over 2}$<br><br>
 $a_{10} ​= 8⋅({1 \over 2}​)^9 = {1 \over 64}$<br><br>
+
+## 6
+Since $(k + 1)^{th} term > k^{th} term and (k + 1)^{th} term ⋅ k^{th} term < 0$
