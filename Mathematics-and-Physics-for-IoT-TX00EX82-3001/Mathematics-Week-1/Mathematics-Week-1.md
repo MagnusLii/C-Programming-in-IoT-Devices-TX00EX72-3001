@@ -61,12 +61,12 @@ Both B and D can be true provided the other is false.<br>
 A and E are False.
 
 ## 7
-$a_n = a_1 \times b^{n-1}$
-$a_1 \times b^8 - a_1 \times b^4 = 240$<br>
-$(b^4 - 16)()$
-
-$a1​=1$<br>
-$a_9​=a_1​ \times q_8 = q_8$<br>
-$a_5=a_1\times (q_4)^q$<br>
-${a_n=a_1 \times q_n−1}{a_n​=a_1 \times ​q_n−1} a_9−a_5=q_8−q_4=q_4(a_9​−a_5​=q_8−q_4=q_4( q_4−1)=240q_4−1)=240$<br>
-$94=1694=16 {15×16=240}{15×16=240} q=20r q=-2 s0a8=a1q7=27=128s0​a8​=a1​q7=27=128 or a8=a1q7=(−2)7=−128a8​=a1​q7=(−2)7=−128$
+$a_1 = 1$<br>
+$a_n = a_1 \times q^(n-1)$<br>
+$a_9 = a_1 \times q_8$<br>
+$a_5 = a_1 \times q_4$<br>
+$a_9 - a_5 = q_8 - q_4$<br>
+$q_8 - q_4 = q_4(q_4 - 1) = 240$<br>
+$(q_4​−16)(q_4​+15)=0$<br>
+$q = \sqrt[4]{16} = \pm 2$<br>
+$a_8 = a_1 \times q^7 = $|| $2^7 = 128$, $-2^7 = -128$
