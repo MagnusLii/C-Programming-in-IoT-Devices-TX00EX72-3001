@@ -53,4 +53,4 @@ $a_5​ = 8⋅(​{1 \over 2})^4 = {1 \over 2}$<br><br>
 $a_{10} ​= 8⋅({1 \over 2}​)^9 = {1 \over 64}$<br><br>
 
 ## 6
-Since $(k + 1)^{th} term > k^{th} term and (k + 1)^{th} term ⋅ k^{th} term < 0$
+Since $(k + 1)^{th}$ $term > k^{th}$ $term and (k + 1)^{th}$ $term ⋅ k^{th}$ $term < 0$ $r has to be < 0$ 
