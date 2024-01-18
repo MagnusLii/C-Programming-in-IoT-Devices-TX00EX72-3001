@@ -1,7 +1,7 @@
 # Mathematics Week 1
 ## 1
-$f(t) = cos(t+2), t ∈ R$ <br><br>
-$f(0) = 1$ <br><br>
+$f(t) = cos(t+2),$ $t ∈ R$ <br><br>
+$f(0) = cos(0 + 2) = cos(2) = -041514$ <br><br>
 $f(1) = -0.9899$ <br><br>
 $f(2) = -0.6536$ <br><br>
 $f(3) = 0.28366$ <br><br>
