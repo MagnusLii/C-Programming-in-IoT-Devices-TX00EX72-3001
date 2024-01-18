@@ -20,3 +20,7 @@ $x(4) = 12$<br>
 $x[k] = {x[k − 1] \over 2}, x[0] = 1$<br><br>
 $x[1] = {x[1-1] \over 2} = {x[0] \over 2} = 1/2$<br><br>
 $x[2] = {x[2-1] \over 2} = {x[1] \over 2} = {{1 \over 2} \over 2} = {1 \over 4} $<br><br>
+$x[3] = {x[3-1] \over 2} = ... = 1 \over 8$<br><br>
+$x[4] = {x[4-1] \over 2} = ... = 1 \over 16$<br><br>
+
+![Plot for task 3a](1.png)
