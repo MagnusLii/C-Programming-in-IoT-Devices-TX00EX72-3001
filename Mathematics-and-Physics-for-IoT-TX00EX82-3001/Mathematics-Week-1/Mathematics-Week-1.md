@@ -19,4 +19,4 @@ $x(4) = 12$<br>
 # 3a
 $x[k] = {x[k − 1] \over 2}, x[0] = 1$<br><br>
 $x[1] = {x[1-1] \over 2} = {x[0] \over 2} = 1/2$<br><br>
-$x[2] = {x[1] \over 2} = $<br><br>
+$x[2] = {x[2-1] \over 2} = {x[1] \over 2} = {1 \over 2 \over 2 = 1 \over 4} $<br><br>
